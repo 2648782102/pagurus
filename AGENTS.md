@@ -11,6 +11,7 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 - Use Conchbase's versioned API. Never read or write its private files/database.
 - A UI selection or installation must not bypass the runtime's per-tool authorization.
 - Do not put provider/tool credentials in browser storage, frontend bundles, logs, or Git.
+- Conchbase's published phase-1 task, cancel, and retry routes are the only accepted write operations.
 - Remote runtime pairing and configuration write operations are not implemented yet.
 
 ## UI and change discipline

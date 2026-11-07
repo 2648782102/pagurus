@@ -2,6 +2,8 @@
 
 Status: accepted for repository development guardrails, not a public API contract.
 
+Update note (2026-11-07): [ADR 0002](0002-phase-one-task-operations.md) accepts Conchbase's published phase-1 task operations. The executable guardrails were updated in that same slice to allow exactly the documented task/retry/cancel writes. All other client boundaries remain in force.
+
 ## Context
 
 Pagurus is developed primarily by AI coding agents, and the repository does not optimize for human handoff. Conchbase's `docs/AI_TASK_QUEUE.md` blocks the next implementation slice until product direction is given on the open ADRs. A weaker model working in Pagurus could otherwise invent a second API schema, add configuration write routes, use browser storage for secrets, connect to a non-loopback runtime, or present planned configuration workflows as implemented.

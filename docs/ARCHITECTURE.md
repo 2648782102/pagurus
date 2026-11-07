@@ -4,17 +4,17 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 
 ## Client boundary
 
-- The web console uses the versioned HTTP/JSON Runtime API and subscribes to resumable SSE events.
+- The web console uses the versioned HTTP/JSON Runtime API. Phase 1 polls task state; SSE remains a future transport after Conchbase accepts its event envelope.
 - Development uses a same-origin Vite proxy to the loopback runtime.
 - A production console should be served from the runtime origin or paired to an explicitly authorized local endpoint.
 - The runtime owns secrets, active configuration revisions, task state, and policy enforcement.
 - Conchbase owns the current machine-readable API source of truth at [`docs/openapi.yaml`](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml). Do not copy or independently redefine that contract here.
 
-## Initial screen
+## Implemented screens
 
-The current screen reports runtime connectivity and lists the planned configuration areas: Agents, tools/MCP connections, and Skills. It contains no write operations.
+The overview reports runtime connectivity and lists the planned configuration areas: Agents, tools/MCP connections, and Skills. Those rows remain visibly non-interactive.
 
-The current client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state. It does not create tasks, stream events, or manage configuration.
+The status client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state. The task client uses `GET /v1/models`, `POST /v1/tasks`, `GET /v1/tasks/{taskId}`, `POST .../cancel`, and `POST .../retry` against Conchbase's published contract. It polls task state while active and shows the final output, error, or interruption. It does not manage configuration.
 
 ## Future desktop shell
 

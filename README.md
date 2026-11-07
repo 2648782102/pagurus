@@ -6,7 +6,7 @@
 
 Pagurus lets users configure and inspect agents, MCP connections, Skills, and policies. Conchbase remains responsible for task execution, secrets resolution, and permission enforcement. The console is an optional client; CLI and other interfaces can use the same runtime API.
 
-The current scaffold connects to a local Conchbase health endpoint, shows connection state, and reports incompatible Runtime API versions. Configuration workflows are planned work. Deterministic repository guardrail tests keep the current client and API boundaries explicit.
+The current client connects to a local Conchbase runtime, shows connection state, reports incompatible Runtime API versions, and operates phase-1 model tasks through the published Runtime API. Users can select a model from the local Magpie catalog, start one task, watch its state, and cancel or explicitly retry it. Configuration workflows are planned work. Deterministic repository guardrail tests keep the accepted task-write and client boundaries explicit.
 
 ## Run locally
 
@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. Start Conchbase separately to see the connected state. The initial screen makes read-only health requests.
+The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. Start Conchbase and Magpie separately, then enable a model in Magpie to run a task. Provider credentials stay in Magpie; Pagurus receives model ids and display names only.
 
 ## Principles
 

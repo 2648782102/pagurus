@@ -1,4 +1,5 @@
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
+import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 
 export function App() {
   return (
@@ -28,12 +29,20 @@ export function App() {
 
         <RuntimeStatusPanel />
 
+        <TaskOperationsPanel />
+
         <section className="next-section" aria-labelledby="next-title">
           <div className="section-heading">
             <div><p className="eyebrow">WORKSPACE</p><h2 id="next-title">管理空间</h2></div>
             <span className="muted-label">即将开放</span>
           </div>
           <div className="workspace-list">
+            <a className="workspace-row is-live" id="tasks" href="#task-operations-title">
+              <span className="row-icon icon-tools">↗</span>
+              <span className="row-copy"><strong>任务运行</strong><small>创建、查看、取消和重试模型任务</small></span>
+              <span className="row-state">已开放</span>
+              <span className="row-arrow">↗</span>
+            </a>
             <div className="workspace-row is-planned" id="agents">
               <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agents</strong><small>模型、身份与运行配置</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
             </div>

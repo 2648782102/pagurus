@@ -29,6 +29,11 @@ const nonLoopbackAddress = /0\.0\.0\.0|::\/0/;
 const readOnlyFetch = /await fetch\(path, \{\s*headers: \{ Accept: 'application\/json' \},\s*signal,\s*\}\)/;
 const forbiddenBrowserStorage = /\b(?:localStorage|sessionStorage|indexedDB)\b/;
 const forbiddenHttpMethod = /\bmethod:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/;
+const acceptedTaskPosts = [
+  "'/v1/tasks'",
+  "`/v1/tasks/${encodeURIComponent(taskId)}/cancel`",
+  "`/v1/tasks/${encodeURIComponent(taskId)}/retry`",
+];
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -59,35 +64,28 @@ function assertNoForbiddenBrowserStorageIn(source: string, label: string): void 
   ).toBe(false);
 }
 
-function assertNoWriteFetchIn(source: string, label: string): void {
-  expect(
-    forbiddenHttpMethod.test(source),
-    `${label} must not add an undocumented Runtime API write call`,
-  ).toBe(false);
+function assertAcceptedWriteBoundary(source: string, label: string): void {
+  const posts = [...source.matchAll(/method: 'POST'/g)];
+  expect(posts.length, `${label} must use only the accepted task POST helper`).toBe(1);
+  for (const route of acceptedTaskPosts) {
+    expect(source, `${label} must use ${route}`).toContain(route);
+  }
+  expect(source, `${label} must not invent configuration writes`).not.toMatch(/\/v1\/config/);
+  expect(source, `${label} must not put credentials in requests`).not.toMatch(/Authorization|apiKey|secret/);
 }
 
 function assertApiBoundary(source: string, label: string): void {
-  expect(
-    source.includes("getJson('/v1/health'"),
-    `${label} must keep the current health route`,
-  ).toBe(true);
-  expect(
-    source.includes("getJson('/v1/runtime'"),
-    `${label} must keep the current runtime route`,
-  ).toBe(true);
+  expect(source, `${label} must keep the current health route`).toContain("getJson('/v1/health'");
+  expect(source, `${label} must keep the current runtime route`).toContain("getJson('/v1/runtime'");
   expect(source, `${label} must use a read-only fetch helper`).toMatch(readOnlyFetch);
-  assertNoWriteFetchIn(source, label);
+  expect(forbiddenHttpMethod.test(source), `${label} must not add a write call here`).toBe(false);
 }
 
 function assertLoopbackProxy(source: string, label: string): void {
-  expect(
-    source.includes("target: 'http://127.0.0.1:4318'"),
-    `${label} must keep the loopback development proxy`,
-  ).toBe(true);
-  expect(
-    nonLoopbackAddress.test(source),
-    `${label} must not configure a non-loopback runtime target`,
-  ).toBe(false);
+  expect(source, `${label} must keep the loopback development proxy`)
+    .toContain("target: 'http://127.0.0.1:4318'");
+  expect(nonLoopbackAddress.test(source), `${label} must not configure a non-loopback runtime target`)
+    .toBe(false);
 }
 
 function assertDependencyBoundaries(
@@ -126,7 +124,6 @@ describe('AI-first entry documents', () => {
       "Use Conchbase's versioned API. Never read or write its private files/database.",
       'A UI selection or installation must not bypass the runtime\'s per-tool authorization.',
       'Do not put provider/tool credentials in browser storage, frontend bundles, logs, or Git.',
-      'Remote runtime pairing and configuration write operations are not implemented yet.',
       'Run `npm run check`, `npm test`, and `npm run build` after code changes.',
       'Keep `tests/repository-guardrails.test.ts` passing; update it only alongside an accepted ADR or a documented development-boundary change.',
     ]) {
@@ -134,44 +131,43 @@ describe('AI-first entry documents', () => {
     }
 
     const handoff = read('docs/AI_HANDOFF.md');
-    expect(handoff).toMatch(/Do not tell users that Pagurus can configure an agent yet/);
-    expect(handoff).toMatch(/Propose API changes there before building dependent UI/);
+    expect(handoff).toMatch(/Task operations are implemented/);
+    expect(handoff).toMatch(/Configuration workflows remain planned work/);
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
     expect(englishReadme).toMatch(/Configuration workflows are planned work/);
-    expect(englishReadme).toMatch(/Deterministic repository guardrail tests keep the current client and API boundaries explicit\./);
     expect(chineseReadme).toMatch(/配置工作流尚未实现/);
-    expect(chineseReadme).toMatch(/确定性的仓库护栏测试会把当前客户端与 API 边界固定为可执行检查。/);
   });
 
-  it('records the accepted development guardrail decision', () => {
+  it('records the accepted guardrail and task-operations decisions', () => {
     const recordsDir = 'docs/decisions';
     const files = readdirSync(path.join(repositoryRoot, recordsDir))
       .filter((file) => file.endsWith('.md'))
       .sort();
-    expect(files).toEqual(['0001-ai-development-guardrails.md']);
+    expect(files).toEqual([
+      '0001-ai-development-guardrails.md',
+      '0002-phase-one-task-operations.md',
+    ]);
 
-    const record = read(`${recordsDir}/0001-ai-development-guardrails.md`);
-    expect(record).toMatch(/^Status: accepted for repository development guardrails, not a public API contract\.$/m);
-    expect(record).toMatch(/does not authorize configuration write routes/);
-    expect(record).toMatch(/does not implement an agent loop/);
+    const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
+    expect(first).toMatch(/^Status: accepted for repository development guardrails, not a public API contract\.$/m);
+    const second = read(`${recordsDir}/0002-phase-one-task-operations.md`);
+    expect(second).toMatch(/^Status: \*\*accepted for the phase-1 task operations UI/m);
+    expect(second).toMatch(/configuration management remains planned work/);
   });
 });
 
 describe('client boundaries', () => {
-  it('keeps the Runtime API read-only, loopback-only, and free of private-file access', () => {
-    const apiClient = read('src/shared/api/runtime.ts');
-    assertApiBoundary(apiClient, 'src/shared/api/runtime.ts');
+  it('keeps only accepted write routes, loopback proxy, and no private-file access', () => {
+    assertApiBoundary(read('src/shared/api/runtime.ts'), 'src/shared/api/runtime.ts');
+    assertAcceptedWriteBoundary(read('src/shared/api/tasks.ts'), 'src/shared/api/tasks.ts');
     assertLoopbackProxy(read('vite.config.ts'), 'vite.config.ts');
 
-    const sourceFiles = listSourceFiles('src');
-    expect(sourceFiles.length).toBeGreaterThan(0);
-    for (const file of sourceFiles) {
+    for (const file of listSourceFiles('src')) {
       const source = read(file);
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
-      assertNoWriteFetchIn(source, file);
     }
   });
 
@@ -184,7 +180,7 @@ describe('client boundaries', () => {
   it('rejects representative boundary violations', () => {
     const syntheticPrivateImport = ['import fs ', "from 'node:fs';"].join('');
     const syntheticBrowserStorage = ['const value = ', 'localStorage', ".getItem('secret');"].join('');
-    const syntheticWriteFetch = ['await fetch', "('/v1/config', { method: ", "'POST'", ' });'].join('');
+    const syntheticConfigWrite = ['method: ', "'POST'", ", '/v1/config'"].join('');
     const syntheticNonLoopbackProxy = [
       'server: { proxy: {',
       " '/v1': { target: '",
@@ -205,9 +201,7 @@ describe('client boundaries', () => {
     expect(() => assertNoForbiddenBrowserStorageIn(syntheticBrowserStorage, 'synthetic')).toThrowError(
       /must not put runtime or credential data in browser storage/,
     );
-    expect(() => assertNoWriteFetchIn(syntheticWriteFetch, 'synthetic')).toThrowError(
-      /must not add an undocumented Runtime API write call/,
-    );
+    expect(forbiddenHttpMethod.test(syntheticConfigWrite)).toBe(true);
     expect(() => assertLoopbackProxy(syntheticNonLoopbackProxy, 'synthetic')).toThrowError(
       /must keep the loopback development proxy/,
     );

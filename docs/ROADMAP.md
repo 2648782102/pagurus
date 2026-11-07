@@ -14,8 +14,9 @@ This is a direction for staged validation, not a release commitment.
 - Add and inspect MCP connections, then manage per-tool enablement and grants.
 - Validate and preview changes before asking Conchbase to apply a new revision.
 
-## Operations
+## Operations (phase 1 partially implemented)
 
+- Create, inspect, cancel, and retry one bounded model task through Conchbase's API.
 - Stream task events and show approval requests.
 - Inspect task history, tool calls, artifacts, and configuration revisions.
 - Add secure runtime pairing and remote connection support.

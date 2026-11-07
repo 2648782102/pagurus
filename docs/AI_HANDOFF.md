@@ -6,72 +6,64 @@ This document is the starting packet for a coding model that has not seen the de
 
 ## Product definition
 
-Pagurus (寄居蟹) is the optional control console for Conchbase. Users should be able to configure and inspect their agents, MCP connections, Skills, policies, and later plugins through a graphical interface. CLI and third-party clients remain valid; the UI does not become the execution authority.
-
-Conchbase is a separate public repository and owns the actual agent loop, task state, secrets, and permission decisions. Pagurus communicates with it through the versioned Runtime API.
+Pagurus (寄居蟹) is the optional control console for Conchbase. Its eventual job is to let users configure and inspect agents, MCP connections, Skills, policies, and later plugins through a graphical interface. Conchbase is a separate public repository and owns the agent loop, task state, secrets, and permission decisions. CLI and third-party clients remain valid; Pagurus does not become the execution authority.
 
 ## Read in this order
 
 1. `AGENTS.md` — mandatory client/security constraints and AI-first development rule.
-2. `docs/AI_DEVELOPMENT.md` — how to make and validate focused changes in this repository.
-3. `docs/ARCHITECTURE.md` — client boundary, API ownership, and current source layout.
-4. `docs/TECH_STACK.md` — chosen and deferred UI technology.
-5. `docs/decisions/0001-ai-development-guardrails.md` — accepted executable development guardrails, not a public contract.
-6. `docs/ROADMAP.md` — intended product sequence.
-7. `docs/VALIDATION_PLAN.md` — current automated and future UI validation strategy.
-8. Conchbase's `docs/AI_TASK_QUEUE.md` — current cross-repository sequencing and unresolved public contracts.
+2. This handoff, then `docs/AI_DEVELOPMENT.md`.
+3. [ADR 0002](decisions/0002-phase-one-task-operations.md) — accepted phase-1 task operations client.
+4. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
+5. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
+6. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
 
 ## Current repository facts
 
 Implemented:
 
-- React + TypeScript UI built with Vite.
-- Responsive overview screen with connected, disconnected, checking, and error states.
-- Explicit unsupported-Runtime-API-version state with recovery guidance.
-- Read-only `GET /v1/health` and `GET /v1/runtime` calls through the Vite proxy to `http://127.0.0.1:4318`, with response validation at the API boundary.
-- Navigation placeholders for Agents, tools/MCP, and Skills; these are not functional management pages.
-- npm scripts: `npm run dev`, `npm run check`, `npm test`, and `npm run build`.
-- Automated tests cover Runtime API response validation and connection status UI states.
-- Tests assert that planned navigation is not presented as a functional link.
-- Deterministic repository guardrails enforce the read-only/loopback client boundary and reject premature imports, browser storage, write-fetch calls, and dependencies. See [ADR 0001](decisions/0001-ai-development-guardrails.md) and `tests/repository-guardrails.test.ts`.
-- GitHub Actions runs type checks, tests, and a production build on pushes and pull requests.
+- React + TypeScript UI built with Vite, with responsive connection status and explicit checking, connected, disconnected, and unsupported-API-version states.
+- Read-only `GET /v1/health` and `GET /v1/runtime` calls through the loopback Vite proxy, with response validation at the API boundary.
+- Task operations are implemented against Conchbase's published phase-1 API: model catalog, task creation, task polling, cancellation, and explicit retry. A user picks a model id from the user's Magpie catalog, enters a prompt, sees the task state and output, and can cancel or retry.
+- Deterministic tests cover Runtime API response validation, task API calls, connection status, task operations, and executable repository guardrails. The guardrails now allow only the documented task POST routes and reject configuration writes, private-file imports, browser storage, and premature dependencies.
+- GitHub Actions runs type checks, tests, and a production build.
 
 Not implemented yet:
 
-- Configuration editing, profile creation, MCP installation/configuration, Skill management, plugin management, policy editing, task creation, event streaming, approvals, persistent console preferences, desktop packaging, and remote pairing.
+- Configuration editing, profile creation, MCP installation/configuration, Skill management, plugin management, policy editing, SSE/event streaming, approvals, persistent console preferences, desktop packaging, and remote pairing.
+- Generated client types. The typed clients mirror Conchbase's current OpenAPI contract explicitly; do not create a second schema.
 
-Do not tell users that Pagurus can configure an agent yet; its current capability is a connection-status scaffold.
+Do not tell users that Pagurus can configure an agent yet. Its implemented capabilities are connection status and phase-1 task operations. The remaining workspace rows are visibly marked as planned.
 
 ## Accepted client/runtime boundaries
 
-- Pagurus is a client. It never runs a model loop or executes tools.
-- Conchbase's API is authoritative. The current source contract is [`conchbase/docs/openapi.yaml`](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml); current routes are read-only status endpoints.
-- All future writes go through explicit Conchbase API operations that validate, preview, and apply configuration revisions. Do not implement direct filesystem or database access.
+- Pagurus is a client. It never runs a model loop, executes tools, or reads/writes Conchbase's private SQLite database.
+- Conchbase owns the API source of truth at [`conchbase/docs/openapi.yaml`](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml). Define new runtime operations there before implementing client UI.
+- All writes use the documented versioned Runtime API. The current write set is exactly `POST /v1/tasks`, `POST /v1/tasks/{taskId}/cancel`, and `POST /v1/tasks/{taskId}/retry`.
+- Provider credentials stay in Magpie. Pagurus sees only model ids and display names. No secret enters browser storage, frontend bundles, logs, URLs, or Git.
 - Runtime enforcement remains authoritative for tools and permissions. Installing, enabling, and granting are separate concepts.
 - A Skill provides instructions; it does not grant tools. Plugin execution is deferred until Conchbase defines an isolation and capability model.
-- The Vite proxy is for local development only. Remote connections require explicit authentication and pairing design.
+- The Vite proxy is for local development only. Remote connections require an explicit authentication and pairing design.
 
 ## Development setup
 
-Run Conchbase in one terminal from its repository:
+Start Conchbase in one terminal from its repository:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Then run Pagurus in another terminal:
+Then start Pagurus in another terminal:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Pagurus's Vite server proxies `/v1` to `http://127.0.0.1:4318`. Current baseline is Node.js 24+, React, TypeScript, Vite, Vitest, and npm. Run `npm run check`, `npm test`, and `npm run build` to validate changes.
+Pagurus's Vite server proxies `/v1` to `http://127.0.0.1:4318`. Start Magpie and enable at least one model for live task operations. Current baseline is Node.js 24+, React, TypeScript, Vite, Vitest, and npm. Run `npm run check`, `npm test`, and `npm run build` to validate changes.
 
 - Pagurus: <https://github.com/2648782102/pagurus>.
 - Runtime: <https://github.com/2648782102/conchbase>.
-- The API contract belongs to Conchbase. Propose API changes there before building dependent UI.
 
 ## Open design questions
 
@@ -83,16 +75,16 @@ Do not silently treat these as settled:
 - Skill discovery, provenance, conflict/precedence, and project-vs-user scopes.
 - Plugin trust, isolation, lifecycle, and capability grants.
 - Runtime discovery/pairing for multiple local or remote runtimes.
-- Task-event display, approvals, logs, and artifact access.
+- SSE event display, approvals, logs, artifacts, and task history.
 - Desktop shell, mobile layout scope, and localization policy.
 
-When an implementation depends on one of these, document options and impacts and request product direction before locking the shared API or configuration schema.
+Configuration workflows remain planned work. When an implementation depends on an open question, document options and impacts and request product direction before locking the shared API or configuration schema.
 
-## Recommended first implementation sequence
+## Recommended next implementation sequence
 
-1. Keep API response parsing typed and validated at the HTTP boundary. Read Conchbase's `docs/AI_TASK_QUEUE.md` before starting client work; keep the repository guardrails passing and generate the client only once the broader API contract is accepted.
-2. Propose a versioned profile/config API in Conchbase before building write forms.
-3. Build validation preview and apply/rollback UI against a fake runtime fixture, then the real API.
-4. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.
+1. Wait for Conchbase to accept a streaming/partial-output event contract before replacing task polling.
+2. Add the configuration validation/apply UI only after Conchbase accepts a portable, versioned profile API.
+3. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.
+4. Keep client parsing typed, keep loading/error/empty states explicit, and preserve keyboard access and narrow layouts.
 
 The current unsupported-version check is a client-side guard against the existing `/v1/health` response. It is not a negotiated versioning protocol and does not authorize new API shapes.
