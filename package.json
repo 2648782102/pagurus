@@ -1,0 +1,29 @@
+{
+  "name": "pagurus",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A local control console for Conchbase agent runtimes.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "check": "npm run typecheck"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.6"
+  },
+  "license": "MIT"
+}
