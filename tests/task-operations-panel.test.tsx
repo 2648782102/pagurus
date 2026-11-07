@@ -11,6 +11,7 @@ const TASK = {
   state: 'queued',
   attempt: 1,
   output: null,
+  partialOutput: null,
   error: null,
 };
 
@@ -58,6 +59,34 @@ describe('TaskOperationsPanel', () => {
     expect(screen.getByRole('button', { name: '重新加载模型' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '开始任务' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByText(/配置 Agents、MCP、Skills 和插件的界面仍在规划中/)).toBeTruthy();
+  });
+
+  it('shows streaming progress while active and prefers final output on completion', async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ models: [{ id: 'fixture/model', displayName: 'Fixture' }] }))
+      .mockResolvedValueOnce(json({ task: TASK }, 202))
+      .mockResolvedValueOnce(json({
+        task: { ...TASK, state: 'running', partialOutput: 'draft answer' },
+      }))
+      .mockResolvedValue(json({
+        task: {
+          ...TASK,
+          state: 'succeeded',
+          output: 'final answer',
+          partialOutput: 'stale draft',
+        },
+      }));
+
+    render(<TaskOperationsPanel />);
+    await screen.findByLabelText('模型');
+    fireEvent.change(screen.getByLabelText('任务内容'), { target: { value: 'hello' } });
+    fireEvent.click(screen.getByRole('button', { name: '开始任务' }));
+
+    expect(await screen.findByText('draft answer')).toBeTruthy();
+    expect(screen.getByText('实时输出中…')).toBeTruthy();
+    expect(await screen.findByText('final answer')).toBeTruthy();
+    expect(screen.queryByText('stale draft')).toBeNull();
+    expect(screen.queryByText('实时输出中…')).toBeNull();
   });
 
   it('keeps cancel and retry keyboard accessible with labels', async () => {

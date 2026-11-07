@@ -148,6 +148,7 @@ describe('AI-first entry documents', () => {
     expect(files).toEqual([
       '0001-ai-development-guardrails.md',
       '0002-phase-one-task-operations.md',
+      '0003-streaming-output-progress-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -155,6 +156,9 @@ describe('AI-first entry documents', () => {
     const second = read(`${recordsDir}/0002-phase-one-task-operations.md`);
     expect(second).toMatch(/^Status: \*\*accepted for the phase-1 task operations UI/m);
     expect(second).toMatch(/configuration management remains planned work/);
+    const third = read(`${recordsDir}/0003-streaming-output-progress-client.md`);
+    expect(third).toMatch(/^Status: \*\*accepted for the phase-1 streaming progress UI/m);
+    expect(third).toMatch(/partialOutput/);
   });
 });
 

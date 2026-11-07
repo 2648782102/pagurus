@@ -6,7 +6,7 @@
 
 寄居蟹用于配置和查看 Agents、MCP 连接、Skills 与策略。海螺负责任务执行、密钥解析和权限强制。寄居蟹是可选客户端；CLI 和其他界面也可以使用同一套 Runtime API。
 
-当前客户端可以连接本机海螺、显示状态，在 Runtime API 版本不兼容时给出明确提示，并通过已发布的 Runtime API 操作第一阶段模型任务。用户可以从本机 Magpie 模型目录选择模型、发起一轮任务、查看状态，以及取消或显式重试；配置工作流尚未实现。确定性的仓库护栏测试会把已接受的任务写入与客户端边界固定为可执行检查。
+当前客户端可以连接本机海螺、显示状态，在 Runtime API 版本不兼容时给出明确提示，并通过已发布的 Runtime API 操作第一阶段模型任务。用户可以从本机 Magpie 模型目录选择模型、发起一轮任务、查看状态与流式进度，以及取消或显式重试；配置工作流尚未实现。确定性的仓库护栏测试会把已接受的任务写入与客户端边界固定为可执行检查。
 
 ## 本地运行
 
@@ -26,7 +26,7 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。另行启动海螺�
 - 模型与工具密钥不会以明文交给界面。
 - 每个任务使用固定配置版本。
 
-架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)，再读海螺仓库中的 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
+架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0003](docs/decisions/0003-streaming-output-progress-client.md)，再读海螺仓库中的 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
 技术栈、路线图和验证计划见 [docs/TECH_STACK.md](docs/TECH_STACK.md)、[docs/ROADMAP.md](docs/ROADMAP.md) 与 [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
 
 ## 面向 AI 开发

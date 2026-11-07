@@ -8,6 +8,7 @@ This document records current automated coverage and the next validation layers 
 - Component tests cover the checking, disconnected, retry, connected, model-loading, task success, cancellation, and model-catalog error states.
 - Component tests cover the unsupported-API-version recovery state and assert planned workspaces are non-interactive.
 - Dependency-free repository guardrails check AI-first entry documents, the accepted phase-1 task-write/loopback client boundary, source imports, browser storage, configuration write calls, and premature dependencies. Synthetic violation fixtures prove the checks reject representative boundary breaks; see [ADR 0001](decisions/0001-ai-development-guardrails.md) and [ADR 0002](decisions/0002-phase-one-task-operations.md).
+- Task client tests validate Conchbase `0.3.0`'s `partialOutput`, and panel tests show live progress while active and prefer final `output` on completion; see [ADR 0003](decisions/0003-streaming-output-progress-client.md).
 - GitHub Actions runs `npm run check`, `npm test`, and `npm run build`.
 
 This is a phase-1 baseline plus executable repository boundaries. It does not validate configuration workflows, SSE task events, approvals, or real secret handling because those features do not exist yet.

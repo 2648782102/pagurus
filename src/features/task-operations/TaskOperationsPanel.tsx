@@ -115,7 +115,20 @@ export function TaskOperationsPanel() {
               <span>Attempt {operations.task.attempt}</span>
               <code>{operations.task.id}</code>
             </div>
-            {operations.task.output && <pre className="task-output">{operations.task.output}</pre>}
+            {(() => {
+              const finalOutput = !isActive(operations.task?.state)
+                ? operations.task?.output
+                : null;
+              const visibleOutput = finalOutput
+                ?? (isActive(operations.task?.state) ? operations.task?.partialOutput : null);
+              if (!visibleOutput) return null;
+              return (
+                <div className="task-output-block">
+                  {!finalOutput && <p className="task-progress-label">实时输出中…</p>}
+                  <pre className="task-output">{visibleOutput}</pre>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

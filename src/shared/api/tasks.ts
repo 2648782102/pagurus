@@ -16,6 +16,7 @@ export interface Task {
   state: TaskState;
   attempt: number;
   output: string | null;
+  partialOutput: string | null;
   error: string | null;
 }
 
@@ -48,6 +49,7 @@ function isTask(value: unknown): value is Task {
     && TASK_STATES.includes(value.state as TaskState)
     && typeof value.attempt === 'number'
     && (typeof value.output === 'string' || value.output === null)
+    && (typeof value.partialOutput === 'string' || value.partialOutput === null)
     && (typeof value.error === 'string' || value.error === null);
 }
 

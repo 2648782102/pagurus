@@ -15,6 +15,7 @@ const TASK = {
   state: 'queued',
   attempt: 1,
   output: null,
+  partialOutput: null,
   error: null,
 };
 
@@ -78,5 +79,20 @@ describe('phase-1 task API client', () => {
 
     fetchMock.mockResolvedValueOnce(response({ error: 'missing' }, 404));
     await expect(getTask('missing')).rejects.toThrow('任务不存在');
+  });
+
+  it('validates the streaming progress field', async () => {
+    fetchMock.mockResolvedValueOnce(response({
+      task: { ...TASK, state: 'running', partialOutput: 'draft' },
+    }));
+    await expect(getTask('task_fixture')).resolves.toMatchObject({
+      state: 'running',
+      partialOutput: 'draft',
+    });
+
+    fetchMock.mockResolvedValueOnce(response({
+      task: { ...TASK, state: 'running', partialOutput: 42 },
+    }));
+    await expect(getTask('task_fixture')).rejects.toThrow('不符合契约');
   });
 });

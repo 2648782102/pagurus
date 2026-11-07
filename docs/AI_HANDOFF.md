@@ -13,10 +13,11 @@ Pagurus (寄居蟹) is the optional control console for Conchbase. Its eventual 
 1. `AGENTS.md` — mandatory client/security constraints and AI-first development rule.
 2. This handoff, then `docs/AI_DEVELOPMENT.md`.
 3. [ADR 0002](decisions/0002-phase-one-task-operations.md) — accepted phase-1 task operations client.
-4. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
-5. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
-6. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
-7. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md) — phase-1 single-owner database boundary.
+4. [ADR 0003](decisions/0003-streaming-output-progress-client.md) — accepted streaming progress client.
+5. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
+6. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
+7. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
+8. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md) — phase-1 single-owner database boundary, and [ADR 0012](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0012-streaming-output-progress.md) — durable streaming progress.
 
 ## Current repository facts
 
@@ -25,6 +26,7 @@ Implemented:
 - React + TypeScript UI built with Vite, with responsive connection status and explicit checking, connected, disconnected, and unsupported-API-version states.
 - Read-only `GET /v1/health` and `GET /v1/runtime` calls through the loopback Vite proxy, with response validation at the API boundary.
 - Task operations are implemented against Conchbase's published phase-1 API: model catalog, task creation, task polling, cancellation, and explicit retry. A user picks a model id from the user's Magpie catalog, enters a prompt, sees the task state and output, and can cancel or retry.
+- The task panel validates Conchbase `0.3.0`'s `partialOutput`, shows a live progress preview while a task is active, and prefers final `output` after a terminal state. It does not consume `GET /v1/events` or add SSE.
 - Deterministic tests cover Runtime API response validation, task API calls, connection status, task operations, and executable repository guardrails. The guardrails now allow only the documented task POST routes and reject configuration writes, private-file imports, browser storage, and premature dependencies.
 - GitHub Actions runs type checks, tests, and a production build.
 
@@ -84,7 +86,7 @@ Configuration workflows remain planned work. When an implementation depends on a
 
 ## Recommended next implementation sequence
 
-1. Wait for Conchbase to accept a streaming/partial-output event contract before replacing task polling.
+1. Add an SSE or event-cursor display only after Conchbase accepts `Last-Event-ID`, retention, and reconnect semantics.
 2. Add the configuration validation/apply UI only after Conchbase accepts a portable, versioned profile API.
 3. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.
 4. Keep client parsing typed, keep loading/error/empty states explicit, and preserve keyboard access and narrow layouts.
