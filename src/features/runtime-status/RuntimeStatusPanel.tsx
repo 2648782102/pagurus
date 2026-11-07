@@ -6,7 +6,14 @@ export function RuntimeStatusPanel() {
     checking: '正在检查连接',
     connected: '运行时已连接',
     disconnected: '运行时未连接',
+    incompatible: 'API 版本不兼容',
   }[state];
+
+  const errorMessage = error?.kind === 'incompatible'
+    ? `${error.message}请升级寄居蟹，或连接兼容版本的 Conchbase 后重试。`
+    : error
+      ? `${error.message}。启动 Conchbase 后可以重新连接。`
+      : null;
 
   return (
     <section className={`runtime-panel status-${state}`} aria-labelledby="runtime-title">
@@ -26,7 +33,9 @@ export function RuntimeStatusPanel() {
         <div><span className="detail-label">状态</span><code>{health?.status ?? (state === 'checking' ? '检查中' : '离线')}</code></div>
       </div>
 
-      {error && <p className="error-message" role="status">{error}。启动 Conchbase 后可以重新连接。</p>}
+      {errorMessage && (
+        <p className="error-message" role="status">{errorMessage}</p>
+      )}
 
       <div className="runtime-footer">
         <span className="connection-note">这里读取 Runtime 状态；任务执行和权限由海螺负责。</span>

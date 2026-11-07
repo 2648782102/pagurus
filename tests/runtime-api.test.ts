@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { UnsupportedRuntimeApiError } from '../src/shared/api/errors.js';
 import { getRuntimeHealth, getRuntimeInfo } from '../src/shared/api/runtime.js';
 
 describe('getRuntimeHealth', () => {
@@ -40,11 +41,24 @@ describe('getRuntimeHealth', () => {
   it('rejects payloads that do not match the current API contract', async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({
       status: 'ok',
+      service: 'other-runtime',
+      apiVersion: 1,
+    }), { status: 200 }));
+
+    await expect(getRuntimeHealth()).rejects.toThrow('invalid response from /v1/health');
+  });
+
+  it('reports an unsupported API version without accepting the payload', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({
+      status: 'ok',
       service: 'conchbase',
       apiVersion: 2,
     }), { status: 200 }));
 
-    await expect(getRuntimeHealth()).rejects.toThrow('invalid response from /v1/health');
+    await expect(getRuntimeHealth()).rejects.toMatchObject({
+      name: UnsupportedRuntimeApiError.name,
+      message: 'Runtime API version from /v1/health is not supported',
+    });
   });
 
   it('validates runtime identity and capability data', async () => {

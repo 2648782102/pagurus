@@ -6,7 +6,7 @@
 
 Pagurus lets users configure and inspect agents, MCP connections, Skills, and policies. Conchbase remains responsible for task execution, secrets resolution, and permission enforcement. The console is an optional client; CLI and other interfaces can use the same runtime API.
 
-The current scaffold connects to a local Conchbase health endpoint and shows connection state. Configuration workflows are planned work.
+The current scaffold connects to a local Conchbase health endpoint, shows connection state, and reports incompatible Runtime API versions. Configuration workflows are planned work.
 
 ## Run locally
 
@@ -26,7 +26,7 @@ The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. S
 - The console never receives model or tool secrets in clear text.
 - Each task runs against a fixed configuration revision.
 
-See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
+See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md), then read Conchbase's [AI task queue](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
 See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.md), and [validation plan](docs/VALIDATION_PLAN.md). The runtime is [Conchbase](https://github.com/2648782102/conchbase).
 
 ## AI-first development

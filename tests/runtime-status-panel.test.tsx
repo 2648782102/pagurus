@@ -58,4 +58,26 @@ describe('RuntimeStatusPanel', () => {
     expect(screen.getByText('0.1.0')).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
+
+  it('shows an explicit incompatibility state for an unsupported API version', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input);
+      const payload = path.includes('health')
+        ? { status: 'ok', service: 'conchbase', apiVersion: 2 }
+        : {
+          name: 'Conchbase',
+          version: '0.1.0',
+          state: 'ready',
+          capabilities: [],
+        };
+      return Promise.resolve(new Response(JSON.stringify(payload), { status: 200 }));
+    });
+
+    render(<RuntimeStatusPanel />);
+
+    expect(await screen.findByText('API 版本不兼容')).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toContain('需要 v1');
+    expect(screen.getByRole('status').textContent).toContain('升级寄居蟹');
+    expect(screen.getByRole('button', { name: '重新连接' }).hasAttribute('disabled')).toBe(false);
+  });
 });

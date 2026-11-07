@@ -1,8 +1,12 @@
+import { UnsupportedRuntimeApiError } from './errors.js';
+
 export interface RuntimeHealth {
   status: 'ok';
   service: 'conchbase';
-  apiVersion: 1;
+  apiVersion: number;
 }
+
+export const SUPPORTED_RUNTIME_API_VERSION = 1;
 
 export interface RuntimeInfo {
   name: 'Conchbase';
@@ -20,7 +24,7 @@ function isRuntimeHealth(value: unknown): value is RuntimeHealth {
   const health = value;
   return health.status === 'ok'
     && health.service === 'conchbase'
-    && health.apiVersion === 1;
+    && typeof health.apiVersion === 'number';
 }
 
 function isRuntimeInfo(value: unknown): value is RuntimeInfo {
@@ -55,7 +59,15 @@ async function getJson<T>(
 }
 
 export function getRuntimeHealth(signal?: AbortSignal): Promise<RuntimeHealth> {
-  return getJson('/v1/health', isRuntimeHealth, signal);
+  return getJson('/v1/health', isRuntimeHealth, signal).then((health) => {
+    if (health.apiVersion !== SUPPORTED_RUNTIME_API_VERSION) {
+      throw new UnsupportedRuntimeApiError(
+        '/v1/health',
+        SUPPORTED_RUNTIME_API_VERSION,
+      );
+    }
+    return health;
+  });
 }
 
 export function getRuntimeInfo(signal?: AbortSignal): Promise<RuntimeInfo> {

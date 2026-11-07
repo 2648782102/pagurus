@@ -7,11 +7,11 @@ export function App() {
         <a className="brand-mark" href="#overview" aria-label="Pagurus 首页">P</a>
         <nav className="rail-nav">
           <a className="rail-link is-active" href="#overview" aria-current="page" aria-label="总览">⌂</a>
-          <a className="rail-link" href="#agents" aria-label="Agents">◉</a>
-          <a className="rail-link" href="#tools" aria-label="工具与连接">⌘</a>
-          <a className="rail-link" href="#skills" aria-label="Skills">✳</a>
+          <span className="rail-link is-planned" aria-label="Agents 配置入口建设中" title="Agents 配置入口建设中">◉</span>
+          <span className="rail-link is-planned" aria-label="工具与连接配置入口建设中" title="工具与连接配置入口建设中">⌘</span>
+          <span className="rail-link is-planned" aria-label="Skills 配置入口建设中" title="Skills 配置入口建设中">✳</span>
         </nav>
-        <a className="rail-link rail-settings" href="#settings" aria-label="设置">⚙</a>
+        <span className="rail-link rail-settings is-planned" aria-label="设置入口建设中" title="设置入口建设中">⚙</span>
       </aside>
 
       <main id="overview" className="main-content">
@@ -34,15 +34,15 @@ export function App() {
             <span className="muted-label">即将开放</span>
           </div>
           <div className="workspace-list">
-            <a className="workspace-row" id="agents" href="#agents">
+            <div className="workspace-row is-planned" id="agents">
               <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agents</strong><small>模型、身份与运行配置</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </a>
-            <a className="workspace-row" id="tools" href="#tools">
+            </div>
+            <div className="workspace-row is-planned" id="tools">
               <span className="row-icon icon-tools">⌘</span><span className="row-copy"><strong>工具与连接</strong><small>MCP 服务和逐项授权</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </a>
-            <a className="workspace-row" id="skills" href="#skills">
+            </div>
+            <div className="workspace-row is-planned" id="skills">
               <span className="row-icon icon-skills">✳</span><span className="row-copy"><strong>Skills</strong><small>可复用的指令与工作方法</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </a>
+            </div>
           </div>
         </section>
 

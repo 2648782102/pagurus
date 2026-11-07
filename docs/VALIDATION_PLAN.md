@@ -6,6 +6,7 @@ This document records current automated coverage and the next validation layers 
 
 - Runtime API client tests validate health/runtime response shapes, malformed payloads, and HTTP error handling.
 - Component tests cover the checking, disconnected, retry, and connected states.
+- Component tests cover the unsupported-API-version recovery state and assert planned workspaces are non-interactive.
 - GitHub Actions runs `npm run check`, `npm test`, and `npm run build`.
 
 This is a scaffold-level baseline. It does not validate configuration workflows, task events, approvals, or secret handling because those features do not exist yet.

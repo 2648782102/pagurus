@@ -18,6 +18,7 @@ Conchbase is a separate public repository and owns the actual agent loop, task s
 4. `docs/TECH_STACK.md` — chosen and deferred UI technology.
 5. `docs/ROADMAP.md` — intended product sequence.
 6. `docs/VALIDATION_PLAN.md` — future automated and UI validation strategy.
+7. Conchbase's `docs/AI_TASK_QUEUE.md` — current cross-repository sequencing and unresolved public contracts.
 
 ## Current repository facts
 
@@ -25,10 +26,12 @@ Implemented:
 
 - React + TypeScript UI built with Vite.
 - Responsive overview screen with connected, disconnected, checking, and error states.
+- Explicit unsupported-Runtime-API-version state with recovery guidance.
 - Read-only `GET /v1/health` and `GET /v1/runtime` calls through the Vite proxy to `http://127.0.0.1:4318`, with response validation at the API boundary.
 - Navigation placeholders for Agents, tools/MCP, and Skills; these are not functional management pages.
 - npm scripts: `npm run dev`, `npm run check`, `npm test`, and `npm run build`.
 - Automated tests cover Runtime API response validation and connection status UI states.
+- Tests assert that planned navigation is not presented as a functional link.
 - GitHub Actions runs type checks, tests, and a production build on pushes and pull requests.
 
 Not implemented yet:
@@ -85,7 +88,9 @@ When an implementation depends on one of these, document options and impacts and
 
 ## Recommended first implementation sequence
 
-1. Keep API response parsing typed and validated at the HTTP boundary. Generate the client once the broader API contract stabilizes.
+1. Keep API response parsing typed and validated at the HTTP boundary. Read Conchbase's `docs/AI_TASK_QUEUE.md` before starting client work; generate the client only once the broader API contract is accepted.
 2. Propose a versioned profile/config API in Conchbase before building write forms.
 3. Build validation preview and apply/rollback UI against a fake runtime fixture, then the real API.
 4. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.
+
+The current unsupported-version check is a client-side guard against the existing `/v1/health` response. It is not a negotiated versioning protocol and does not authorize new API shapes.
