@@ -8,6 +8,6 @@ Before opening a pull request:
 2. Include loading, disconnected, and error states for runtime-backed screens.
 3. Preserve keyboard access, visible focus, and narrow-screen layouts.
 4. Document user-visible API or permission effects.
-5. Run `npm run check` and `npm run build`.
+5. Run `npm run check`, `npm test`, and `npm run build`.
 
 Do not commit credentials, user data, or local runtime profiles.

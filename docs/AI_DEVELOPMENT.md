@@ -1,0 +1,32 @@
+# AI development guide
+
+## Development target
+
+AI coding agents are the primary implementation workflow. Optimize repository context, code boundaries, and feedback loops for an agent to complete a well-scoped change without relying on chat history. Human maintainability is not a product requirement. This describes how the software is developed; Pagurus remains an optional interface for open-ended users, alongside CLI and third-party clients.
+
+Prefer explicit types, feature-local state, small vertical slices, and executable checks. Avoid giant components, hidden cross-feature behavior, speculative frameworks, and duplicate API contracts. Add an abstraction when it protects a real reuse, runtime, or security boundary.
+
+## Change loop
+
+1. Read `AGENTS.md`, this guide, and the owning architecture/API document. Treat the current repository state as authoritative.
+2. Inspect `git status` and the files in the affected feature before editing. Preserve unrelated user changes.
+3. Implement a complete UI slice with loading, connected, disconnected, error, and permission states where applicable. Keep runtime state authoritative in Conchbase.
+4. If a feature requires a new runtime operation, define and document it in Conchbase first; never invent a competing schema here.
+5. Run `npm run check`, `npm test`, and `npm run build`. Do not claim behavior that is only planned.
+6. Report the files changed, commands run, results, and any unresolved decision.
+
+## UI code boundaries
+
+- `src/app/` composes the application and owns the page shell.
+- `src/features/<capability>/` owns feature presentation and feature-local state.
+- `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary.
+- Add shared UI only after a real reuse exists. Do not create empty feature folders or generic state frameworks ahead of use.
+- Keep keyboard access, visible focus, reduced motion, responsive behavior, and meaningful loading/error states in each implemented slice.
+
+## Machine feedback
+
+- `npm run check`: TypeScript validation for app and test files.
+- `npm test`: Vitest tests for both Runtime API responses and connection UI states.
+- `npm run build`: production bundle and TypeScript project build.
+- CI runs all three commands.
+- Use deterministic local data. Never put credentials or user runtime data in fixtures, browser storage, logs, or bundles.

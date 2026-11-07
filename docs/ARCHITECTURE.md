@@ -14,8 +14,19 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 
 The current screen reports runtime connectivity and lists the planned configuration areas: Agents, tools/MCP connections, and Skills. It contains no write operations.
 
-The current client only calls `GET /v1/health`. It does not yet load `/v1/runtime`, create tasks, stream events, or manage configuration.
+The current client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state. It does not create tasks, stream events, or manage configuration.
 
 ## Future desktop shell
 
 Keep the UI web-first. A native desktop wrapper can be selected after installer, system tray, and operating-system integration requirements are defined. The wrapper must remain a Runtime API client.
+
+## Source layout
+
+```text
+src/
+├── app/                            # application composition and page shell
+├── features/<capability>/          # feature UI and its local state
+└── shared/api/                     # typed clients for Conchbase's public API
+```
+
+Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. Keep HTTP parsing at the API boundary and pass typed data into feature components. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.

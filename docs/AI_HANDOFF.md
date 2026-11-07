@@ -1,5 +1,7 @@
 # AI development handoff: Pagurus
 
+> **AI-first project:** Pagurus is developed primarily by AI coding agents. Optimize the repository for fast, accurate agent context loading, bounded changes, and deterministic validation; human handoff is not a product requirement. Keep implementation explicit, typed, and easy to inspect. Start with `AGENTS.md`, then follow this handoff.
+
 This document is the starting packet for a coding model that has not seen the design conversation. It separates actual behavior from the intended product.
 
 ## Product definition
@@ -10,11 +12,12 @@ Conchbase is a separate public repository and owns the actual agent loop, task s
 
 ## Read in this order
 
-1. `AGENTS.md` — mandatory client/security constraints.
-2. `docs/ARCHITECTURE.md` — client boundary and API ownership.
-3. `docs/TECH_STACK.md` — chosen and deferred UI technology.
-4. `docs/ROADMAP.md` — intended product sequence.
-5. `docs/VALIDATION_PLAN.md` — future automated and UI validation strategy.
+1. `AGENTS.md` — mandatory client/security constraints and AI-first development rule.
+2. `docs/AI_DEVELOPMENT.md` — how to make and validate focused changes in this repository.
+3. `docs/ARCHITECTURE.md` — client boundary, API ownership, and current source layout.
+4. `docs/TECH_STACK.md` — chosen and deferred UI technology.
+5. `docs/ROADMAP.md` — intended product sequence.
+6. `docs/VALIDATION_PLAN.md` — future automated and UI validation strategy.
 
 ## Current repository facts
 
@@ -22,15 +25,15 @@ Implemented:
 
 - React + TypeScript UI built with Vite.
 - Responsive overview screen with connected, disconnected, checking, and error states.
-- A read-only `GET /v1/health` call through the Vite proxy to `http://127.0.0.1:4318`.
+- Read-only `GET /v1/health` and `GET /v1/runtime` calls through the Vite proxy to `http://127.0.0.1:4318`, with response validation at the API boundary.
 - Navigation placeholders for Agents, tools/MCP, and Skills; these are not functional management pages.
-- npm scripts: `npm run dev`, `npm run check`, and `npm run build`.
-- GitHub Actions runs type checking and a production build on pushes and pull requests.
+- npm scripts: `npm run dev`, `npm run check`, `npm test`, and `npm run build`.
+- Automated tests cover Runtime API response validation and connection status UI states.
+- GitHub Actions runs type checks, tests, and a production build on pushes and pull requests.
 
 Not implemented yet:
 
 - Configuration editing, profile creation, MCP installation/configuration, Skill management, plugin management, policy editing, task creation, event streaming, approvals, persistent console preferences, desktop packaging, and remote pairing.
-- Automated test suite. CI currently checks types and builds only.
 
 Do not tell users that Pagurus can configure an agent yet; its current capability is a connection-status scaffold.
 
@@ -48,18 +51,18 @@ Do not tell users that Pagurus can configure an agent yet; its current capabilit
 Run Conchbase in one terminal from its repository:
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
 Then run Pagurus in another terminal:
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-Pagurus's Vite server proxies `/v1` to `http://127.0.0.1:4318`. Current baseline is Node.js 24+, React, TypeScript, Vite, and npm. Check with `npm run check`; build with `npm run build`.
+Pagurus's Vite server proxies `/v1` to `http://127.0.0.1:4318`. Current baseline is Node.js 24+, React, TypeScript, Vite, Vitest, and npm. Run `npm run check`, `npm test`, and `npm run build` to validate changes.
 
 - Pagurus: <https://github.com/2648782102/pagurus>.
 - Runtime: <https://github.com/2648782102/conchbase>.
@@ -82,8 +85,7 @@ When an implementation depends on one of these, document options and impacts and
 
 ## Recommended first implementation sequence
 
-1. Generate or maintain a typed client from Conchbase's current API contract.
-2. Show runtime identity/version/capabilities, with recovery guidance for disconnected runtimes.
-3. Propose a versioned profile/config API in Conchbase before building write forms.
-4. Build validation preview and apply/rollback UI against a fake runtime fixture, then the real API.
-5. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.
+1. Keep API response parsing typed and validated at the HTTP boundary. Generate the client once the broader API contract stabilizes.
+2. Propose a versioned profile/config API in Conchbase before building write forms.
+3. Build validation preview and apply/rollback UI against a fake runtime fixture, then the real API.
+4. Add MCP and Skill flows after the runtime defines their schemas and security boundaries.

@@ -1,6 +1,8 @@
 # Instructions for coding agents
 
-Read `docs/AI_HANDOFF.md` first, then the linked architecture and technology documents. Treat this repository as the source of truth; do not rely on context from another chat.
+This project is built primarily by AI coding agents. Optimize architecture, documentation, and validation for agents to understand, change, and verify bounded tasks quickly. Human handoff is not a product requirement. Keep code explicit and legible; this principle is not permission for opaque code or speculative abstraction.
+
+Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked architecture and technology documents. Treat this repository as the source of truth; do not rely on context from another chat.
 
 ## Product invariants
 
@@ -19,5 +21,5 @@ Read `docs/AI_HANDOFF.md` first, then the linked architecture and technology doc
 - Keep UI state separate from authoritative runtime state.
 - If a feature needs a new Runtime API, propose and document it in Conchbase first; do not invent a second schema here.
 - Record meaningful UI/API decisions in `docs/` and mark undecided choices as proposals.
-- Run `npm run check` and `npm run build` after code changes. The current CI checks types and builds; it does not run a test suite.
+- Run `npm run check`, `npm test`, and `npm run build` after code changes. CI runs all three commands.
 

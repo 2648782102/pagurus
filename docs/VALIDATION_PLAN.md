@@ -1,10 +1,14 @@
 # Validation plan
 
-This plan is for future implementation work; the repository currently has no automated test suite.
+This document records current automated coverage and the next validation layers needed as console features arrive.
 
-## Current CI
+## Current automated coverage
 
-GitHub Actions runs `npm run check` and `npm run build`. This catches TypeScript and bundling errors, not UI behavior, API compatibility, or accessibility regressions.
+- Runtime API client tests validate health/runtime response shapes, malformed payloads, and HTTP error handling.
+- Component tests cover the checking, disconnected, retry, and connected states.
+- GitHub Actions runs `npm run check`, `npm test`, and `npm run build`.
+
+This is a scaffold-level baseline. It does not validate configuration workflows, task events, approvals, or secret handling because those features do not exist yet.
 
 ## Required validation layers as features arrive
 
