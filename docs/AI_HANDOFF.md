@@ -16,6 +16,7 @@ Pagurus (寄居蟹) is the optional control console for Conchbase. Its eventual 
 4. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
 5. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
 6. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
+7. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md) — phase-1 single-owner database boundary.
 
 ## Current repository facts
 
@@ -37,6 +38,7 @@ Do not tell users that Pagurus can configure an agent yet. Its implemented capab
 ## Accepted client/runtime boundaries
 
 - Pagurus is a client. It never runs a model loop, executes tools, or reads/writes Conchbase's private SQLite database.
+- Conchbase's phase-1 task database has one owner at a time. Use the Runtime API or Pagurus for concurrent task inspection while `conchbase serve` is active; do not start a second task-state CLI process against the same database. Pagurus does not open or lock that database.
 - Conchbase owns the API source of truth at [`conchbase/docs/openapi.yaml`](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml). Define new runtime operations there before implementing client UI.
 - All writes use the documented versioned Runtime API. The current write set is exactly `POST /v1/tasks`, `POST /v1/tasks/{taskId}/cancel`, and `POST /v1/tasks/{taskId}/retry`.
 - Provider credentials stay in Magpie. Pagurus sees only model ids and display names. No secret enters browser storage, frontend bundles, logs, URLs, or Git.
