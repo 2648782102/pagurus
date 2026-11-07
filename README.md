@@ -26,8 +26,8 @@ The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. S
 - The console never receives model or tool secrets in clear text.
 - Each task runs against a fixed configuration revision.
 
-See [the architecture notes](docs/ARCHITECTURE.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
-See also [the technology baseline](docs/TECH_STACK.md) and [roadmap](docs/ROADMAP.md). The runtime is [Conchbase](https://github.com/2648782102/conchbase).
+See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
+See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.md), and [validation plan](docs/VALIDATION_PLAN.md). The runtime is [Conchbase](https://github.com/2648782102/conchbase).
 
 ## License
 

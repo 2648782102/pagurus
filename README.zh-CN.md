@@ -26,8 +26,8 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。另行启动海螺�
 - 模型与工具密钥不会以明文交给界面。
 - 每个任务使用固定配置版本。
 
-架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。English: [README.md](README.md).
-技术栈和路线图见 [docs/TECH_STACK.md](docs/TECH_STACK.md) 与 [docs/ROADMAP.md](docs/ROADMAP.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
+架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)。English: [README.md](README.md).
+技术栈、路线图和验证计划见 [docs/TECH_STACK.md](docs/TECH_STACK.md)、[docs/ROADMAP.md](docs/ROADMAP.md) 与 [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
 
 ## 许可
 
