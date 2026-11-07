@@ -21,5 +21,6 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 - Keep UI state separate from authoritative runtime state.
 - If a feature needs a new Runtime API, propose and document it in Conchbase first; do not invent a second schema here.
 - Record meaningful UI/API decisions in `docs/` and mark undecided choices as proposals.
+- Keep `tests/repository-guardrails.test.ts` passing; update it only alongside an accepted ADR or a documented development-boundary change.
 - Run `npm run check`, `npm test`, and `npm run build` after code changes. CI runs all three commands.
 

@@ -6,7 +6,7 @@
 
 Pagurus lets users configure and inspect agents, MCP connections, Skills, and policies. Conchbase remains responsible for task execution, secrets resolution, and permission enforcement. The console is an optional client; CLI and other interfaces can use the same runtime API.
 
-The current scaffold connects to a local Conchbase health endpoint, shows connection state, and reports incompatible Runtime API versions. Configuration workflows are planned work.
+The current scaffold connects to a local Conchbase health endpoint, shows connection state, and reports incompatible Runtime API versions. Configuration workflows are planned work. Deterministic repository guardrail tests keep the current client and API boundaries explicit.
 
 ## Run locally
 

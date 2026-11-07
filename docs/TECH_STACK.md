@@ -10,6 +10,8 @@ This records the initial implementation choices. Revisit a choice through a shor
 | API schemas | Generated client/types from Conchbase's published contract | Planned after the Runtime API stabilizes |
 | Desktop packaging | Web-first; choose a native wrapper after OS integration requirements are known | Deferred |
 
+Repository guardrails use Node built-ins with the existing Vitest runner and local-file assertions; they are development checks, not UI or runtime technology. See [ADR 0001](decisions/0001-ai-development-guardrails.md).
+
 Pagurus is a client, not a second agent runtime. It must not read private Conchbase state files or keep provider credentials in the browser bundle.
 
 ## Deferred choices

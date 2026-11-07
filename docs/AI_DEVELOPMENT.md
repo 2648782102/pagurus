@@ -12,7 +12,7 @@ Prefer explicit types, feature-local state, small vertical slices, and executabl
 2. Inspect `git status` and the files in the affected feature before editing. Preserve unrelated user changes.
 3. Implement a complete UI slice with loading, connected, disconnected, error, and permission states where applicable. Keep runtime state authoritative in Conchbase.
 4. If a feature requires a new runtime operation, define and document it in Conchbase first; never invent a competing schema here.
-5. Run `npm run check`, `npm test`, and `npm run build`. Do not claim behavior that is only planned.
+5. Keep `tests/repository-guardrails.test.ts` passing. Update it only alongside an accepted ADR or a documented development-boundary change. Run `npm run check`, `npm test`, and `npm run build`. Do not claim behavior that is only planned.
 6. Report the files changed, commands run, results, and any unresolved decision.
 
 ## UI code boundaries
@@ -26,7 +26,7 @@ Prefer explicit types, feature-local state, small vertical slices, and executabl
 ## Machine feedback
 
 - `npm run check`: TypeScript validation for app and test files.
-- `npm test`: Vitest tests for both Runtime API responses and connection UI states.
+- `npm test`: Vitest tests for both Runtime API responses, connection UI states, and repository guardrails. Vitest discovers new test files under `tests/`; no package script change is needed for this slice.
 - `npm run build`: production bundle and TypeScript project build.
 - CI runs all three commands.
 - Use deterministic local data. Never put credentials or user runtime data in fixtures, browser storage, logs, or bundles.
