@@ -34,6 +34,10 @@ const acceptedTaskPosts = [
   "`/v1/tasks/${encodeURIComponent(taskId)}/cancel`",
   "`/v1/tasks/${encodeURIComponent(taskId)}/retry`",
 ];
+const acceptedConfigurationPosts = [
+  "'/v1/configuration/validate'",
+  "'/v1/configuration/apply'",
+];
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -70,8 +74,19 @@ function assertAcceptedWriteBoundary(source: string, label: string): void {
   for (const route of acceptedTaskPosts) {
     expect(source, `${label} must use ${route}`).toContain(route);
   }
-  expect(source, `${label} must not invent configuration writes`).not.toMatch(/\/v1\/config/);
+  expect(source, `${label} must not invent configuration writes`).not.toMatch(/\/v1\/config(?:[^a-z]|$)/);
   expect(source, `${label} must not put credentials in requests`).not.toMatch(/Authorization|apiKey|secret/);
+}
+
+function assertAcceptedConfigurationWrites(source: string, label: string): void {
+  const posts = [...source.matchAll(/method: 'POST'/g)];
+  expect(posts.length, `${label} must centralize configuration POST calls`).toBe(1);
+  for (const route of acceptedConfigurationPosts) {
+    expect(source, `${label} must use ${route}`).toContain(route);
+  }
+  expect(source, `${label} must not invent another configuration route`).not.toMatch(/\/v1\/config(?:[^a-z]|$)/);
+  expect(source, `${label} must not put credentials in requests`)
+    .not.toMatch(/Authorization|apiKey|secretValue|credentialValue/);
 }
 
 function assertApiBoundary(source: string, label: string): void {
@@ -132,12 +147,12 @@ describe('AI-first entry documents', () => {
 
     const handoff = read('docs/AI_HANDOFF.md');
     expect(handoff).toMatch(/Task operations are implemented/);
-    expect(handoff).toMatch(/Configuration workflows remain planned work/);
+    expect(handoff).toMatch(/versioned configuration revision editing/);
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
-    expect(englishReadme).toMatch(/Configuration workflows are planned work/);
-    expect(chineseReadme).toMatch(/配置工作流尚未实现/);
+    expect(englishReadme).toMatch(/versioned configuration revisions/);
+    expect(chineseReadme).toMatch(/版本化配置修订/);
   });
 
   it('records the accepted guardrail and task-operations decisions', () => {
@@ -149,6 +164,7 @@ describe('AI-first entry documents', () => {
       '0001-ai-development-guardrails.md',
       '0002-phase-one-task-operations.md',
       '0003-streaming-output-progress-client.md',
+      '0004-versioned-configuration-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -159,6 +175,9 @@ describe('AI-first entry documents', () => {
     const third = read(`${recordsDir}/0003-streaming-output-progress-client.md`);
     expect(third).toMatch(/^Status: \*\*accepted for the phase-1 streaming progress UI/m);
     expect(third).toMatch(/partialOutput/);
+    const fourth = read(`${recordsDir}/0004-versioned-configuration-client.md`);
+    expect(fourth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.4\.0 configuration revision UI/m);
+    expect(fourth).toMatch(/schemaVersion: 1/);
   });
 });
 
@@ -166,6 +185,10 @@ describe('client boundaries', () => {
   it('keeps only accepted write routes, loopback proxy, and no private-file access', () => {
     assertApiBoundary(read('src/shared/api/runtime.ts'), 'src/shared/api/runtime.ts');
     assertAcceptedWriteBoundary(read('src/shared/api/tasks.ts'), 'src/shared/api/tasks.ts');
+    assertAcceptedConfigurationWrites(
+      read('src/shared/api/configuration.ts'),
+      'src/shared/api/configuration.ts',
+    );
     assertLoopbackProxy(read('vite.config.ts'), 'vite.config.ts');
 
     for (const file of listSourceFiles('src')) {

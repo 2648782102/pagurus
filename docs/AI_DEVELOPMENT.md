@@ -20,6 +20,7 @@ Prefer explicit types, feature-local state, small vertical slices, and executabl
 - `src/app/` composes the application and owns the page shell.
 - `src/features/<capability>/` owns feature presentation and feature-local state.
 - `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary.
+- `src/features/configuration/` owns the versioned configuration document editor and its feature-local state. It mirrors Conchbase `0.4.0` directly, including required sections and the exclusion of `source: url`; it must not create a second schema, credential store, capability installer, or composition template.
 - Add shared UI only after a real reuse exists. Do not create empty feature folders or generic state frameworks ahead of use.
 - Keep keyboard access, visible focus, reduced motion, responsive behavior, and meaningful loading/error states in each implemented slice.
 

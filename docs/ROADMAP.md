@@ -5,14 +5,14 @@ This is a direction for staged validation, not a release commitment.
 ## Foundation
 
 - Connect to a local Conchbase runtime and show actionable connection status.
-- Display the active configuration revision and runtime capabilities.
+- Display the active configuration revision, history, validation state, and runtime capabilities.
 - Generate the client from Conchbase's stable API contract.
 
 ## Configuration workflows
 
 - Manage agent profiles, model provider references, and Skills.
 - Add and inspect MCP connections, then manage per-tool enablement and grants.
-- Validate and preview changes before asking Conchbase to apply a new revision.
+- Portable profile file import/export and topology-neutral composition editing after Conchbase accepts those schemas.
 
 ## Operations (phase 1 partially implemented)
 

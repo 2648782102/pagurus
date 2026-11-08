@@ -12,9 +12,9 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 
 ## Implemented screens
 
-The overview reports runtime connectivity and lists the planned configuration areas: Agents, tools/MCP connections, and Skills. Those rows remain visibly non-interactive.
+The overview reports runtime connectivity, links to the implemented configuration revision editor, and lists the planned capability lifecycle areas for tools/MCP connections and Skills. Those rows remain visibly non-interactive.
 
-The status client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state. The task client uses `GET /v1/models`, `POST /v1/tasks`, `GET /v1/tasks/{taskId}`, `POST .../cancel`, and `POST .../retry` against Conchbase's published contract. It polls task state while active, shows `partialOutput` as live progress, and shows final `output`, error, or interruption after a terminal state. It does not manage configuration or consume the event cursor directly.
+The status client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state. The task client uses `GET /v1/models`, `POST /v1/tasks`, `GET /v1/tasks/{taskId}`, `POST .../cancel`, and `POST .../retry` against Conchbase's published contract. It polls task state while active, shows `partialOutput` as live progress, and shows final `output`, error, or interruption after a terminal state. The configuration client uses the published `0.4.0` active-revision, history, validate, and apply/rollback routes. It keeps authoritative state in Conchbase, renders field-level validation issues, and never consumes the event cursor directly.
 
 ## Future desktop shell
 

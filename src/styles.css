@@ -81,6 +81,22 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 .task-progress-label { margin: 0 0 7px; color: var(--muted); font-size: 12px; }
 .task-output { max-height: 220px; overflow: auto; margin: 0; padding: 13px; border: 1px solid #e7e6de; border-radius: 7px; background: #f6f5ef; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 var(--mono); }
 .task-note { margin-top: 16px; padding-top: 13px; border-top: 1px solid #eceae3; }
+.config-panel { margin-top: 24px; padding: 25px 28px 21px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+.config-intro { max-width: 680px; margin: 14px 0 18px; color: #727b74; font-size: 12px; line-height: 1.8; }
+.config-status { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 12px 0; border-top: 1px solid #eceae3; border-bottom: 1px solid #eceae3; }
+.config-status code { overflow-wrap: anywhere; }
+.config-recovery { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.config-message { margin: 14px 0 0; color: var(--teal); font-size: 12px; }
+.config-issues { margin: 12px 0 0; padding: 12px 14px 12px 30px; border: 1px solid #ead8d1; border-radius: 7px; color: #9b4b37; background: #fff8f5; font-size: 11px; line-height: 1.7; }
+.config-issues li + li { margin-top: 4px; }
+.config-editor, .config-history { display: grid; gap: 9px; margin-top: 18px; }
+.config-editor label, .config-history label { color: #4d5a53; font-size: 12px; font-weight: 600; }
+.config-editor textarea, .config-history select { width: 100%; padding: 10px 11px; border: 1px solid #d7d9d0; border-radius: 7px; color: var(--ink); background: #fff; font: 12px/1.6 var(--mono); }
+.config-editor textarea { min-height: 220px; resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+.config-editor textarea:disabled, .config-history select:disabled { background: #f1f1ec; color: #7c847e; }
+.config-history { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.config-history label { grid-column: 1 / -1; }
+.config-history .button-secondary { min-width: 140px; }
 .next-section { margin-top: 48px; }
 .section-heading { margin-bottom: 15px; }
 .section-heading .eyebrow { margin-bottom: 6px; }
@@ -110,6 +126,7 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
   .intro { padding: 44px 0 28px; }
   .runtime-panel { padding: 20px 18px 17px; }
   .task-panel { padding: 20px 18px 17px; }
+  .config-panel { padding: 20px 18px 17px; }
   .runtime-details { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .runtime-details > div { padding-left: 10px; }
   .runtime-details code { font-size: 10px; }
@@ -131,6 +148,8 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
   .runtime-footer { align-items: flex-start; flex-direction: column; }
   .button-secondary { width: 100%; }
   .task-actions > button { width: 100%; }
+  .config-history { grid-template-columns: 1fr; }
+  .config-history .button-secondary { width: 100%; }
   .task-meta { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
 

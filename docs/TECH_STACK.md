@@ -6,7 +6,7 @@ This records the initial implementation choices. Revisit a choice through a shor
 |---|---|---|
 | UI | React and TypeScript | In use |
 | Build and local development | Vite | In use |
-| Runtime connection | Versioned Conchbase HTTP/JSON API through a same-origin loopback development proxy | In use; phase-1 task operations poll task state |
+| Runtime connection | Versioned Conchbase HTTP/JSON API through a same-origin loopback development proxy | In use; phase-1 task operations poll task state and configuration revisions use explicit reads/writes |
 | Runtime events | SSE with resumable event IDs | Planned after Conchbase accepts an event envelope |
 | API schemas | Generated client/types from Conchbase's published contract | Planned after the Runtime API stabilizes |
 | Desktop packaging | Web-first; choose a native wrapper after OS integration requirements are known | Deferred |

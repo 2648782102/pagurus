@@ -23,6 +23,7 @@ describe('App workspaces', () => {
     }
 
     expect(screen.queryByRole('link', { name: 'Agents' })).toBeNull();
+    expect(screen.getByRole('link', { name: /配置版本/ }).getAttribute('href')).toBe('#configuration-title');
     expect(screen.getByRole('link', { name: /任务运行/ }).getAttribute('href')).toBe('#task-operations-title');
   });
 });

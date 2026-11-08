@@ -1,3 +1,4 @@
+import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 
@@ -31,6 +32,8 @@ export function App() {
 
         <TaskOperationsPanel />
 
+        <ConfigurationPanel />
+
         <section className="next-section" aria-labelledby="next-title">
           <div className="section-heading">
             <div><p className="eyebrow">WORKSPACE</p><h2 id="next-title">管理空间</h2></div>
@@ -43,9 +46,9 @@ export function App() {
               <span className="row-state">已开放</span>
               <span className="row-arrow">↗</span>
             </a>
-            <div className="workspace-row is-planned" id="agents">
-              <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agents</strong><small>模型、身份与运行配置</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </div>
+            <a className="workspace-row is-live" id="agents" href="#configuration-title">
+              <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>配置版本</strong><small>校验、应用与回滚配置文档</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            </a>
             <div className="workspace-row is-planned" id="tools">
               <span className="row-icon icon-tools">⌘</span><span className="row-copy"><strong>工具与连接</strong><small>MCP 服务和逐项授权</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
             </div>
