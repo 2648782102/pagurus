@@ -79,7 +79,7 @@ export interface ApplyConfigurationResult {
 
 export class ConfigurationValidationError extends Error {
   constructor(readonly details: readonly ConfigurationValidationIssue[]) {
-    super('配置文档不符合 Conchbase 0.5.0 契约');
+    super('配置文档不符合 Conchbase 0.5.0+ 契约');
     this.name = 'ConfigurationValidationError';
   }
 }

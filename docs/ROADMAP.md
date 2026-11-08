@@ -18,7 +18,8 @@ This is a direction for staged validation, not a release commitment.
 ## Operations (phase 1 partially implemented)
 
 - Create, inspect, cancel, and retry one bounded model task through Conchbase's API.
-- Stream task events and show approval requests.
+- Add a typed tool request/approval client only after its own accepted ADR; Conchbase `0.6.0` publishes the ledger contract without granting Pagurus a write surface.
+- Stream task events and show approval requests after the event transport and approval UI contracts are accepted.
 - Inspect task history, tool calls, artifacts, and configuration revisions.
 - Add secure runtime pairing and remote connection support.
 

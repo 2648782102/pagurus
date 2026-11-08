@@ -9,10 +9,11 @@ This document records current automated coverage and the next validation layers 
 - Component tests cover the unsupported-API-version recovery state and assert planned workspaces are non-interactive.
 - Dependency-free repository guardrails check AI-first entry documents, the accepted phase-1 task-write/loopback client boundary, source imports, browser storage, configuration write calls, and premature dependencies. Synthetic violation fixtures prove the checks reject representative boundary breaks; see [ADR 0001](decisions/0001-ai-development-guardrails.md) and [ADR 0002](decisions/0002-phase-one-task-operations.md).
 - Task client tests validate `partialOutput`, and panel tests show live progress while active and prefer final `output` on completion; see [ADR 0003](decisions/0003-streaming-output-progress-client.md).
-- Configuration client tests validate Conchbase `0.5.0` v1/v2 documents, composition section shape, cross-check active/history ids, validation errors, apply, and rollback. Panel tests cover loading, unsupported capability, disconnected, validation, v2 apply/no-op, rollback, and keyboard states; see [ADR 0004](decisions/0004-versioned-configuration-client.md) and [ADR 0005](decisions/0005-composition-configuration-client.md).
+- Configuration client tests validate the Conchbase `0.5.0` v1/v2 document union kept by `0.6.0`, composition section shape, cross-check active/history ids, validation errors, apply, and rollback. Panel tests cover loading, unsupported capability, disconnected, validation, v2 apply/no-op, rollback, and keyboard states; see [ADR 0004](decisions/0004-versioned-configuration-client.md) and [ADR 0005](decisions/0005-composition-configuration-client.md).
+- Guardrails verify that Pagurus still uses exactly its five accepted write routes and does not call Conchbase `0.6.0`'s tool request/approval routes without a client ADR.
 - GitHub Actions runs `npm run check`, `npm test`, and `npm run build`.
 
-This is a phase-1 baseline plus v1/v2 versioned configuration revisions and executable repository boundaries. It does not validate visual composition editing, capability lifecycle workflows, portable files, SSE task events, approvals, or real secret handling because those features do not exist yet.
+This is a phase-1 baseline plus v1/v2 versioned configuration revisions and executable repository boundaries. It does not validate visual composition editing, capability lifecycle workflows, portable files, SSE task events, tool approval UI, or real secret handling because those features do not exist yet.
 
 ## Required validation layers as features arrive
 

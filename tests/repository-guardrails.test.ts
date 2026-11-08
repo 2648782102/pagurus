@@ -151,6 +151,8 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/ADR 0016/);
     expect(handoff).toMatch(/no composition editor/);
     expect(handoff).toMatch(/composition-execution/);
+    expect(handoff).toMatch(/ADR 0017/);
+    expect(handoff).toMatch(/tool-approval-ledger/);
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
@@ -211,6 +213,9 @@ describe('client boundaries', () => {
     const panelSource = read('src/features/configuration/ConfigurationPanel.tsx');
     expect(panelSource).toMatch(/schemaVersion 1 或 2/);
     expect(panelSource).not.toMatch(/可视化组合编辑器|Agent 层级|三层/i);
+    for (const file of listSourceFiles('src')) {
+      expect(read(file), `${file} must not call Conchbase tool ledger routes`).not.toMatch(/\/v1\/tool-requests/);
+    }
   });
 
   it('does not silently accept runtime adapters or state frameworks', () => {

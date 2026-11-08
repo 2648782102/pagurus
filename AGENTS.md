@@ -11,7 +11,7 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 - Use Conchbase's versioned API. Never read or write its private files/database.
 - A UI selection or installation must not bypass the runtime's per-tool authorization.
 - Do not put provider/tool credentials in browser storage, frontend bundles, logs, or Git.
-- Conchbase's published task, cancel, retry, configuration validation, and configuration apply/rollback routes are the only accepted write operations.
+- Conchbase's published task, cancel, retry, configuration validation, and configuration apply/rollback routes are the only accepted Pagurus write operations. Conchbase additionally publishes tool request/approval ledger routes, but Pagurus has no accepted client ADR or UI for them yet.
 - Configuration documents are versioned data; they do not install, enable, grant, resolve secrets, load code, or execute tools.
 - Remote runtime pairing and capability lifecycle operations are not implemented yet.
 

@@ -6,7 +6,7 @@
 
 Pagurus lets users configure and inspect agents, MCP connections, Skills, and policies. Conchbase remains responsible for task execution, secrets resolution, and permission enforcement. The console is an optional client; CLI and other interfaces can use the same runtime API.
 
-The current client connects to a local Conchbase runtime, shows connection state, reports incompatible Runtime API versions, operates phase-1 model tasks, and edits Conchbase `0.5.0` v1/v2 versioned configuration revisions. Users can select a model, run a task with streaming progress, cancel/retry it, validate/apply a configuration document, and roll back to a known revision. A v2 document can carry a topology-neutral composition section; the runtime advertises `composition-execution` and owns graph validation and bounded deterministic execution. Configuration references are opaque data; visual composition editing, capability installation, secret resolution, and model-driven composition are planned work. Deterministic repository guardrail tests keep the accepted write and client boundaries explicit.
+The current client connects to a local Conchbase runtime, shows connection state, reports incompatible Runtime API versions, operates phase-1 model tasks, and edits the v1/v2 versioned configuration revisions introduced in Conchbase `0.5.0` and kept by `0.6.0`. Users can select a model, run a task with streaming progress, cancel/retry it, validate/apply a configuration document, and roll back to a known revision. A v2 document can carry a topology-neutral composition section; the runtime advertises `composition-execution` and owns graph validation and bounded deterministic execution. Conchbase `0.6.0` also advertises a `tool-approval-ledger` capability for runtime-owned tool request/approval records, but Pagurus has no tool approval UI or write route yet. Configuration references are opaque data; visual composition editing, capability installation, secret resolution, and model-driven composition are planned work. Deterministic repository guardrail tests keep the accepted write and client boundaries explicit.
 
 ## Run locally
 
@@ -26,7 +26,7 @@ The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. S
 - The console never receives model or tool secrets in clear text.
 - Each task runs against a fixed configuration revision.
 
-See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md), [ADR 0004](docs/decisions/0004-versioned-configuration-client.md), [ADR 0005](docs/decisions/0005-composition-configuration-client.md), and Conchbase's [AI task queue](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
+See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md), [ADR 0004](docs/decisions/0004-versioned-configuration-client.md), [ADR 0005](docs/decisions/0005-composition-configuration-client.md), Conchbase's [ADR 0017](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0017-public-tool-request-approval-ledger.md), and its [AI task queue](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md). Chinese: [README.zh-CN.md](README.zh-CN.md).
 See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.md), and [validation plan](docs/VALIDATION_PLAN.md). The runtime is [Conchbase](https://github.com/2648782102/conchbase).
 
 ## AI-first development

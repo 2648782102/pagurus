@@ -12,7 +12,7 @@ export function ConfigurationPanel() {
           <p className="eyebrow">CONFIGURATION REVISIONS</p>
           <h2 id="configuration-title">配置版本</h2>
         </div>
-        <span className="muted-label">Conchbase 0.5.0 契约</span>
+        <span className="muted-label">Conchbase 0.5.0+ 配置契约</span>
       </div>
 
       <p className="config-intro">
