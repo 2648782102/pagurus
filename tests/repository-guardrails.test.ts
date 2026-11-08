@@ -148,6 +148,8 @@ describe('AI-first entry documents', () => {
     const handoff = read('docs/AI_HANDOFF.md');
     expect(handoff).toMatch(/Task operations are implemented/);
     expect(handoff).toMatch(/versioned configuration revision editing/);
+    expect(handoff).toMatch(/ADR 0015/);
+    expect(handoff).toMatch(/composition editor/);
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');

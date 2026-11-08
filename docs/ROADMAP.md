@@ -12,7 +12,8 @@ This is a direction for staged validation, not a release commitment.
 
 - Manage agent profiles, model provider references, and Skills.
 - Add and inspect MCP connections, then manage per-tool enablement and grants.
-- Portable profile file import/export and topology-neutral composition editing after Conchbase accepts those schemas.
+- Add a topology-neutral composition editor only after Conchbase accepts the composition execution and public schema slice sequenced in ADR 0015 and the runtime queue.
+- Portable profile file import/export after Conchbase accepts those schemas.
 
 ## Operations (phase 1 partially implemented)
 

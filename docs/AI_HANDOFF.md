@@ -19,6 +19,7 @@ Pagurus (寄居蟹) is the optional control console for Conchbase. Its eventual 
 7. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
 8. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
 9. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md), [ADR 0012](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0012-streaming-output-progress.md), and [ADR 0014](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0014-versioned-configuration-api.md) — accepted runtime boundaries.
+10. Conchbase [ADR 0015](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0015-composition-identity-kernel.md) — internal composition identity direction and sequencing before public tool contracts.
 
 ## Current repository facts
 
@@ -37,7 +38,7 @@ Not implemented yet:
 - Portable profile files, composition editing, MCP installation/configuration, Skill management, plugin management, policy lifecycle, secret resolution, capability grants, SSE/event streaming, approvals, persistent console preferences, desktop packaging, and remote pairing.
 - Generated client types. The typed clients mirror Conchbase's current OpenAPI contract explicitly; do not create a second schema.
 
-Do not tell users that Pagurus can install capabilities or compose agents yet. Its implemented capabilities are connection status, phase-1 task operations, and versioned configuration revision editing. Rows without published Runtime API contracts remain visibly marked as planned.
+Implemented capabilities are connection status, phase-1 task operations, and versioned configuration revision editing. Pagurus has no composition editor. Conchbase's internal composition identity kernel has no published Runtime API or configuration schema section; adding a visual builder before Conchbase accepts that contract would create a second schema. Keep composition and capability lifecycle rows visibly marked as planned.
 
 ## Accepted client/runtime boundaries
 
@@ -75,7 +76,7 @@ Pagurus's Vite server proxies `/v1` to `http://127.0.0.1:4318`. Start Magpie and
 
 Do not silently treat these as settled:
 
-- Portable profile files, composition schema, validation preview beyond the published field errors, secret resolution, and capability lifecycle.
+- Portable profile files, public composition schema and execution contract, validation preview beyond the published field errors, secret resolution, and capability lifecycle.
 - MCP catalog sources, server process lifecycle, health checks, and per-tool enable/grant UX.
 - Secret entry and OS credential-store handoff without exposing secret values to browser storage.
 - Skill discovery, provenance, conflict/precedence, and project-vs-user scopes.
@@ -88,9 +89,9 @@ Capability lifecycle workflows remain planned work. When an implementation depen
 
 ## Recommended next implementation sequence
 
-1. Add an SSE or event-cursor display only after Conchbase accepts `Last-Event-ID`, retention, and reconnect semantics.
-2. Add portable file import/export and composition editing after Conchbase accepts those schemas through a new ADR.
-3. Add MCP and Skill lifecycle flows after the runtime defines their schemas and security boundaries.
+1. Wait for Conchbase to accept the composition execution and public schema slice in `docs/AI_TASK_QUEUE.md`, then add a typed composition client and topology-neutral editor that follows the published API.
+2. Add SSE or an event-cursor display only after Conchbase accepts `Last-Event-ID`, retention, and reconnect semantics.
+3. Add portable file import/export and capability lifecycle flows after the runtime defines their schemas and security boundaries.
 4. Keep client parsing typed, keep loading/error/empty states explicit, and preserve keyboard access and narrow layouts.
 
 The current unsupported-version check is a client-side guard against the existing `/v1/health` response. It is not a negotiated versioning protocol and does not authorize new API shapes.
