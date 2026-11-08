@@ -36,7 +36,10 @@ function json(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), { status });
 }
 
-function runtimeResponse(version = '0.4.0', capabilities = ['configuration-revisions']): Response {
+function runtimeResponse(
+  version = '0.5.0',
+  capabilities = ['configuration-revisions', 'composition-execution'],
+): Response {
   return json({
     name: 'Conchbase',
     version,
@@ -95,7 +98,7 @@ describe('ConfigurationPanel', () => {
     render(<ConfigurationPanel />);
     await screen.findByText(REVISION.id);
     fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
-      target: { value: JSON.stringify({ ...DOCUMENT, schemaVersion: 2 }) },
+      target: { value: JSON.stringify({ ...DOCUMENT, schemaVersion: 4 }) },
     });
     fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
 
@@ -118,6 +121,72 @@ describe('ConfigurationPanel', () => {
     const applyCall = fetchMock.mock.calls.find((call) => call[0] === '/v1/configuration/apply');
     expect(applyCall).toBeTruthy();
     expect(JSON.parse(String((applyCall?.[1] as RequestInit).body))).toEqual({ document: DOCUMENT });
+  });
+
+  it('validates and applies a v2 composition document without a visual builder', async () => {
+    const v2Document = {
+      ...DOCUMENT,
+      schemaVersion: 2,
+      composition: {
+        schemaVersion: 1,
+        name: 'fixture composition',
+        nodes: [{ id: 'node-a', label: 'First node' }],
+        links: [],
+        entryNodeIds: ['node-a'],
+        metadata: { shape: 'single' },
+      },
+    };
+    for (const response of connectedResponses()) fetchMock.mockResolvedValueOnce(response);
+    fetchMock
+      .mockResolvedValueOnce(json({
+        valid: true,
+        activeRevisionId: REVISION.id,
+        document: v2Document,
+      }))
+      .mockResolvedValueOnce(json({
+        ...APPLY_RESULT,
+        revision: { ...REVISION, document: v2Document },
+      }));
+
+    render(<ConfigurationPanel />);
+    await screen.findByText(REVISION.id);
+    fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
+      target: { value: JSON.stringify(v2Document) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+
+    expect(await screen.findByText(/已应用新的配置版本/)).toBeTruthy();
+    expect(screen.queryByLabelText('可视化组合编辑器')).toBeNull();
+    const applyCall = fetchMock.mock.calls.find((call) => call[0] === '/v1/configuration/apply');
+    expect(JSON.parse(String((applyCall?.[1] as RequestInit).body))).toEqual({ document: v2Document });
+  });
+
+  it('explains that v2 requires composition-execution on an older runtime', async () => {
+    fetchMock.mockResolvedValueOnce(runtimeResponse('0.4.0', ['configuration-revisions']))
+      .mockResolvedValueOnce(json({ revision: REVISION }))
+      .mockResolvedValueOnce(json({ activeRevisionId: REVISION.id, revisions: HISTORY }));
+    const v2Document = {
+      ...DOCUMENT,
+      schemaVersion: 2,
+      composition: {
+        schemaVersion: 1,
+        name: 'fixture composition',
+        nodes: [{ id: 'node-a', label: 'First node' }],
+        links: [],
+        entryNodeIds: ['node-a'],
+        metadata: { shape: 'single' },
+      },
+    };
+
+    render(<ConfigurationPanel />);
+    await screen.findByText(REVISION.id);
+    fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
+      target: { value: JSON.stringify(v2Document) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+
+    expect(await screen.findByText(/当前 Conchbase 未提供 composition-execution 能力/)).toBeTruthy();
+    expect(fetchMock.mock.calls.some((call) => call[0] === '/v1/configuration/apply')).toBe(false);
   });
 
   it('rolls back through a keyboard-accessible select and button', async () => {

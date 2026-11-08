@@ -12,7 +12,7 @@ export function ConfigurationPanel() {
           <p className="eyebrow">CONFIGURATION REVISIONS</p>
           <h2 id="configuration-title">配置版本</h2>
         </div>
-        <span className="muted-label">Conchbase 0.4.0 契约</span>
+        <span className="muted-label">Conchbase 0.5.0 契约</span>
       </div>
 
       <p className="config-intro">
@@ -61,7 +61,7 @@ export function ConfigurationPanel() {
           aria-describedby="configuration-document-help"
         />
         <p id="configuration-document-help" className="task-hint">
-          仅接受 schemaVersion 1；不要输入密钥值，secretRefs 只保存不透明引用。
+          接受 schemaVersion 1 或 2；v2 需要 composition 段和 runtime 的 composition-execution 能力。不要输入密钥值，secretRefs 只保存不透明引用。
         </p>
         <div className="task-actions">
           <button

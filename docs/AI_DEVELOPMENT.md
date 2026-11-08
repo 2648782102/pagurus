@@ -20,14 +20,14 @@ Prefer explicit types, feature-local state, small vertical slices, and executabl
 - `src/app/` composes the application and owns the page shell.
 - `src/features/<capability>/` owns feature presentation and feature-local state.
 - `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary.
-- `src/features/configuration/` owns the versioned configuration document editor and its feature-local state. It mirrors Conchbase `0.4.0` directly, including required sections and the exclusion of `source: url`; it must not create a second schema, credential store, capability installer, or composition template.
+- `src/features/configuration/` owns the versioned configuration document editor and its feature-local state. It mirrors Conchbase `0.5.0` v1/v2 documents directly, including required base sections, the v2 topology-neutral composition section, the exclusion of `source: url`, and the `composition-execution` capability guard. It must not create a second schema, credential store, capability installer, graph identity calculator, visual composition builder, or composition template.
 - Add shared UI only after a real reuse exists. Do not create empty feature folders or generic state frameworks ahead of use.
 - Keep keyboard access, visible focus, reduced motion, responsive behavior, and meaningful loading/error states in each implemented slice.
 
 ## Machine feedback
 
 - `npm run check`: TypeScript validation for app and test files.
-- `npm test`: Vitest tests for both Runtime API responses, connection UI states, and repository guardrails. Vitest discovers new test files under `tests/`; no package script change is needed for this slice.
+- `npm test`: Vitest tests for Runtime API responses, connection UI states, v1/v2 configuration states, and repository guardrails. Vitest discovers new test files under `tests/`; no package script change is needed for this slice.
 - `npm run build`: production bundle and TypeScript project build.
 - CI runs all three commands.
 - Use deterministic local data. Never put credentials or user runtime data in fixtures, browser storage, logs, or bundles.

@@ -6,8 +6,7 @@ export interface ConfigurationReference {
   source: ConfigurationSource;
 }
 
-export interface ConfigurationDocument {
-  schemaVersion: 1;
+interface ConfigurationDocumentBase {
   name: string;
   skills: ConfigurationReference[];
   policies: ConfigurationReference[];
@@ -16,6 +15,38 @@ export interface ConfigurationDocument {
   secretRefs: string[];
   metadata: Record<string, string>;
 }
+
+export interface ConfigurationDocumentV1 extends ConfigurationDocumentBase {
+  schemaVersion: 1;
+}
+
+export interface CompositionNode {
+  id: string;
+  label: string;
+}
+
+export interface CompositionLink {
+  id: string;
+  from: string;
+  to: string;
+  label: string;
+}
+
+export interface ConfigurationComposition {
+  schemaVersion: 1;
+  name: string;
+  nodes: CompositionNode[];
+  links: CompositionLink[];
+  entryNodeIds: string[];
+  metadata: Record<string, string>;
+}
+
+export interface ConfigurationDocumentV2 extends ConfigurationDocumentBase {
+  schemaVersion: 2;
+  composition: ConfigurationComposition;
+}
+
+export type ConfigurationDocument = ConfigurationDocumentV1 | ConfigurationDocumentV2;
 
 export interface ConfigurationRevision {
   id: string;
@@ -48,7 +79,7 @@ export interface ApplyConfigurationResult {
 
 export class ConfigurationValidationError extends Error {
   constructor(readonly details: readonly ConfigurationValidationIssue[]) {
-    super('配置文档不符合 Conchbase 0.4.0 契约');
+    super('配置文档不符合 Conchbase 0.5.0 契约');
     this.name = 'ConfigurationValidationError';
   }
 }
@@ -59,9 +90,36 @@ const SOURCES: readonly ConfigurationSource[] = [
   'registry',
   'env',
 ];
+const BASE_KEYS = [
+  'schemaVersion',
+  'name',
+  'skills',
+  'policies',
+  'mcpServers',
+  'plugins',
+  'secretRefs',
+  'metadata',
+];
+const V2_KEYS = [...BASE_KEYS, 'composition'];
+const COMPOSITION_KEYS = [
+  'schemaVersion',
+  'name',
+  'nodes',
+  'links',
+  'entryNodeIds',
+  'metadata',
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  return Object.keys(value).every((key) => keys.includes(key));
+}
+
+function isBoundedString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isReference(value: unknown): value is ConfigurationReference {
@@ -75,18 +133,66 @@ function isReferenceList(value: unknown): value is ConfigurationReference[] {
   return Array.isArray(value) && value.every(isReference);
 }
 
-function isDocument(value: unknown): value is ConfigurationDocument {
+function isMetadata(value: unknown): value is Record<string, string> {
   return isRecord(value)
+    && Object.values(value).every((entry) => typeof entry === 'string');
+}
+
+function isNodeList(value: unknown): value is CompositionNode[] {
+  return Array.isArray(value)
+    && value.every((entry) => isRecord(entry)
+      && hasOnlyKeys(entry, ['id', 'label'])
+      && isBoundedString(entry.id)
+      && isBoundedString(entry.label));
+}
+
+function isLinkList(value: unknown): value is CompositionLink[] {
+  return Array.isArray(value)
+    && value.every((entry) => isRecord(entry)
+      && hasOnlyKeys(entry, ['id', 'from', 'to', 'label'])
+      && isBoundedString(entry.id)
+      && isBoundedString(entry.from)
+      && isBoundedString(entry.to)
+      && isBoundedString(entry.label));
+}
+
+function isNodeIdList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(isBoundedString);
+}
+
+function isComposition(value: unknown): value is ConfigurationComposition {
+  return isRecord(value)
+    && hasOnlyKeys(value, COMPOSITION_KEYS)
     && value.schemaVersion === 1
-    && typeof value.name === 'string'
+    && isBoundedString(value.name)
+    && isNodeList(value.nodes)
+    && isLinkList(value.links)
+    && isNodeIdList(value.entryNodeIds)
+    && isMetadata(value.metadata);
+}
+
+function isBaseDocument(value: Record<string, unknown>): boolean {
+  return isBoundedString(value.name)
     && isReferenceList(value.skills)
     && isReferenceList(value.policies)
     && isReferenceList(value.mcpServers)
     && isReferenceList(value.plugins)
     && Array.isArray(value.secretRefs)
     && value.secretRefs.every((entry) => typeof entry === 'string')
-    && isRecord(value.metadata)
-    && Object.values(value.metadata).every((entry) => typeof entry === 'string');
+    && isMetadata(value.metadata);
+}
+
+function isDocument(value: unknown): value is ConfigurationDocument {
+  if (!isRecord(value)) return false;
+  if (value.schemaVersion === 1) {
+    return hasOnlyKeys(value, BASE_KEYS) && isBaseDocument(value);
+  }
+  if (value.schemaVersion === 2) {
+    return hasOnlyKeys(value, V2_KEYS)
+      && isBaseDocument(value)
+      && isComposition(value.composition);
+  }
+  return false;
 }
 
 function isRevision(value: unknown): value is ConfigurationRevision {

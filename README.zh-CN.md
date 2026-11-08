@@ -6,7 +6,7 @@
 
 寄居蟹用于配置和查看 Agents、MCP 连接、Skills 与策略。海螺负责任务执行、密钥解析和权限强制。寄居蟹是可选客户端；CLI 和其他界面也可以使用同一套 Runtime API。
 
-当前客户端可以连接本机海螺、显示状态，在 Runtime API 版本不兼容时给出明确提示，通过已发布的 Runtime API 操作第一阶段模型任务，并编辑 Conchbase `0.4.0` 的版本化配置修订。用户可以选择模型、发起任务、查看流式进度、取消或重试，也可以校验/应用配置文档并回滚到已知版本。配置引用只是不透明数据；能力安装、密钥解析和组合工作流尚未实现。确定性的仓库护栏测试会把已接受的写入与客户端边界固定为可执行检查。
+当前客户端可以连接本机海螺、显示状态，在 Runtime API 版本不兼容时给出明确提示，通过已发布的 Runtime API 操作第一阶段模型任务，并编辑 Conchbase `0.5.0` 的 v1/v2 版本化配置修订。用户可以选择模型、发起任务、查看流式进度、取消或重试，也可以校验/应用配置文档并回滚到已知版本。v2 文档可携带拓扑中立的组合段；海螺通过 `composition-execution` 能力声明该契约，并负责图校验与有边界的确定性执行。配置引用只是不透明数据；可视化组合编辑、能力安装、密钥解析和模型驱动组合尚未实现。确定性的仓库护栏测试会把已接受的写入与客户端边界固定为可执行检查。
 
 ## 本地运行
 
@@ -26,7 +26,7 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。另行启动海螺�
 - 模型与工具密钥不会以明文交给界面。
 - 每个任务使用固定配置版本。
 
-架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0004](docs/decisions/0004-versioned-configuration-client.md)，再读海螺仓库中的 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
+架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0004](docs/decisions/0004-versioned-configuration-client.md)、[ADR 0005](docs/decisions/0005-composition-configuration-client.md)，再读海螺仓库中的 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
 技术栈、路线图和验证计划见 [docs/TECH_STACK.md](docs/TECH_STACK.md)、[docs/ROADMAP.md](docs/ROADMAP.md) 与 [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
 
 ## 面向 AI 开发

@@ -147,14 +147,15 @@ describe('AI-first entry documents', () => {
 
     const handoff = read('docs/AI_HANDOFF.md');
     expect(handoff).toMatch(/Task operations are implemented/);
-    expect(handoff).toMatch(/versioned configuration revision editing/);
-    expect(handoff).toMatch(/ADR 0015/);
-    expect(handoff).toMatch(/composition editor/);
+    expect(handoff).toMatch(/v1\/v2 versioned configuration revision editing/);
+    expect(handoff).toMatch(/ADR 0016/);
+    expect(handoff).toMatch(/no composition editor/);
+    expect(handoff).toMatch(/composition-execution/);
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
-    expect(englishReadme).toMatch(/versioned configuration revisions/);
-    expect(chineseReadme).toMatch(/版本化配置修订/);
+    expect(englishReadme).toMatch(/v1\/v2 versioned configuration revisions/);
+    expect(chineseReadme).toMatch(/v1\/v2 版本化配置修订/);
   });
 
   it('records the accepted guardrail and task-operations decisions', () => {
@@ -167,6 +168,7 @@ describe('AI-first entry documents', () => {
       '0002-phase-one-task-operations.md',
       '0003-streaming-output-progress-client.md',
       '0004-versioned-configuration-client.md',
+      '0005-composition-configuration-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -180,6 +182,9 @@ describe('AI-first entry documents', () => {
     const fourth = read(`${recordsDir}/0004-versioned-configuration-client.md`);
     expect(fourth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.4\.0 configuration revision UI/m);
     expect(fourth).toMatch(/schemaVersion: 1/);
+    const fifth = read(`${recordsDir}/0005-composition-configuration-client.md`);
+    expect(fifth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.5\.0 v1\/v2 configuration revision UI/m);
+    expect(fifth).toMatch(/composition-execution/);
   });
 });
 
@@ -198,6 +203,14 @@ describe('client boundaries', () => {
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
     }
+
+    const configurationSource = read('src/shared/api/configuration.ts');
+    expect(configurationSource).toMatch(/schemaVersion: 2/);
+    expect(configurationSource).toMatch(/ConfigurationComposition/);
+    expect(configurationSource).not.toMatch(/planner|researcher|reviewer|orchestrator|three[- ]layer|layer[_-]?[123]/i);
+    const panelSource = read('src/features/configuration/ConfigurationPanel.tsx');
+    expect(panelSource).toMatch(/schemaVersion 1 或 2/);
+    expect(panelSource).not.toMatch(/可视化组合编辑器|Agent 层级|三层/i);
   });
 
   it('does not silently accept runtime adapters or state frameworks', () => {

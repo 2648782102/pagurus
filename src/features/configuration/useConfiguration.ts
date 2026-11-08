@@ -22,6 +22,7 @@ export interface ConfigurationViewState {
   phase: ConfigurationPhase;
   revision: ConfigurationRevision | null;
   revisions: readonly ConfigurationRevisionSummary[];
+  supportsComposition: boolean;
   draft: string;
   rollbackId: string;
   message: string | null;
@@ -32,6 +33,7 @@ const initialState: ConfigurationViewState = {
   phase: 'loading',
   revision: null,
   revisions: [],
+  supportsComposition: false,
   draft: '',
   rollbackId: '',
   message: null,
@@ -59,7 +61,7 @@ export function useConfiguration() {
           setState((current) => ({
             ...current,
             phase: 'unsupported',
-            message: '当前 Conchbase 未提供配置版本能力，请升级到 0.4.0 或更新版本。',
+            message: '当前 Conchbase 未提供配置版本能力，请升级到 0.5.0 或更新版本。',
           }));
         }
         return;
@@ -70,6 +72,7 @@ export function useConfiguration() {
         phase: 'ready',
         revision: result.revision,
         revisions: result.revisions,
+        supportsComposition: runtime.capabilities.includes('composition-execution'),
         draft: toDraft(result.revision),
         rollbackId: '',
         message: null,
@@ -118,6 +121,19 @@ export function useConfiguration() {
 
     setState((current) => ({ ...current, phase: 'validating', message: null, issues: [] }));
     try {
+      if (
+        isRecord(parsed)
+        && parsed.schemaVersion === 2
+        && !state.supportsComposition
+      ) {
+        setState((current) => ({
+          ...current,
+          phase: 'ready',
+          message: '当前 Conchbase 未提供 composition-execution 能力，无法应用 schemaVersion 2。',
+          issues: [{ path: 'schemaVersion', reason: '需要 Conchbase 0.5.0 或更新版本' }],
+        }));
+        return;
+      }
       const document = await validateConfiguration(parsed);
       setState((current) => ({ ...current, phase: 'applying' }));
       const result = await applyConfiguration(document);
@@ -125,6 +141,7 @@ export function useConfiguration() {
         phase: 'ready',
         revision: result.revision,
         revisions: result.revisions,
+        supportsComposition: state.supportsComposition,
         draft: toDraft(result.revision),
         rollbackId: '',
         message: result.changed ? '已应用新的配置版本。' : '内容与当前版本一致，没有创建新版本。',
@@ -146,7 +163,7 @@ export function useConfiguration() {
         message: cause instanceof Error ? cause.message : '应用配置失败',
       }));
     }
-  }, [state.draft]);
+  }, [state.draft, state.supportsComposition]);
 
   const rollback = useCallback(async () => {
     const revisionId = state.rollbackId;
@@ -161,6 +178,7 @@ export function useConfiguration() {
         phase: 'ready',
         revision: result.revision,
         revisions: result.revisions,
+        supportsComposition: state.supportsComposition,
         draft: toDraft(result.revision),
         rollbackId: '',
         message: result.changed ? '已切换到所选配置版本。' : '所选版本已经是当前版本。',
@@ -173,7 +191,7 @@ export function useConfiguration() {
         message: cause instanceof Error ? cause.message : '回滚失败',
       }));
     }
-  }, [state.rollbackId]);
+  }, [state.rollbackId, state.supportsComposition]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -189,4 +207,8 @@ export function useConfiguration() {
     apply: () => void apply(),
     rollback: () => void rollback(),
   };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

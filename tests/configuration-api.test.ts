@@ -24,6 +24,20 @@ const REVISION = {
   appliedAt: '2026-11-08T00:00:00.000Z',
 };
 
+const V2_DOCUMENT = {
+  ...DOCUMENT,
+  schemaVersion: 2,
+  name: 'composition fixture',
+  composition: {
+    schemaVersion: 1,
+    name: 'fixture composition',
+    nodes: [{ id: 'node-a', label: 'First node' }],
+    links: [],
+    entryNodeIds: ['node-a'],
+    metadata: { shape: 'single' },
+  },
+};
+
 const APPLY_RESULT = {
   changed: true,
   activeRevisionId: REVISION.id,
@@ -72,6 +86,16 @@ describe('versioned configuration API client', () => {
       .mockResolvedValueOnce(json({ revision: { ...REVISION, document: { schemaVersion: 2 } } }))
       .mockResolvedValueOnce(json({ activeRevisionId: REVISION.id, revisions: APPLY_RESULT.revisions }));
     await expect(getConfigurationState()).rejects.toThrow('不符合契约');
+
+    fetchMock
+      .mockResolvedValueOnce(json({ revision: { ...REVISION, document: { ...V2_DOCUMENT, composition: {} } } }))
+      .mockResolvedValueOnce(json({ activeRevisionId: REVISION.id, revisions: APPLY_RESULT.revisions }));
+    await expect(getConfigurationState()).rejects.toThrow('不符合契约');
+
+    fetchMock
+      .mockResolvedValueOnce(json({ revision: { ...REVISION, document: { ...V2_DOCUMENT, extra: true } } }))
+      .mockResolvedValueOnce(json({ activeRevisionId: REVISION.id, revisions: APPLY_RESULT.revisions }));
+    await expect(getConfigurationState()).rejects.toThrow('不符合契约');
   });
 
   it('rejects missing metadata and URL-sourced references at the client boundary', async () => {
@@ -105,6 +129,23 @@ describe('versioned configuration API client', () => {
     fetchMock.mockResolvedValueOnce(json(APPLY_RESULT));
     await expect(applyConfiguration(DOCUMENT)).resolves.toEqual(APPLY_RESULT);
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/v1/configuration/apply');
+
+    fetchMock.mockResolvedValueOnce(json({
+      valid: true,
+      activeRevisionId: REVISION.id,
+      document: V2_DOCUMENT,
+    }));
+    await expect(validateConfiguration(V2_DOCUMENT)).resolves.toEqual(V2_DOCUMENT);
+    expect(fetchMock.mock.calls[2]?.[0]).toBe('/v1/configuration/validate');
+
+    fetchMock.mockResolvedValueOnce(json({
+      ...APPLY_RESULT,
+      revision: { ...REVISION, document: V2_DOCUMENT },
+    }));
+    await expect(applyConfiguration(V2_DOCUMENT)).resolves.toMatchObject({
+      revision: { document: V2_DOCUMENT },
+    });
+    expect(fetchMock.mock.calls[3]?.[0]).toBe('/v1/configuration/apply');
   });
 
   it('rolls back with the exact rollbackTo shape', async () => {

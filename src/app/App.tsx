@@ -23,7 +23,7 @@ export function App() {
         </header>
 
         <section className="intro" aria-labelledby="page-title">
-          <p className="eyebrow">LOCAL CONTROL PLANE <span>·</span> v0.1</p>
+          <p className="eyebrow">LOCAL CONTROL PLANE <span>·</span> v0.2</p>
           <h1 id="page-title">你的 Agent，<em>由你配置。</em></h1>
           <p className="intro-copy">管理运行时、连接工具与 Skills。配置由海螺执行，寄居蟹负责让它清晰可控。</p>
         </section>
