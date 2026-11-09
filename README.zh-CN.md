@@ -10,6 +10,8 @@
 
 配置面板仍是编辑全局策略/能力配置版本的通用 JSON 编辑器，与各 Agent profile 分开管理。v2 组合执行器只做确定性执行、不调用模型，不代表模型驱动的多 Agent 执行。
 
+海螺 ADR 0021 已让这些已发布的客户端与真实 Runtime、两个独立 Agent 在确定性的本机 loopback HTTP 上完成闭环验收。这标志着本地 API 验收完成；真实供应商、可视化/手工 UI、无障碍和远程 Runtime 验证仍是独立层次。
+
 Agent profile 和 Agent 任务使用海螺的供应商中立模型契约。Magpie 兼容模型目录仍供旧 Runtime 与旧客户端使用。
 
 ## 本地运行
@@ -30,7 +32,7 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。当前海螺兼容�
 - 模型与工具密钥不会以明文交给界面。
 - 每个任务都固定运行时配置版本；Agent 任务还会固定不可变的 Agent 版本和生效的 provider/model。
 
-架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0006](docs/decisions/0006-agent-management-client.md)，再读海螺仓库中的 [ADR 0020](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0020-multi-agent-and-provider-neutral-model-contract.md) 与 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
+架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0006](docs/decisions/0006-agent-management-client.md)，再读海螺仓库中的 [ADR 0020](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0020-multi-agent-and-provider-neutral-model-contract.md)、[ADR 0021](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0021-cross-repository-paired-runtime-acceptance.md) 与 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。English: [README.md](README.md).
 技术栈、路线图和验证计划见 [docs/TECH_STACK.md](docs/TECH_STACK.md)、[docs/ROADMAP.md](docs/ROADMAP.md) 与 [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
 
 ## 面向 AI 开发

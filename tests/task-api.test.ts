@@ -70,6 +70,20 @@ describe('phase-1 task API client', () => {
     expect(fetchMock.mock.calls[2]?.[0]).toBe('/v1/tasks/task_fixture/retry');
   });
 
+  it('does not declare a JSON body for bodyless POST operations', async () => {
+    fetchMock.mockResolvedValueOnce(response({ task: TASK }));
+    await cancelTask('task_fixture');
+    const cancelInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(cancelInit.body).toBeUndefined();
+    expect(cancelInit.headers).not.toHaveProperty('Content-Type');
+
+    fetchMock.mockResolvedValueOnce(response({ task: TASK, retried: true }));
+    await retryTask('task_fixture');
+    const retryInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
+    expect(retryInit.body).toBeUndefined();
+    expect(retryInit.headers).not.toHaveProperty('Content-Type');
+  });
+
   it('rejects malformed payloads and translates documented errors', async () => {
     fetchMock.mockResolvedValueOnce(response({ models: [{ id: 42 }] }));
     await expect(listModels()).rejects.toThrow('不符合契约');

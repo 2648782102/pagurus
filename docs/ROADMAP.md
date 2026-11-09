@@ -4,12 +4,12 @@ This is a direction for staged validation, not a release commitment.
 
 ## Product priority: manage and customize Agents
 
-The product target is a user-managed collection of independently customizable Agents. Conchbase ADR 0020 and Pagurus ADR 0006 have implemented the shared Agent resource and first client editing/operational slice. Deterministic coverage exercises at least two independent Agents and client selection; paired live-runtime acceptance remains active.
+The product target is a user-managed collection of independently customizable Agents. Conchbase ADR 0020 and Pagurus ADR 0006 have implemented the shared Agent resource and first client editing/operational slice. Conchbase ADR 0021 closes deterministic paired live-runtime acceptance for at least two independent Agents over local loopback HTTP; visual/manual UI and real-provider validation remain separate future layers.
 
 1. **Implemented:** Conchbase persists stable Agent ids and immutable revisions, validates provider-neutral defaults, supports default/archive/history/rollback, and performs additive migration.
 2. **Implemented:** Agent tasks explicitly bind the selected revision and pin the Runtime configuration revision plus effective provider/model. Retry preserves the original execution definition; legacy task behavior remains.
 3. **Implemented:** Pagurus supports create, edit, duplicate, selection/default, archive, history/rollback, provider-neutral model selection, Agent-bound task launch, and task inspection. Older runtimes keep the legacy task flow.
-4. **Active live acceptance:** Verify task pins across edits/config changes, model override, retry after edit/archive, cancellation/interruption, stale ids, default changes, and global v1/v2 behavior against paired runtimes. Deterministic API and UI fixtures already prove Agent A/B profile isolation, lifecycle operations, selection, and effective-model display.
+4. **Implemented deterministic acceptance:** ADR 0021 verifies task pins across edits/config changes, model override, retry after edit/archive, cancellation/interruption, stale ids, default changes, global v1/v2 behavior, legacy `/v1/tasks`, CLI compatibility, streaming, and event replay over paired local HTTP runtimes. Deterministic API and UI fixtures also prove Agent A/B profile isolation, lifecycle operations, selection, and effective-model display.
 
 The existing v1/v2 configuration editor remains a generic runtime-wide JSON revision editor, separate from the Agent collection. The legacy task picker still uses Conchbase's Magpie-backed compatibility catalog when Agent capability is unavailable; this does not define Agent model identity or limit provider choices. The v2 composition executor makes no model call and Agent tasks do not implicitly run it.
 

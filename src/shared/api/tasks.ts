@@ -85,7 +85,7 @@ async function request<T>(
   const response = await fetch(path, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }),
       ...init.headers,
       Accept: 'application/json',
     },

@@ -173,13 +173,26 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/composition-execution/);
     expect(handoff).toMatch(/ADR 0017/);
     expect(handoff).toMatch(/tool-approval-ledger/);
+    expect(handoff).toMatch(/ADR 0021/);
+    expect(handoff).toMatch(/deterministic live loopback acceptance/);
+    expect(handoff).toMatch(/not visual\/manual UI or real-provider validation/);
 
+    const roadmap = read('docs/ROADMAP.md');
+    expect(roadmap).toMatch(/ADR 0021 closes deterministic paired live-runtime acceptance/);
+    expect(roadmap).toMatch(/Implemented deterministic acceptance/);
+    const validationPlan = read('docs/VALIDATION_PLAN.md');
+    expect(validationPlan).toMatch(/ADR 0021's paired-runtime acceptance/);
+    expect(validationPlan).toMatch(/Real-provider conformance/);
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
     expect(englishReadme).toMatch(/v1\/v2 runtime configuration/);
     expect(chineseReadme).toMatch(/v1\/v2 全局运行时配置/);
     expect(englishReadme).toMatch(/provider-neutral contract/);
     expect(chineseReadme).toMatch(/供应商中立模型契约/);
+    expect(englishReadme).toMatch(/ADR 0021 exercises these published clients/);
+    expect(chineseReadme).toMatch(/ADR 0021 已让这些已发布的客户端/);
+    expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
+    expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
 
   it('records the accepted guardrail and task-operations decisions', () => {
