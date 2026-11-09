@@ -9,12 +9,17 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 - A production console should be served from the runtime origin or paired to an explicitly authorized local endpoint.
 - The runtime owns secrets, active configuration revisions, task state, and policy enforcement.
 - Conchbase owns the current machine-readable API source of truth at [`docs/openapi.yaml`](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml). Do not copy or independently redefine that contract here.
+- Planned Agent collection and per-Agent revision state belong to Conchbase. Keep them distinct from the existing single runtime-wide policy/capability configuration unless a Conchbase ADR explicitly decides otherwise. An Agent-backed task must display the Agent identity/revision and the runtime configuration revision it actually used.
 
 ## Implemented screens
 
 The overview reports runtime connectivity, links to the implemented configuration revision editor, and lists the planned capability lifecycle areas for tools/MCP connections and Skills. Those rows remain visibly non-interactive.
 
 The status client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state; `tool-approval-ledger` and `provider-tool-call-observation` are read-only capability context, not Pagurus features. The task client uses `GET /v1/models`, `POST /v1/tasks`, `GET /v1/tasks/{taskId}`, `POST .../cancel`, and `POST .../retry` against Conchbase's published contract. It polls task state while active, shows `partialOutput` as live progress, and shows final `output`, error, or interruption after a terminal state. The configuration client uses the published `0.5.0` configuration contract, also used by `0.7.0`, for active-revision, history, validate, and apply/rollback routes, mirrors the v1/v2 document union, and keeps authoritative state in Conchbase. It renders field-level validation issues, gates v2 writes on `composition-execution`, and never consumes the event cursor, tool request/approval routes, or observation routes.
+
+The current configuration screen edits the runtime-wide configuration revision; do not relabel it as an Agent profile. A future Agent client must negotiate an explicit runtime capability and preserve this screen and the current task flow when connecting to older runtimes. It must use only the Conchbase Agent API, handle stale revision conflicts visibly, and submit an Agent identity for new Agent-backed tasks. Existing legacy task creation remains available when Agent management is unsupported.
+
+The current model picker reflects Conchbase's Magpie-backed compatibility catalog. The planned Agent editor must consume Conchbase's provider-neutral provider/model and discovery contract, keep model references portable across adapters, and preserve Magpie compatibility without encoding Magpie catalog or settings fields into the Pagurus Agent UI.
 
 ## Future desktop shell
 

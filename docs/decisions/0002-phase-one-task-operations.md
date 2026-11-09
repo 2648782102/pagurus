@@ -12,12 +12,15 @@ Conchbase [ADR 0010](https://github.com/2648782102/conchbase/blob/main/docs/deci
 
 Add a typed `tasks` API client for the published Conchbase phase-1 routes. Add an operations panel where a user selects a model from the Magpie catalog exposed by Conchbase, enters a prompt, starts one task, sees its state and result, and can cancel or retry. Poll `GET /v1/tasks/{taskId}` while a task is active; do not implement SSE before Conchbase defines it. Keep all data in component state; do not use browser storage or local secrets.
 
+This accepted decision records the phase-1 compatibility implementation, whose catalog is Magpie-backed. It does not make Magpie the product's only provider or define the future Agent schema. New Agent model selection must follow a provider-neutral contract accepted and published by Conchbase; this ADR's client behavior remains the legacy path for runtimes exposing only the current catalog.
+
 Configuration management for Agents, MCP, Skills, policies, and plugins remains a planned workspace. The new panel is task operations, not a claim that Pagurus can configure an agent. No second API schema is introduced: request/response types mirror Conchbase's published versioned contract and are validated at the HTTP boundary.
 
 ## Consequences
 
 - CLI, Pagurus, and third-party clients exercise the same runtime API and durable task state.
 - Model credentials remain in Magpie. Pagurus sees only model ids and display names from Conchbase.
+- This credential/model-catalog statement describes the current Magpie compatibility implementation. It does not define a future Agent's provider/model reference or make Magpie the only selectable provider; those follow Conchbase's provider-neutral contract and adapter-owned credential boundary.
 - Polling is simple and adequate for one bounded model turn; it will need replacement when streaming and frequent events are accepted.
 - The client-side guardrails must evolve in the same slice to allow exactly the documented task/retry/cancel writes and reject credential/browser-storage/private-file patterns.
 

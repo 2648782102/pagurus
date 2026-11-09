@@ -7,6 +7,8 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 ## Product invariants
 
 - Pagurus (寄居蟹) is an optional configuration and operations UI for Conchbase.
+- The product direction is user-managed, multiple-Agent configuration through Pagurus. Prioritize an Agent collection and a complete versioned edit/validate/apply/run/inspect loop before advanced tool-approval or extension-management UI. Each task must remain bound to the selected Agent revision while preserving the existing runtime-wide policy/capability configuration boundary.
+- Keep Agent model references and controls provider-neutral according to Conchbase's published contract. Magpie is the current compatibility path; do not make its catalog, ids, or settings the Agent schema or the only future provider choice.
 - Conchbase owns model execution, task state, secrets, and permission enforcement.
 - Use Conchbase's versioned API. Never read or write its private files/database.
 - A UI selection or installation must not bypass the runtime's per-tool authorization.

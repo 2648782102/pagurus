@@ -135,6 +135,7 @@ describe('AI-first entry documents', () => {
     for (const phrase of [
       'built primarily by AI coding agents',
       'Read `docs/AI_HANDOFF.md` first',
+      'user-managed, multiple-Agent configuration through Pagurus',
       'Conchbase owns model execution, task state, secrets, and permission enforcement.',
       "Use Conchbase's versioned API. Never read or write its private files/database.",
       'A UI selection or installation must not bypass the runtime\'s per-tool authorization.',
@@ -147,6 +148,10 @@ describe('AI-first entry documents', () => {
 
     const handoff = read('docs/AI_HANDOFF.md');
     expect(handoff).toMatch(/Task operations are implemented/);
+    expect(handoff).toMatch(/at least two Agents/);
+    expect(handoff).toMatch(/provider-neutral provider\/model identity/);
+    expect(handoff).toMatch(/Magpie.*not the planned provider-neutral Agent model contract/);
+    expect(handoff).toMatch(/legacy mode for runtimes without the new Agent capability/);
     expect(handoff).toMatch(/v1\/v2 versioned configuration revision editing/);
     expect(handoff).toMatch(/ADR 0016/);
     expect(handoff).toMatch(/no composition editor/);
@@ -158,6 +163,10 @@ describe('AI-first entry documents', () => {
     const chineseReadme = read('README.zh-CN.md');
     expect(englishReadme).toMatch(/v1\/v2 versioned configuration revisions/);
     expect(chineseReadme).toMatch(/v1\/v2 版本化配置修订/);
+    expect(englishReadme).toMatch(/not an Agent collection/);
+    expect(chineseReadme).toMatch(/还不是 Agent 集合/);
+    expect(englishReadme).toMatch(/not a restriction on future Agent provider choices/);
+    expect(chineseReadme).toMatch(/不是产品限制/);
   });
 
   it('records the accepted guardrail and task-operations decisions', () => {

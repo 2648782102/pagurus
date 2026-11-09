@@ -6,6 +6,10 @@ AI coding agents are the primary implementation workflow. Optimize repository co
 
 Prefer explicit types, feature-local state, small vertical slices, and executable checks. Avoid giant components, hidden cross-feature behavior, speculative frameworks, and duplicate API contracts. Add an abstraction when it protects a real reuse, runtime, or security boundary.
 
+The product priority is a user-managed collection of independently customizable Agents through Pagurus. The first acceptance slice must configure at least two Agents and run tasks against each. Conchbase must first define Agent identity, per-Agent immutable revisions, task binding, and how Agent definitions relate to existing runtime-wide capability/policy configuration. Until then, the generic configuration JSON editor is not an Agent collection, and the v2 deterministic composition runner is not model-driven multi-agent execution. Preserve the existing task/configuration workflows for older runtimes, and defer tool approvals, visual composition design, and capability lifecycle UI until their runtime contracts are accepted.
+
+Agent model selection must use Conchbase's provider-neutral provider/model contract and discovery API. The current task screen consumes the Magpie-backed catalog because that is the currently implemented compatibility path; do not copy Magpie-specific identifiers, catalog fields, or settings into Agent documents or make Magpie the only selectable provider in the planned UI.
+
 ## Change loop
 
 1. Read `AGENTS.md`, this guide, and the owning architecture/API document. Treat the current repository state as authoritative.
