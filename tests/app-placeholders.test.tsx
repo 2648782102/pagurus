@@ -8,11 +8,10 @@ describe('App workspaces', () => {
     cleanup();
   });
 
-  it('does not present unimplemented workspaces as clickable navigation', () => {
+  it('links the implemented Agent workspace and keeps other planned entries non-interactive', () => {
     render(<App />);
 
     for (const label of [
-      'Agents 配置入口建设中',
       '工具与连接配置入口建设中',
       'Skills 配置入口建设中',
       '设置入口建设中',
@@ -22,8 +21,8 @@ describe('App workspaces', () => {
       expect(element.classList.contains('is-planned')).toBe(true);
     }
 
-    expect(screen.queryByRole('link', { name: 'Agents' })).toBeNull();
-    expect(screen.getByRole('link', { name: /配置版本/ }).getAttribute('href')).toBe('#configuration-title');
+    expect(screen.getByRole('link', { name: 'Agent 配置' }).getAttribute('href')).toBe('#agent-panel');
+    expect(screen.getByRole('link', { name: /运行时配置/ }).getAttribute('href')).toBe('#configuration-title');
     expect(screen.getByRole('link', { name: /任务运行/ }).getAttribute('href')).toBe('#task-operations-title');
   });
 });

@@ -4,15 +4,14 @@ This is a direction for staged validation, not a release commitment.
 
 ## Product priority: manage and customize Agents
 
-The product target is a user-managed collection of independently customizable Agents. Conchbase must first define and implement the shared Agent resource and versioned task-binding contract; Pagurus must then provide the editing and operational experience. The first end-to-end acceptance slice must exercise at least two Agents so independent configuration and task selection are proven.
+The product target is a user-managed collection of independently customizable Agents. Conchbase ADR 0020 and Pagurus ADR 0006 have implemented the shared Agent resource and first client editing/operational slice. Deterministic coverage exercises at least two independent Agents and client selection; paired live-runtime acceptance remains active.
 
-1. Define the resource boundary: stable Agent id; name, instructions, provider-neutral default provider/model reference and bounded metadata; per-Agent immutable revisions; default/selection semantics; archival; optimistic concurrency; and distinction from existing runtime-wide capability/policy configuration.
-2. Define task creation and retry semantics: explicit Agent selection for new clients; effective provider/model override precedence; atomic pinning of Agent revision, runtime configuration revision, and effective provider/model; task/event inspection; and retries that reuse the exact original execution definition. Model discovery and adapter-specific settings must follow Conchbase's provider-neutral contract.
-3. Implement Conchbase persistence, a transactional/idempotent migration, validation, revision apply/rollback, Agent API and capability advertisement without deleting or rewriting existing configuration/task/event history.
-4. Add Pagurus Agent collection and editor through accepted client ADRs: create, edit, duplicate, select, archive, validate, apply, history, compare/rollback, run, and inspect.
-5. Prove two Agents with different instructions/models remain independent. Verify edits and rollbacks affect only newly created tasks, retries retain the original pinned revisions, archive preserves history, unknown/stale ids fail clearly, and legacy task clients still work.
+1. **Implemented:** Conchbase persists stable Agent ids and immutable revisions, validates provider-neutral defaults, supports default/archive/history/rollback, and performs additive migration.
+2. **Implemented:** Agent tasks explicitly bind the selected revision and pin the Runtime configuration revision plus effective provider/model. Retry preserves the original execution definition; legacy task behavior remains.
+3. **Implemented:** Pagurus supports create, edit, duplicate, selection/default, archive, history/rollback, provider-neutral model selection, Agent-bound task launch, and task inspection. Older runtimes keep the legacy task flow.
+4. **Active live acceptance:** Verify task pins across edits/config changes, model override, retry after edit/archive, cancellation/interruption, stale ids, default changes, and global v1/v2 behavior against paired runtimes. Deterministic API and UI fixtures already prove Agent A/B profile isolation, lifecycle operations, selection, and effective-model display.
 
-The existing v1/v2 configuration editor is a generic runtime-wide JSON revision editor, not an Agent collection. The current task picker uses Conchbase's Magpie-backed compatibility catalog; that existing client behavior does not define Agent model identity or limit future provider choices. The v2 composition executor makes no model call. Keep these existing capabilities and their semantics separate from the new Agent collection; do not present them as an already completed Agent customization loop.
+The existing v1/v2 configuration editor remains a generic runtime-wide JSON revision editor, separate from the Agent collection. The legacy task picker still uses Conchbase's Magpie-backed compatibility catalog when Agent capability is unavailable; this does not define Agent model identity or limit provider choices. The v2 composition executor makes no model call and Agent tasks do not implicitly run it.
 
 ## Foundation and operations (partially implemented)
 
@@ -20,7 +19,7 @@ The existing v1/v2 configuration editor is a generic runtime-wide JSON revision 
 - Create, inspect, cancel, and retry bounded model tasks through Conchbase's API.
 - Display configuration revision history, validation state, runtime capabilities, task progress, and output.
 - Generate or maintain typed clients from Conchbase's stable API contract.
-- Show both runtime configuration revision and Agent revision plus the effective model on each Agent-backed task once the shared contract exposes them consistently.
+- Show both runtime configuration revision and Agent revision plus the effective model on each Agent-backed task.
 - Preserve a legacy task path for clients/runtimes that do not support Agent management.
 
 ## Later capabilities

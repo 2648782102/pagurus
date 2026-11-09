@@ -38,6 +38,14 @@ const acceptedConfigurationPosts = [
   "'/v1/configuration/validate'",
   "'/v1/configuration/apply'",
 ];
+const acceptedAgentRoutes = [
+  "'/v1/agents'",
+  '`/v1/agents/${encodeURIComponent(agentId)}`',
+  '`/v1/agents/${encodeURIComponent(agentId)}/duplicate`',
+  '`/v1/agents/${encodeURIComponent(agentId)}/archive`',
+  "'/v1/agents/default'",
+  '`/v1/agents/${encodeURIComponent(agentId)}/revisions/apply`',
+];
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -69,8 +77,7 @@ function assertNoForbiddenBrowserStorageIn(source: string, label: string): void 
 }
 
 function assertAcceptedWriteBoundary(source: string, label: string): void {
-  const posts = [...source.matchAll(/method: 'POST'/g)];
-  expect(posts.length, `${label} must use only the accepted task POST helper`).toBe(1);
+  expect(source, `${label} must use only the accepted task write helper`).toMatch(/function postJson\([\s\S]*?method: 'POST'/);
   for (const route of acceptedTaskPosts) {
     expect(source, `${label} must use ${route}`).toContain(route);
   }
@@ -85,6 +92,14 @@ function assertAcceptedConfigurationWrites(source: string, label: string): void 
     expect(source, `${label} must use ${route}`).toContain(route);
   }
   expect(source, `${label} must not invent another configuration route`).not.toMatch(/\/v1\/config(?:[^a-z]|$)/);
+  expect(source, `${label} must not put credentials in requests`)
+    .not.toMatch(/Authorization|apiKey|secretValue|credentialValue/);
+}
+
+function assertAcceptedAgentWrites(source: string, label: string): void {
+  for (const route of acceptedAgentRoutes) {
+    expect(source, `${label} must use ${route}`).toContain(route);
+  }
   expect(source, `${label} must not put credentials in requests`)
     .not.toMatch(/Authorization|apiKey|secretValue|credentialValue/);
 }
@@ -147,11 +162,11 @@ describe('AI-first entry documents', () => {
     }
 
     const handoff = read('docs/AI_HANDOFF.md');
-    expect(handoff).toMatch(/Task operations are implemented/);
+    expect(handoff).toMatch(/Task operations use Agent-bound creation/);
     expect(handoff).toMatch(/at least two Agents/);
     expect(handoff).toMatch(/provider-neutral provider\/model identity/);
-    expect(handoff).toMatch(/Magpie.*not the planned provider-neutral Agent model contract/);
-    expect(handoff).toMatch(/legacy mode for runtimes without the new Agent capability/);
+    expect(handoff).toMatch(/legacy catalog only when Agent capability is absent/);
+    expect(handoff).toMatch(/legacy task operations/);
     expect(handoff).toMatch(/v1\/v2 versioned configuration revision editing/);
     expect(handoff).toMatch(/ADR 0016/);
     expect(handoff).toMatch(/no composition editor/);
@@ -161,12 +176,10 @@ describe('AI-first entry documents', () => {
 
     const englishReadme = read('README.md');
     const chineseReadme = read('README.zh-CN.md');
-    expect(englishReadme).toMatch(/v1\/v2 versioned configuration revisions/);
-    expect(chineseReadme).toMatch(/v1\/v2 版本化配置修订/);
-    expect(englishReadme).toMatch(/not an Agent collection/);
-    expect(chineseReadme).toMatch(/还不是 Agent 集合/);
-    expect(englishReadme).toMatch(/not a restriction on future Agent provider choices/);
-    expect(chineseReadme).toMatch(/不是产品限制/);
+    expect(englishReadme).toMatch(/v1\/v2 runtime configuration/);
+    expect(chineseReadme).toMatch(/v1\/v2 全局运行时配置/);
+    expect(englishReadme).toMatch(/provider-neutral contract/);
+    expect(chineseReadme).toMatch(/供应商中立模型契约/);
   });
 
   it('records the accepted guardrail and task-operations decisions', () => {
@@ -180,6 +193,7 @@ describe('AI-first entry documents', () => {
       '0003-streaming-output-progress-client.md',
       '0004-versioned-configuration-client.md',
       '0005-composition-configuration-client.md',
+      '0006-agent-management-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -196,6 +210,8 @@ describe('AI-first entry documents', () => {
     const fifth = read(`${recordsDir}/0005-composition-configuration-client.md`);
     expect(fifth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.5\.0 v1\/v2 configuration revision UI/m);
     expect(fifth).toMatch(/composition-execution/);
+    const sixth = read(`${recordsDir}/0006-agent-management-client.md`);
+    expect(sixth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.8\.0 Agent Runtime API/m);
   });
 });
 
@@ -207,6 +223,7 @@ describe('client boundaries', () => {
       read('src/shared/api/configuration.ts'),
       'src/shared/api/configuration.ts',
     );
+    assertAcceptedAgentWrites(read('src/shared/api/agents.ts'), 'src/shared/api/agents.ts');
     assertLoopbackProxy(read('vite.config.ts'), 'vite.config.ts');
 
     for (const file of listSourceFiles('src')) {

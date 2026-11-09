@@ -15,6 +15,10 @@ export interface RuntimeInfo {
   capabilities: string[];
 }
 
+export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
+  return runtime?.capabilities.includes(capability) ?? false;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }

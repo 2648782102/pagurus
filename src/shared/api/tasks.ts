@@ -18,6 +18,10 @@ export interface Task {
   output: string | null;
   partialOutput: string | null;
   error: string | null;
+  agentId?: string;
+  agentRevisionId?: string;
+  providerId?: string;
+  modelId?: string;
 }
 
 export interface ModelCatalogEntry {
@@ -50,7 +54,11 @@ function isTask(value: unknown): value is Task {
     && typeof value.attempt === 'number'
     && (typeof value.output === 'string' || value.output === null)
     && (typeof value.partialOutput === 'string' || value.partialOutput === null)
-    && (typeof value.error === 'string' || value.error === null);
+    && (typeof value.error === 'string' || value.error === null)
+    && (value.agentId === undefined || typeof value.agentId === 'string')
+    && (value.agentRevisionId === undefined || typeof value.agentRevisionId === 'string')
+    && (value.providerId === undefined || typeof value.providerId === 'string')
+    && (value.modelId === undefined || typeof value.modelId === 'string');
 }
 
 function isTaskEnvelope(value: unknown): value is { task: Task } {
@@ -124,7 +132,7 @@ export async function listModels(signal?: AbortSignal): Promise<ModelCatalogEntr
 }
 
 export async function createTask(
-  input: { prompt: string; model: string },
+  input: { prompt: string; model: string } | { prompt: string; agentId: string; modelOverride?: { providerId: string; modelId: string } },
   signal?: AbortSignal,
 ): Promise<Task> {
   const payload = await request(

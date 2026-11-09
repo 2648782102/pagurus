@@ -1,4 +1,5 @@
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
+import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 
@@ -9,7 +10,7 @@ export function App() {
         <a className="brand-mark" href="#overview" aria-label="Pagurus 首页">P</a>
         <nav className="rail-nav">
           <a className="rail-link is-active" href="#overview" aria-current="page" aria-label="总览">⌂</a>
-          <span className="rail-link is-planned" aria-label="Agents 配置入口建设中" title="Agents 配置入口建设中">◉</span>
+          <a className="rail-link" href="#agent-panel" aria-label="Agent 配置">◉</a>
           <span className="rail-link is-planned" aria-label="工具与连接配置入口建设中" title="工具与连接配置入口建设中">⌘</span>
           <span className="rail-link is-planned" aria-label="Skills 配置入口建设中" title="Skills 配置入口建设中">✳</span>
         </nav>
@@ -30,6 +31,8 @@ export function App() {
 
         <RuntimeStatusPanel />
 
+        <AgentWorkspace />
+
         <TaskOperationsPanel />
 
         <ConfigurationPanel />
@@ -46,8 +49,11 @@ export function App() {
               <span className="row-state">已开放</span>
               <span className="row-arrow">↗</span>
             </a>
-            <a className="workspace-row is-live" id="agents" href="#configuration-title">
-              <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>配置版本</strong><small>校验、应用与回滚配置文档</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            <a className="workspace-row is-live" id="agents" href="#agent-title">
+              <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agent 配置</strong><small>管理独立版本、模型和任务身份</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            </a>
+            <a className="workspace-row is-live" href="#configuration-title">
+              <span className="row-icon icon-agent">↻</span><span className="row-copy"><strong>运行时配置</strong><small>校验、应用与回滚全局策略配置</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
             <div className="workspace-row is-planned" id="tools">
               <span className="row-icon icon-tools">⌘</span><span className="row-copy"><strong>工具与连接</strong><small>MCP 服务和逐项授权</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
