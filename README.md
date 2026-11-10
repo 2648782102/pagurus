@@ -6,6 +6,8 @@
 
 Pagurus is the optional control panel where users will manage and customize their own Agents. Conchbase remains responsible for Agent identity and revisions, task execution, secrets, and permission enforcement; CLI and other interfaces can use the same Runtime API.
 
+[ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) proposes a future human-attention workbench for durable authorized work and a write-only SecretHandle editor. It would consume Conchbase-published contracts only and never render or retain a secret value. This is a proposal, not an implemented route or screen.
+
 The current client connects to Conchbase, reports Runtime API state, manages Agent profiles and immutable revisions, and edits the separate v1/v2 runtime configuration. Users can create/edit/duplicate Agents, select a default, archive profiles, choose any model exposed by the provider-neutral catalog, roll back by appending a historical revision, and compare two revisions in a read-only view. Agent-backed tasks pin the selected Agent revision and Runtime configuration revision; task views show both revisions and the effective provider/model. The task history view reads the existing `GET /v1/tasks` route, supports state and Agent filters, and keeps legacy task records visible. Streaming progress, cancel, and retry remain available. Runtimes without Agent capabilities keep the legacy Magpie compatibility task flow. Conchbase advertises tool ledger and provider observation capabilities, but Pagurus has no corresponding UI or write routes. Configuration references remain data; visual composition editing, capability installation, secret resolution, server-side task pagination/filtering, live task history, and model-driven composition remain planned.
 
 The configuration panel remains a generic editor for one runtime-wide policy/capability revision, separate from individual Agent profiles. The v2 composition executor is deterministic and does not call a model; it is not model-driven multi-Agent execution.
@@ -38,6 +40,8 @@ See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.m
 ## AI-first development
 
 This project is developed primarily by AI coding agents. Architecture, documentation, and validation are optimized for fast context loading, bounded changes, and deterministic verification; future human handoff is not a product requirement. Start with [`AGENTS.md`](AGENTS.md), then read the [AI handoff](docs/AI_HANDOFF.md) and [development guide](docs/AI_DEVELOPMENT.md).
+
+Before implementing the next product slice, also read proposed [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) and Conchbase [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0022-persistent-work-runtime-direction.md) / [ADR 0023](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0023-secret-handle-and-runtime-injection-proposal.md). Do not add workbench or secret routes until their contracts are accepted.
 
 ## License
 

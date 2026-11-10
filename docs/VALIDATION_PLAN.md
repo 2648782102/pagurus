@@ -28,6 +28,7 @@ This covers Agent management and task binding, read-only task history, revision 
 4. **Integration:** fake Runtime API with deterministic responses; no provider secrets and no public-network dependency.
 5. **Visual/accessibility/manual:** narrow and wide viewport screenshots, reduced-motion preference, keyboard-only navigation, automated accessibility checks, and a complete screen walkthrough against a real local Conchbase runtime.
 6. **Real-provider conformance:** selected local provider fixtures that do not enter CI credentials and remain distinct from ADR 0021's deterministic fake gateway.
+7. **Workbench and SecretHandle no-leak:** after accepted contracts, sentinel fixtures must prove no plaintext secret enters component state, browser storage, URLs, logs, errors, or client responses; workbench fixtures must cover authorization, denied, stopped, resumed, delivery-pending, and offline states without inventing a second Runtime schema.
 
 ## Initial critical scenarios
 

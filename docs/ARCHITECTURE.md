@@ -23,6 +23,8 @@ The legacy model picker reflects Conchbase's Magpie-backed compatibility catalog
 
 Task history and revision comparison are inspection surfaces. They do not own task ordering, retention, pagination, revision identity, model selection, or execution semantics. A future production-scale history surface must begin with a Conchbase contract for those concerns.
 
+[ADR 0008](decisions/0008-human-attention-workbench-proposal.md) proposes a future human-attention workbench and write-only SecretHandle editor. Those surfaces must consume Conchbase-published contracts. A WorkItem, Assignment, Mandate, Outbox, or DeliveryReceipt may not be defined locally; a plaintext secret may never enter browser state, storage, URLs, logs, errors, or the bundle. The current source layout and accepted write routes remain unchanged.
+
 ## Future desktop shell
 
 Keep the UI web-first. A native desktop wrapper can be selected after installer, system tray, and operating-system integration requirements are defined. The wrapper must remain a Runtime API client.

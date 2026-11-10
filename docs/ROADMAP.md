@@ -15,6 +15,10 @@ The product target is a user-managed collection of independently customizable Ag
 
 The existing v1/v2 configuration editor remains a generic runtime-wide JSON revision editor, separate from the Agent collection. The legacy task picker still uses Conchbase's Magpie-backed compatibility catalog when Agent capability is unavailable; this does not define Agent model identity or limit provider choices. The v2 composition executor makes no model call and Agent tasks do not implicitly run it.
 
+## Product direction: human-attention workbench (proposal, not implemented)
+
+Conchbase ADR 0022 accepts durable, event-driven work as direction; Conchbase ADR 0023 proposes write-only SecretHandles. Pagurus [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) proposes a matching workbench for work that needs authorization, stopping, resumption, or acceptance, plus a write-only handle editor. Pagurus remains a versioned Runtime API client; it never owns work identity, delivery evidence, secrets, or permission enforcement. Wait for Conchbase to publish each contract, then accept a paired client ADR. No route, component, browser storage, secret value field, or second schema is added now.
+
 ## Foundation and operations (partially implemented)
 
 - Connect to a local Conchbase runtime and show actionable connection status.

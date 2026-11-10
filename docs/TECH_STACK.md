@@ -10,6 +10,7 @@ This records the initial implementation choices. Revisit a choice through a shor
 | Runtime events | SSE with resumable event IDs | Planned after Conchbase accepts an event envelope |
 | API schemas | Generated client/types from Conchbase's published contract | Planned after the Runtime API stabilizes |
 | Desktop packaging | Web-first; choose a native wrapper after OS integration requirements are known | Deferred |
+| Human-attention workbench and SecretHandle editor | Future API-only client surfaces from Conchbase-published contracts | Proposed by ADR 0008; no route, component, storage, or schema implemented |
 
 Repository guardrails use Node built-ins with the existing Vitest runner and local-file assertions; they are development checks, not UI or runtime technology. See [ADR 0001](decisions/0001-ai-development-guardrails.md).
 
@@ -20,3 +21,4 @@ Pagurus is a client, not a second agent runtime. It must not read private Conchb
 - Desktop wrapper: compare installation, auto-start, tray, update, and platform-specific permission requirements before selecting a shell.
 - Runtime discovery and pairing: keep the current development proxy loopback-only; design authenticated pairing before connecting to remote runtimes.
 - UI state libraries: use component state until the console has enough shared server state to justify a dedicated cache.
+- Workbench and secret-handle contracts: wait for Conchbase ADRs 0022/0023 implementation contracts and a paired Pagurus ADR; keep plaintext out of every browser surface.

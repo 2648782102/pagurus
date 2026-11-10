@@ -193,11 +193,16 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/ADR 0017/);
     expect(handoff).toMatch(/tool-approval-ledger/);
     expect(handoff).toMatch(/ADR 0021/);
+    expect(handoff).toMatch(/ADR 0008/);
+    expect(handoff).toMatch(/ADR 0022/);
+    expect(handoff).toMatch(/ADR 0023/);
+    expect(handoff).toMatch(/never plaintext after creation/);
     expect(handoff).toMatch(/deterministic live loopback acceptance/);
     expect(handoff).toMatch(/manual\/visual screen walkthrough has since been completed/);
 
     const roadmap = read('docs/ROADMAP.md');
     expect(roadmap).toMatch(/ADR 0021 closes deterministic paired live-runtime acceptance/);
+    expect(roadmap).toMatch(/human-attention workbench/);
     expect(roadmap).toMatch(/Implemented deterministic acceptance/);
     const validationPlan = read('docs/VALIDATION_PLAN.md');
     expect(validationPlan).toMatch(/ADR 0021's paired-runtime acceptance/);
@@ -227,6 +232,7 @@ describe('AI-first entry documents', () => {
       '0005-composition-configuration-client.md',
       '0006-agent-management-client.md',
       '0007-task-history-and-revision-comparison-client.md',
+      '0008-human-attention-workbench-proposal.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -250,6 +256,10 @@ describe('AI-first entry documents', () => {
     expect(seventh).toMatch(/Magpie remains a compatibility adapter/);
     expect(seventh).toMatch(/Do not add a Runtime route/);
     expect(seventh).toMatch(/Do not add SSE/);
+    const eighth = read(`${recordsDir}/0008-human-attention-workbench-proposal.md`);
+    expect(eighth).toMatch(/^Status: \*\*proposed, not accepted as a client contract\*\*$/m);
+    expect(eighth).toMatch(/write-only SecretHandle editor/);
+    expect(eighth).toMatch(/must never display a plaintext value/);
   });
 });
 
@@ -269,6 +279,9 @@ describe('client boundaries', () => {
       const source = read(file);
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
+      expect(source, `${file} must not implement an unaccepted workbench or plaintext secret path`).not.toMatch(
+        /WorkItem|DeliveryReceipt|SecretHandle|plaintextSecret|secretValue|resolveSecret|decryptSecret/i,
+      );
     }
 
     assertTaskHistoryFeatureBoundary(

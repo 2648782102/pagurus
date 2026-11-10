@@ -6,6 +6,8 @@
 
 寄居蟹是用户管理和定制自己 Agents 的可选控制面板。海螺负责 Agent 身份与版本、任务执行、密钥和权限；CLI 与其他界面也可以使用同一套 Runtime API。
 
+[ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) 提议未来提供面向长期授权工作的「人类注意力工作台」和只写 SecretHandle 编辑器。它只消费海螺已发布的契约，绝不展示或保留密钥明文。这是方向提案，不是已实现路由或页面。
+
 当前客户端可以连接海螺、显示 Runtime 状态、管理 Agent profile 与不可变版本，并编辑独立的 v1/v2 全局运行时配置。用户可以创建/编辑/复制 Agent、设置默认项、归档、选择供应商中立目录中的模型、通过追加历史版本内容来回滚，并在只读视图中比较两个版本。Agent 任务固定所选 Agent 版本和运行时配置版本；任务页展示两个版本以及实际 provider/model。任务历史使用已有的 `GET /v1/tasks`，支持按状态和 Agent 筛选，并保留旧 Runtime 任务。流式进度、取消和重试继续可用。不具备 Agent 能力的旧 Runtime 会继续走 Magpie 兼容任务流程。海螺声明工具台账和供应商工具观察能力，但寄居蟹尚无对应界面或写入路由。配置引用仍只是数据；可视化组合编辑、能力安装、密钥解析、服务端任务分页/筛选、任务实时历史和模型驱动组合仍未实现。
 
 配置面板仍是编辑全局策略/能力配置版本的通用 JSON 编辑器，与各 Agent profile 分开管理。v2 组合执行器只做确定性执行、不调用模型，不代表模型驱动的多 Agent 执行。
@@ -38,6 +40,8 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。当前海螺兼容�
 ## 面向 AI 开发
 
 本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，再按其中顺序读取 [AI 交接说明](docs/AI_HANDOFF.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
+
+实现下一产品切片前还要读提议中的 [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md)，以及海螺 [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0022-persistent-work-runtime-direction.md) / [ADR 0023](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0023-secret-handle-and-runtime-injection-proposal.md)。相关契约被接受前，不得添加工作台或密钥路由。
 
 ## 许可
 

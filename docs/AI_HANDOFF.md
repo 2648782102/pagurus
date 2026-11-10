@@ -12,6 +12,8 @@ The first Agent resource and task-binding contract is implemented in Conchbase A
 
 Provider compatibility is an implementation detail, not the product definition. Agent definitions and model-selection UI use Conchbase's provider-neutral provider/model identity and catalog. The task UI falls back to the Magpie-backed legacy catalog only when Agent capability is absent. Keep Magpie working as one compatibility adapter; do not encode its catalog shape or settings in Agent revisions, and do not assume it is the only provider.
 
+Conchbase [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0022-persistent-work-runtime-direction.md) accepts durable, event-driven, topology-neutral work as product direction. [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) proposes that Pagurus eventually show work needing authorization, stopping, resumption, or acceptance, along with Mandate scope, Assignment state, Outbox, and DeliveryReceipt evidence. A WorkItem is not a chat Session and may outlive several execution attempts. Conchbase [ADR 0023](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0023-secret-handle-and-runtime-injection-proposal.md) proposes a central write-only SecretHandle registry; Pagurus may eventually submit a value once and show key, version, status, grant, and digest-only use receipts, never plaintext after creation. Both are proposals here. No route, source file, component, browser storage, or second schema is added.
+
 ## Read in this order
 
 1. `AGENTS.md` — mandatory client/security constraints and AI-first development rule.
@@ -22,10 +24,11 @@ Provider compatibility is an implementation detail, not the product definition. 
 6. [ADR 0005](decisions/0005-composition-configuration-client.md) — accepted Conchbase `0.5.0` v1/v2 composition configuration client; `0.7.0` keeps the same configuration document union.
 7. [ADR 0006](decisions/0006-agent-management-client.md) — accepted Agent management and task binding client contract.
 8. [ADR 0007](decisions/0007-task-history-and-revision-comparison-client.md) — accepted read-only task history and Agent revision comparison client contract.
-9. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
-10. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
-11. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
-12. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md), [ADR 0012](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0012-streaming-output-progress.md), [ADR 0014](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0014-versioned-configuration-api.md), [ADR 0015](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0015-composition-identity-kernel.md), [ADR 0016](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0016-composition-execution-and-public-schema.md), [ADR 0017](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0017-public-tool-request-approval-ledger.md), [ADR 0019](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0019-explicit-provider-tool-call-observation-boundary.md), and [ADR 0021](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0021-cross-repository-paired-runtime-acceptance.md) — accepted runtime boundaries.
+9. [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) — proposed human-attention workbench and write-only SecretHandle editor; no client contract change.
+10. `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md`, and `src/shared/api/` — client boundary and typed API clients.
+11. `docs/ROADMAP.md`, `docs/VALIDATION_PLAN.md`, and [ADR 0001](decisions/0001-ai-development-guardrails.md) — planned work, validation, and executable boundaries.
+12. Conchbase's `docs/AI_HANDOFF.md`, `docs/openapi.yaml`, and `docs/AI_TASK_QUEUE.md` — the authoritative cross-repository contract and sequencing.
+13. Conchbase [ADR 0011](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0011-phase-one-database-instance-ownership.md), [ADR 0012](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0012-streaming-output-progress.md), [ADR 0014](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0014-versioned-configuration-api.md), [ADR 0015](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0015-composition-identity-kernel.md), [ADR 0016](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0016-composition-execution-and-public-schema.md), [ADR 0017](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0017-public-tool-request-approval-ledger.md), [ADR 0019](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0019-explicit-provider-tool-call-observation-boundary.md), [ADR 0021](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0021-cross-repository-paired-runtime-acceptance.md), [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0022-persistent-work-runtime-direction.md), and proposed [ADR 0023](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0023-secret-handle-and-runtime-injection-proposal.md) — runtime boundaries and direction.
 
 ## Current repository facts
 
@@ -43,10 +46,12 @@ Implemented:
 - Conchbase's ADR 0021 paired-runtime acceptance dynamically imports these published clients and verifies the two-Agent loop, revision pins, stale writes, override/archive/default behavior, configuration apply/rollback, cancellation, restart interruption, retry, event replay, legacy task dispatch, v1/v2 composition, streaming, validation errors, and CLI compatibility over live loopback HTTP. Bodyless cancel/retry POSTs do not declare a JSON content type. This is deterministic API acceptance, not visual/manual UI or real-provider validation. ADR 0007's manual/visual screen walkthrough has since been completed against a real local Runtime with the user's configured Magpie gateway; it covered mixed Agent/legacy tasks, provider success/error records, state/Agent filters, refresh/recovery, revision comparison, and a 320px viewport. It is not automated real-provider conformance or accessibility validation.
 - The status client reads runtime capabilities as strings, including `agents`, `provider-neutral-model-catalog`, `tool-approval-ledger`, and `provider-tool-call-observation`. Pagurus does not call the runtime's tool request/approval or observation routes or render an approval/observation workflow.
 - GitHub Actions runs type checks, tests, and a production build.
+- ADR 0008 is a direction record only. The current Runtime API clients, accepted write routes, dependency baseline, loopback proxy, and no-browser-secret-storage boundary are unchanged.
 
 Not implemented yet:
 
 - Portable profile files, visual composition editing, MCP installation/configuration, Skill management, plugin management, policy lifecycle, secret resolution, capability grants, tool request/approval UI, SSE/event streaming, server-side task pagination/filtering, persistent console preferences, desktop packaging, and remote pairing.
+- ADR 0008's human-attention workbench, WorkItem/Assignment/DeliveryReceipt views, write-only SecretHandle editor, handle rotation, and digest-only use receipts.
 - Generated client types. The typed clients mirror Conchbase's current OpenAPI contract explicitly; do not create a second schema.
 
 Implemented capabilities are connection status, Agent collection and revision management, Agent-bound task creation/inspection, legacy task operations, and v1/v2 versioned configuration revision editing. Pagurus has no composition editor. Conchbase has a published topology-neutral composition configuration section and bounded deterministic executor; Pagurus only mirrors the document shape through the Runtime API. Keep capability lifecycle rows visibly marked as planned.
@@ -98,11 +103,14 @@ Do not silently treat these as settled:
 - Runtime discovery/pairing for multiple local or remote runtimes.
 - Tool approval request presentation, decision states, task identity, and capability fallback behavior.
 - SSE event display, approvals, logs, artifacts, production-scale task querying, and live task history updates.
+- Workbench information architecture, authorization/stop/resume/accept states, delivery evidence presentation, and a write-only handle editor that never renders plaintext.
 - Desktop shell, mobile layout scope, and localization policy.
 
 Capability lifecycle workflows remain planned work. When an implementation depends on an open question, document options and impacts and request product direction before locking the shared API or configuration schema.
 
 ## Recommended next implementation sequence
 
-1. Add real-provider conformance and accessibility validation as distinct layers. The complete-screen manual/visual ADR 0007 walkthrough is complete; do not add a competing Runtime schema or tool-approval UI.
-2. If task volume requires it, design a separate Conchbase API contract for ordering, retention, pagination, filtering, and live updates before expanding the history client.
+1. Wait for Conchbase's accepted durable-work domain/API ADR, then accept a paired Pagurus workbench ADR and implement a read-only attention view over published routes. Do not invent a second work state.
+2. Wait for Conchbase's accepted SecretHandle, local authorization, adapter-isolation, and redaction contracts, then accept a separate write-only editor ADR with sentinel no-leak fixtures.
+3. Add real-provider conformance and accessibility validation as distinct layers. The complete-screen manual/visual ADR 0007 walkthrough is complete; do not add a competing Runtime schema or tool-approval UI.
+4. If task volume requires it, design a separate Conchbase API contract for ordering, retention, pagination, filtering, and live updates before expanding the history client.

@@ -10,6 +10,8 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 - The product direction is user-managed, multiple-Agent configuration through Pagurus. Prioritize an Agent collection and a complete versioned edit/validate/apply/run/inspect loop before advanced tool-approval or extension-management UI. Each task must remain bound to the selected Agent revision while preserving the existing runtime-wide policy/capability configuration boundary.
 - Keep Agent model references and controls provider-neutral according to Conchbase's published contract. Magpie is the current compatibility path; do not make its catalog, ids, or settings the Agent schema or the only future provider choice.
 - Conchbase owns model execution, task state, secrets, and permission enforcement.
+- Pagurus ADR 0008 proposes a human-attention workbench and write-only SecretHandle editor after Conchbase publishes their contracts. Do not invent durable work schemas, a second work state, secret values, or new write routes before paired accepted ADRs exist.
+- Plaintext secrets must never enter browser storage, the frontend bundle, URLs, logs, errors, client state, or model context. A client may show handle keys, metadata, and digest-only use receipts, never a value or decryptable resolver token.
 - Use Conchbase's versioned API. Never read or write its private files/database.
 - A UI selection or installation must not bypass the runtime's per-tool authorization.
 - Do not put provider/tool credentials in browser storage, frontend bundles, logs, or Git.
