@@ -194,7 +194,7 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/tool-approval-ledger/);
     expect(handoff).toMatch(/ADR 0021/);
     expect(handoff).toMatch(/deterministic live loopback acceptance/);
-    expect(handoff).toMatch(/not visual\/manual UI or real-provider validation/);
+    expect(handoff).toMatch(/manual\/visual screen walkthrough has since been completed/);
 
     const roadmap = read('docs/ROADMAP.md');
     expect(roadmap).toMatch(/ADR 0021 closes deterministic paired live-runtime acceptance/);
