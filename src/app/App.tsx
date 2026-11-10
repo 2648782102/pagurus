@@ -4,9 +4,12 @@ import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 import { TaskHistoryPanel } from '../features/task-history/TaskHistoryPanel.js';
+import { AttentionWorkbenchPanel } from '../features/work/AttentionWorkbenchPanel.js';
+import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
 
 export function App() {
   const [agentRefreshToken, setAgentRefreshToken] = useState(0);
+  const runtimeStatus = useRuntimeStatus();
   const handleAgentsChanged = useCallback(() => {
     setAgentRefreshToken((current) => current + 1);
   }, []);
@@ -18,6 +21,7 @@ export function App() {
         <nav className="rail-nav">
           <a className="rail-link is-active" href="#overview" aria-current="page" aria-label="总览">⌂</a>
           <a className="rail-link" href="#agent-panel" aria-label="Agent 配置">◉</a>
+          <a className="rail-link" href="#workbench" aria-label="持久工作">≋</a>
           <span className="rail-link is-planned" aria-label="工具与连接配置入口建设中" title="工具与连接配置入口建设中">⌘</span>
           <span className="rail-link is-planned" aria-label="Skills 配置入口建设中" title="Skills 配置入口建设中">✳</span>
         </nav>
@@ -36,13 +40,15 @@ export function App() {
           <p className="intro-copy">管理运行时、连接工具与 Skills。配置由海螺执行，寄居蟹负责让它清晰可控。</p>
         </section>
 
-        <RuntimeStatusPanel />
+        <RuntimeStatusPanel {...runtimeStatus} />
 
         <AgentWorkspace onAgentsChanged={handleAgentsChanged} />
 
         <TaskOperationsPanel agentRefreshToken={agentRefreshToken} />
 
         <TaskHistoryPanel />
+
+        <AttentionWorkbenchPanel runtime={runtimeStatus.runtime} />
 
         <ConfigurationPanel />
 
@@ -60,6 +66,9 @@ export function App() {
             </a>
             <a className="workspace-row is-live" href="#task-history-title">
               <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>任务历史</strong><small>按状态和 Agent 查看任务与固定版本</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            </a>
+            <a className="workspace-row is-live" href="#workbench-title">
+              <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>持久工作</strong><small>只读查看授权范围、执行绑定与交付证据</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
             <a className="workspace-row is-live" id="agents" href="#agent-title">
               <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agent 配置</strong><small>管理独立版本、模型和任务身份</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>

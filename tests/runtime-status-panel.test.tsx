@@ -2,6 +2,12 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RuntimeStatusPanel } from '../src/features/runtime-status/RuntimeStatusPanel.js';
+import { useRuntimeStatus } from '../src/features/runtime-status/useRuntimeStatus.js';
+
+function Harness() {
+  const status = useRuntimeStatus();
+  return <RuntimeStatusPanel {...status} />;
+}
 
 describe('RuntimeStatusPanel', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -19,7 +25,7 @@ describe('RuntimeStatusPanel', () => {
   it('shows the checking state while the runtime request is pending', () => {
     fetchMock.mockReturnValue(new Promise(() => {}));
 
-    render(<RuntimeStatusPanel />);
+    render(<Harness />);
 
     expect(screen.getByText('正在检查连接')).toBeTruthy();
     expect(screen.getByRole('button', { name: '检查中…' }).hasAttribute('disabled')).toBe(true);
@@ -46,7 +52,7 @@ describe('RuntimeStatusPanel', () => {
         capabilities: [],
       }), { status: 200 }));
 
-    render(<RuntimeStatusPanel />);
+    render(<Harness />);
 
     expect(await screen.findByText('运行时未连接')).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('Failed to fetch');
@@ -73,7 +79,7 @@ describe('RuntimeStatusPanel', () => {
       return Promise.resolve(new Response(JSON.stringify(payload), { status: 200 }));
     });
 
-    render(<RuntimeStatusPanel />);
+    render(<Harness />);
 
     expect(await screen.findByText('API 版本不兼容')).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('需要 v1');

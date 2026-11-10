@@ -23,7 +23,7 @@ The legacy model picker reflects Conchbase's Magpie-backed compatibility catalog
 
 Task history and revision comparison are inspection surfaces. They do not own task ordering, retention, pagination, revision identity, model selection, or execution semantics. A future production-scale history surface must begin with a Conchbase contract for those concerns.
 
-[ADR 0008](decisions/0008-human-attention-workbench-proposal.md) proposes a future human-attention workbench and write-only SecretHandle editor. Those surfaces must consume Conchbase-published contracts. A WorkItem, Assignment, Mandate, Outbox, or DeliveryReceipt may not be defined locally; a plaintext secret may never enter browser state, storage, URLs, logs, errors, or the bundle. The current source layout and accepted write routes remain unchanged.
+[ADR 0009](decisions/0009-read-only-attention-workbench-client.md) implements a read-only human-attention workbench over Conchbase `0.9.0`'s published `GET /v1/work/items`, `GET /v1/work/items/{workItemId}`, and `GET /v1/work/delivery-receipts` routes. The typed client mirrors published response shapes; the panel is gated on `durable-work-contract` and never defines WorkItem/Assignment/Mandate/Outbox/DeliveryReceipt authority locally. [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) keeps work-control actions and a write-only SecretHandle editor as proposals. A plaintext secret may never enter browser state, storage, URLs, logs, errors, or the bundle. Accepted write routes remain unchanged.
 
 ## Future desktop shell
 

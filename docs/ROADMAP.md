@@ -15,9 +15,9 @@ The product target is a user-managed collection of independently customizable Ag
 
 The existing v1/v2 configuration editor remains a generic runtime-wide JSON revision editor, separate from the Agent collection. The legacy task picker still uses Conchbase's Magpie-backed compatibility catalog when Agent capability is unavailable; this does not define Agent model identity or limit provider choices. The v2 composition executor makes no model call and Agent tasks do not implicitly run it.
 
-## Product direction: human-attention workbench (proposal, not implemented)
+## Product direction: human-attention workbench (read-only slice implemented)
 
-Conchbase ADR 0022 accepts durable, event-driven work as direction; Conchbase ADR 0023 proposes write-only SecretHandles. Pagurus [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) proposes a matching workbench for work that needs authorization, stopping, resumption, or acceptance, plus a write-only handle editor. Pagurus remains a versioned Runtime API client; it never owns work identity, delivery evidence, secrets, or permission enforcement. Wait for Conchbase to publish each contract, then accept a paired client ADR. No route, component, browser storage, secret value field, or second schema is added now.
+Conchbase ADR 0022 accepts durable, event-driven work as direction; Conchbase ADR 0024 publishes the `0.9.0` deterministic work contract. Pagurus [ADR 0009](decisions/0009-read-only-attention-workbench-client.md) implements a capability-gated, read-only attention view over three published GET routes, with typed response validation and no second work schema. Pagurus remains a versioned Runtime API client; it never owns work identity, delivery evidence, secrets, or permission enforcement. Proposed [ADR 0008](decisions/0008-human-attention-workbench-proposal.md) keeps authorization, stop/resume/acceptance actions and a write-only handle editor for separate accepted client slices after Conchbase publishes execution and SecretHandle contracts. No work write route, secret value field, browser storage, or second schema is added now.
 
 ## Foundation and operations (partially implemented)
 

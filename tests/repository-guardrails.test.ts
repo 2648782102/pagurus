@@ -194,6 +194,7 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/tool-approval-ledger/);
     expect(handoff).toMatch(/ADR 0021/);
     expect(handoff).toMatch(/ADR 0008/);
+    expect(handoff).toMatch(/ADR 0009/);
     expect(handoff).toMatch(/ADR 0022/);
     expect(handoff).toMatch(/ADR 0023/);
     expect(handoff).toMatch(/never plaintext after creation/);
@@ -215,6 +216,8 @@ describe('AI-first entry documents', () => {
     expect(chineseReadme).toMatch(/供应商中立模型契约/);
     expect(englishReadme).toMatch(/ADR 0021 exercises these published clients/);
     expect(chineseReadme).toMatch(/ADR 0021 已让这些已发布的客户端/);
+    expect(englishReadme).toMatch(/read-only attention workbench/);
+    expect(chineseReadme).toMatch(/只读注意力工作台/);
     expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
     expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
@@ -233,6 +236,7 @@ describe('AI-first entry documents', () => {
       '0006-agent-management-client.md',
       '0007-task-history-and-revision-comparison-client.md',
       '0008-human-attention-workbench-proposal.md',
+      '0009-read-only-attention-workbench-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -260,6 +264,10 @@ describe('AI-first entry documents', () => {
     expect(eighth).toMatch(/^Status: \*\*proposed, not accepted as a client contract\*\*$/m);
     expect(eighth).toMatch(/write-only SecretHandle editor/);
     expect(eighth).toMatch(/must never display a plaintext value/);
+    const ninth = read(`${recordsDir}/0009-read-only-attention-workbench-client.md`);
+    expect(ninth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.9\.0 durable-work contract\*\*$/m);
+    expect(ninth).toMatch(/GET \/v1\/work\/items/);
+    expect(ninth).toMatch(/POST \/v1\/work\/triggers/);
   });
 });
 
@@ -279,10 +287,20 @@ describe('client boundaries', () => {
       const source = read(file);
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
-      expect(source, `${file} must not implement an unaccepted workbench or plaintext secret path`).not.toMatch(
-        /WorkItem|DeliveryReceipt|SecretHandle|plaintextSecret|secretValue|resolveSecret|decryptSecret/i,
+      expect(source, `${file} must not implement an unaccepted secret path`).not.toMatch(
+        /SecretHandle|plaintextSecret|secretValue|resolveSecret|decryptSecret/i,
       );
     }
+
+    const workClient = read('src/shared/api/work.ts');
+    expect(workClient).toMatch(/durable-work-contract/);
+    expect(workClient).toMatch(/'\/v1\/work\/items'/);
+    expect(workClient).toMatch(/'\/v1\/work\/delivery-receipts'/);
+    expect(workClient).not.toMatch(/method:\s*['"](?:POST|PUT|PATCH|DELETE)['"]|\/v1\/work\/triggers/);
+    expect(forbiddenHttpMethod.test(workClient), 'work client must not add writes').toBe(false);
+    const workFeature = read('src/features/work/useAttentionWorkbench.ts');
+    expect(workFeature).toMatch(/supportsDurableWorkContract/);
+    expect(workFeature).not.toMatch(/method:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/);
 
     assertTaskHistoryFeatureBoundary(
       read('src/features/task-history/useTaskHistory.ts'),
@@ -302,6 +320,7 @@ describe('client boundaries', () => {
     expect(panelSource).not.toMatch(/可视化组合编辑器|Agent 层级|三层/i);
     for (const file of listSourceFiles('src')) {
       expect(read(file), `${file} must not call Conchbase tool ledger routes`).not.toMatch(/\/v1\/tool-requests/);
+      expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(/Router|Worker|three-layer|layered|hierarchy/i);
     }
   });
 

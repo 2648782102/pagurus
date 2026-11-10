@@ -1,7 +1,20 @@
-import { useRuntimeStatus } from './useRuntimeStatus.js';
+import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import type { RuntimeConnectionState, RuntimeConnectionError } from './useRuntimeStatus.js';
+import type { RuntimeHealth } from '../../shared/api/runtime.js';
 
-export function RuntimeStatusPanel() {
-  const { state, health, runtime, error, refresh } = useRuntimeStatus();
+export function RuntimeStatusPanel({
+  state,
+  health,
+  runtime,
+  error,
+  refresh,
+}: {
+  state: RuntimeConnectionState;
+  health: RuntimeHealth | null;
+  runtime: RuntimeInfo | null;
+  error: RuntimeConnectionError | null;
+  refresh: (signal?: AbortSignal) => Promise<void>;
+}) {
   const statusText = {
     checking: '正在检查连接',
     connected: '运行时已连接',
