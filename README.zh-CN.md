@@ -4,11 +4,11 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/2648782102/pagurus/ci.yml?branch=main&label=CI)](https://github.com/2648782102/pagurus/actions/workflows/ci.yml) [![MIT License](https://img.shields.io/github/license/2648782102/pagurus)](LICENSE) [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-43853d)](https://nodejs.org/)
 
-寄居蟹是用户管理和定制自己 Agents 的可选控制面板。海螺负责 Agent 身份与版本、任务执行、密钥和权限；CLI 与其他界面也可以使用同一套 Runtime API。
+寄居蟹 `1.0.0` 是用户管理和定制自己 Agents 与本地优先 Runtime 的可选控制面板。海螺负责 Agent 身份与版本、任务执行、持久工作状态、密钥和权限；CLI 与其他界面也可以使用同一套 Runtime API。
 
-[ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md) 已实现面向海螺 `0.9.0` 持久工作的只读注意力工作台：只消费 `GET /v1/work/items`、`GET /v1/work/items/{workItemId}` 和 `GET /v1/work/delivery-receipts`，并通过 `durable-work-contract` 能力门禁；页面展示 WorkItem、只补上下文的 Thread、不可变 Mandate、planned Assignment、pending Outbox 和 observed DeliveryReceipt。[ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) 中的工作控制动作与只写 SecretHandle 编辑器仍是方向提案；界面绝不展示或保留密钥明文。
+[ADR 0010](docs/decisions/0010-final-local-first-client.md) 已实现最终本地优先 `1.0.0` 的配套客户端：持久工作 start/stop/complete、重启恢复对账、交付决策、本地 Source 策略与有界事件证据的控制工作台；能力元数据目录；以及支持只写提交、轮换、状态变更、固定适配器使用和摘要收据的 SecretHandle 编辑器。每个界面都由已发布的 Runtime capability 门禁。[ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) 与 [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md) 是历史记录。一次性 value 提交后，界面不回读、不展示、不保留明文。
 
-当前客户端可以连接海螺、显示 Runtime 状态、管理 Agent profile 与不可变版本、编辑独立的 v1/v2 全局运行时配置，并通过只读注意力工作台查看持久工作。用户可以创建/编辑/复制 Agent、设置默认项、归档、选择供应商中立目录中的模型、通过追加历史版本内容来回滚，并在只读视图中比较两个版本。Agent 任务固定所选 Agent 版本和运行时配置版本；任务页展示两个版本以及实际 provider/model。任务历史使用已有的 `GET /v1/tasks`，支持按状态和 Agent 筛选，并保留旧 Runtime 任务。流式进度、取消和重试继续可用。不具备 Agent 能力的旧 Runtime 会继续走 Magpie 兼容任务流程。海螺声明工具台账和供应商工具观察能力，但寄居蟹尚无对应界面或写入路由。配置引用仍只是数据；工作控制动作、可视化组合编辑、能力安装、密钥解析、服务端任务分页/筛选、任务实时历史和模型驱动组合仍未实现。
+当前客户端可以连接海螺、显示 Runtime 状态、管理 Agent profile 与不可变版本、编辑独立的 v1/v2 全局运行时配置、控制持久工作、记录有界能力元数据，并一次性提交 SecretHandle value。用户可以创建/编辑/复制 Agent、设置默认项、归档、选择供应商中立目录中的模型、通过追加历史版本内容来回滚，并在只读视图中比较两个版本。Agent 任务固定所选 Agent 版本和运行时配置版本；任务页展示两个版本以及实际 provider/model。任务历史使用已有的 `GET /v1/tasks`，支持按状态和 Agent 筛选，并保留旧 Runtime 任务。流式进度、取消和重试继续可用。不具备 Agent 能力的旧 Runtime 会继续走 Magpie 兼容任务流程。海螺声明工具台账和供应商工具观察能力，但寄居蟹尚无对应界面或写入路由。配置引用仍只是数据；可视化组合编辑、可执行能力安装、通用密钥解析、服务端任务分页/筛选、任务实时历史、模型驱动组合、远程配对 UX 与稳定跨进程密钥托管仍在最终本地优先目标之外。
 
 配置面板仍是编辑全局策略/能力配置版本的通用 JSON 编辑器，与各 Agent profile 分开管理。v2 组合执行器只做确定性执行、不调用模型，不代表模型驱动的多 Agent 执行。
 
@@ -41,7 +41,9 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。当前海螺兼容�
 
 本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，再按其中顺序读取 [AI 交接说明](docs/AI_HANDOFF.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
 
-实现下一产品切片前还要读已接受的 [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md)、提议中的 [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md)，以及海螺 [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0022-persistent-work-runtime-direction.md) / [ADR 0024](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0024-durable-work-domain-and-public-api.md) / 提议中的 [ADR 0023](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0023-secret-handle-and-runtime-injection-proposal.md)。相关契约被接受前，不得添加工作控制或密钥路由。
+实现下一产品切片前请读已接受的 [ADR 0010](docs/decisions/0010-final-local-first-client.md)、历史 [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) / [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md)，以及海螺 [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) 和精确 47 条路径的 OpenAPI 契约。新增外部适配器、真实执行、稳定跨进程密钥或远程配对 UX 之前，两个仓库都必须先接受新的契约。
+
+> 最终本地优先目标：寄居蟹 `1.0.0` 与 ADR 0010 已闭合配套控制客户端。敏感值只通过已发布只写路由一次性提交并立即清除，客户端绝不回读、显示、存储或解析明文。海螺持有进程内 AES-256-GCM 封存值、固定适配器注入、摘要收据和重启失效边界；OS keychain、任意适配器、真实工具、外部 Source 与云部署都需要新的 ADR。
 
 ## 许可
 

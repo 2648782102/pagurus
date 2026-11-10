@@ -5,6 +5,8 @@ import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPane
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 import { TaskHistoryPanel } from '../features/task-history/TaskHistoryPanel.js';
 import { AttentionWorkbenchPanel } from '../features/work/AttentionWorkbenchPanel.js';
+import { CapabilityPanel } from '../features/capabilities/CapabilityPanel.js';
+import { SecretHandlePanel } from '../features/secrets/SecretHandlePanel.js';
 import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
 
 export function App() {
@@ -21,11 +23,11 @@ export function App() {
         <nav className="rail-nav">
           <a className="rail-link is-active" href="#overview" aria-current="page" aria-label="总览">⌂</a>
           <a className="rail-link" href="#agent-panel" aria-label="Agent 配置">◉</a>
-          <a className="rail-link" href="#workbench" aria-label="持久工作">≋</a>
-          <span className="rail-link is-planned" aria-label="工具与连接配置入口建设中" title="工具与连接配置入口建设中">⌘</span>
-          <span className="rail-link is-planned" aria-label="Skills 配置入口建设中" title="Skills 配置入口建设中">✳</span>
+          <a className="rail-link" href="#workbench" aria-label="持久工作控制台">≋</a>
+          <a className="rail-link" href="#capabilities" aria-label="能力目录">⌘</a>
+          <a className="rail-link" href="#secrets" aria-label="敏感信息句柄">✳</a>
         </nav>
-        <span className="rail-link rail-settings is-planned" aria-label="设置入口建设中" title="设置入口建设中">⚙</span>
+        <a className="rail-link rail-settings" href="#configuration-title" aria-label="运行时设置">⚙</a>
       </aside>
 
       <main id="overview" className="main-content">
@@ -35,9 +37,9 @@ export function App() {
         </header>
 
         <section className="intro" aria-labelledby="page-title">
-          <p className="eyebrow">LOCAL CONTROL PLANE <span>·</span> v0.2</p>
+          <p className="eyebrow">LOCAL CONTROL PLANE <span>·</span> v1.0</p>
           <h1 id="page-title">你的 Agent，<em>由你配置。</em></h1>
-          <p className="intro-copy">管理运行时、连接工具与 Skills。配置由海螺执行，寄居蟹负责让它清晰可控。</p>
+          <p className="intro-copy">管理运行时、能力目录与只写敏感信息。配置由海螺执行，寄居蟹负责让它清晰可控。</p>
         </section>
 
         <RuntimeStatusPanel {...runtimeStatus} />
@@ -50,12 +52,16 @@ export function App() {
 
         <AttentionWorkbenchPanel runtime={runtimeStatus.runtime} />
 
+        <CapabilityPanel runtime={runtimeStatus.runtime} />
+
+        <SecretHandlePanel runtime={runtimeStatus.runtime} />
+
         <ConfigurationPanel />
 
         <section className="next-section" aria-labelledby="next-title">
           <div className="section-heading">
             <div><p className="eyebrow">WORKSPACE</p><h2 id="next-title">管理空间</h2></div>
-            <span className="muted-label">即将开放</span>
+            <span className="muted-label">本地优先 · 已开放</span>
           </div>
           <div className="workspace-list">
             <a className="workspace-row is-live" id="tasks" href="#task-operations-title">
@@ -68,7 +74,7 @@ export function App() {
               <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>任务历史</strong><small>按状态和 Agent 查看任务与固定版本</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
             <a className="workspace-row is-live" href="#workbench-title">
-              <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>持久工作</strong><small>只读查看授权范围、执行绑定与交付证据</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+              <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>持久工作</strong><small>控制工作项、查看恢复状态与交付证据</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
             <a className="workspace-row is-live" id="agents" href="#agent-title">
               <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agent 配置</strong><small>管理独立版本、模型和任务身份</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
@@ -76,12 +82,12 @@ export function App() {
             <a className="workspace-row is-live" href="#configuration-title">
               <span className="row-icon icon-agent">↻</span><span className="row-copy"><strong>运行时配置</strong><small>校验、应用与回滚全局策略配置</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
-            <div className="workspace-row is-planned" id="tools">
-              <span className="row-icon icon-tools">⌘</span><span className="row-copy"><strong>工具与连接</strong><small>MCP 服务和逐项授权</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </div>
-            <div className="workspace-row is-planned" id="skills">
-              <span className="row-icon icon-skills">✳</span><span className="row-copy"><strong>Skills</strong><small>可复用的指令与工作方法</small></span><span className="row-state">配置入口建设中</span><span className="row-arrow">↗</span>
-            </div>
+            <a className="workspace-row is-live" id="tools" href="#capability-title">
+              <span className="row-icon icon-tools">⌘</span><span className="row-copy"><strong>能力目录</strong><small>记录 MCP、Skill、插件与句柄配置元数据</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            </a>
+            <a className="workspace-row is-live" id="skills" href="#secrets-title">
+              <span className="row-icon icon-skills">✳</span><span className="row-copy"><strong>敏感信息</strong><small>只写提交、轮换、禁用与摘要收据</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
+            </a>
           </div>
         </section>
 

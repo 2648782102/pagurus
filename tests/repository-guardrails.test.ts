@@ -46,6 +46,25 @@ const acceptedAgentRoutes = [
   "'/v1/agents/default'",
   '`/v1/agents/${encodeURIComponent(agentId)}/revisions/apply`',
 ];
+const acceptedWorkPostRoutes = [
+  "'/v1/work/events'",
+  "`/v1/work/items/${encodeURIComponent(workItemId)}/start`",
+  "`/v1/work/items/${encodeURIComponent(workItemId)}/stop`",
+  "`/v1/work/items/${encodeURIComponent(workItemId)}/complete`",
+  "`/v1/work/assignments/${encodeURIComponent(assignmentId)}/reconcile`",
+  "`/v1/work/delivery-receipts/${encodeURIComponent(receiptId)}/decision`",
+];
+const acceptedPlatformPostRoutes = [
+  "'/v1/capabilities'",
+  "'/v1/sources/local/events'",
+  "'/v1/secret-handles'",
+  "`/v1/secret-handles/${encodeURIComponent(handleId)}/rotate`",
+  "`/v1/secret-handles/${encodeURIComponent(handleId)}/status`",
+  "`/v1/secret-handles/${encodeURIComponent(input.handleId)}/use`",
+  "'/v1/secret-handles/use-receipts'",
+];
+const acceptedFinalPostRoutes = [...acceptedWorkPostRoutes, ...acceptedPlatformPostRoutes];
+const forbiddenSecretResolver = /\bplaintextSecret|secretValue|resolveSecret|decryptSecret\b/i;
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -102,6 +121,23 @@ function assertAcceptedAgentWrites(source: string, label: string): void {
   }
   expect(source, `${label} must not put credentials in requests`)
     .not.toMatch(/Authorization|apiKey|secretValue|credentialValue/);
+}
+
+function assertAcceptedFinalWrites(
+  source: string,
+  label: string,
+  routes = acceptedFinalPostRoutes,
+  requestHelper = /export async function requestWorkJson</,
+): void {
+  expect(source, `${label} must use the centralized version-2 request helper`).toMatch(requestHelper);
+  for (const route of routes) {
+    expect(source, `${label} must use ${route}`).toContain(route);
+  }
+  expect(source, `${label} must not invent a Trigger write`).not.toMatch(/\/v1\/work\/triggers/);
+  expect(source, `${label} must not invent a generic secret resolver`).not.toMatch(forbiddenSecretResolver);
+  expect(source, `${label} must keep one-shot values out of credentials`).not.toMatch(
+    /Authorization|apiKey|credentialValue/,
+  );
 }
 
 function assertTaskHistoryFeatureBoundary(source: string, label: string): void {
@@ -195,6 +231,7 @@ describe('AI-first entry documents', () => {
     expect(handoff).toMatch(/ADR 0021/);
     expect(handoff).toMatch(/ADR 0008/);
     expect(handoff).toMatch(/ADR 0009/);
+    expect(handoff).toMatch(/ADR 0010/);
     expect(handoff).toMatch(/ADR 0022/);
     expect(handoff).toMatch(/ADR 0023/);
     expect(handoff).toMatch(/never plaintext after creation/);
@@ -203,7 +240,7 @@ describe('AI-first entry documents', () => {
 
     const roadmap = read('docs/ROADMAP.md');
     expect(roadmap).toMatch(/ADR 0021 closes deterministic paired live-runtime acceptance/);
-    expect(roadmap).toMatch(/human-attention workbench/);
+    expect(roadmap).toMatch(/final local-first control client/);
     expect(roadmap).toMatch(/Implemented deterministic acceptance/);
     const validationPlan = read('docs/VALIDATION_PLAN.md');
     expect(validationPlan).toMatch(/ADR 0021's paired-runtime acceptance/);
@@ -216,8 +253,10 @@ describe('AI-first entry documents', () => {
     expect(chineseReadme).toMatch(/供应商中立模型契约/);
     expect(englishReadme).toMatch(/ADR 0021 exercises these published clients/);
     expect(chineseReadme).toMatch(/ADR 0021 已让这些已发布的客户端/);
-    expect(englishReadme).toMatch(/read-only attention workbench/);
-    expect(chineseReadme).toMatch(/只读注意力工作台/);
+    expect(englishReadme).toMatch(/final local-first `1\.0\.0` client/);
+    expect(chineseReadme).toMatch(/最终本地优先 `1\.0\.0`/);
+    expect(englishReadme).toMatch(/No plaintext secret is returned, rendered, or retained/);
+    expect(chineseReadme).toMatch(/不回读、不展示、不保留明文/);
     expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
     expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
@@ -237,6 +276,7 @@ describe('AI-first entry documents', () => {
       '0007-task-history-and-revision-comparison-client.md',
       '0008-human-attention-workbench-proposal.md',
       '0009-read-only-attention-workbench-client.md',
+      '0010-final-local-first-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -268,6 +308,11 @@ describe('AI-first entry documents', () => {
     expect(ninth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.9\.0 durable-work contract\*\*$/m);
     expect(ninth).toMatch(/GET \/v1\/work\/items/);
     expect(ninth).toMatch(/POST \/v1\/work\/triggers/);
+    const tenth = read(`${recordsDir}/0010-final-local-first-client.md`);
+    expect(tenth).toMatch(/^Status: \*\*accepted final paired client contract for Conchbase 1\.0\.0\*\*$/m);
+    expect(tenth).toMatch(/47 unique OpenAPI paths/);
+    expect(tenth).toMatch(/restart invalidation/);
+    expect(tenth).toMatch(/Runtime capability gating remains explicit/);
   });
 });
 
@@ -287,20 +332,53 @@ describe('client boundaries', () => {
       const source = read(file);
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
-      expect(source, `${file} must not implement an unaccepted secret path`).not.toMatch(
-        /SecretHandle|plaintextSecret|secretValue|resolveSecret|decryptSecret/i,
+      expect(source, `${file} must not implement a generic secret resolver`).not.toMatch(
+        forbiddenSecretResolver,
+      );
+      expect(source, `${file} must not call a private runtime path`).not.toMatch(
+        /\.conchbase|runtime\.sqlite|node:sqlite|node:fs/,
       );
     }
 
     const workClient = read('src/shared/api/work.ts');
+    assertAcceptedFinalWrites(workClient, 'src/shared/api/work.ts', acceptedWorkPostRoutes);
     expect(workClient).toMatch(/durable-work-contract/);
+    expect(workClient).toMatch(/asynchronous-work-control/);
+    expect(workClient).toMatch(/local-source-policy/);
     expect(workClient).toMatch(/'\/v1\/work\/items'/);
     expect(workClient).toMatch(/'\/v1\/work\/delivery-receipts'/);
-    expect(workClient).not.toMatch(/method:\s*['"](?:POST|PUT|PATCH|DELETE)['"]|\/v1\/work\/triggers/);
-    expect(forbiddenHttpMethod.test(workClient), 'work client must not add writes').toBe(false);
+    expect(workClient).not.toMatch(/\/v1\/work\/triggers/);
+
+    const platformClient = read('src/shared/api/platform.ts');
+    assertAcceptedFinalWrites(
+      platformClient,
+      'src/shared/api/platform.ts',
+      acceptedPlatformPostRoutes,
+      /from '\.\/work\.js'|requestWorkJson/,
+    );
+    expect(platformClient).toMatch(/capability-directory/);
+    expect(platformClient).toMatch(/write-only-secret-handles/);
+    expect(platformClient).toMatch(/SecretHandleRecord/);
+    expect(platformClient).not.toMatch(
+      /SecretHandleRecord[\s\S]{0,500}value:\s*string[\s\S]{0,500}valueDigest:/,
+    );
+
     const workFeature = read('src/features/work/useAttentionWorkbench.ts');
     expect(workFeature).toMatch(/supportsDurableWorkContract/);
-    expect(workFeature).not.toMatch(/method:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/);
+    expect(workFeature).toMatch(/supportsAsynchronousWorkControl/);
+    expect(workFeature).toMatch(/supportsLocalSourcePolicy/);
+    expect(workFeature).not.toMatch(forbiddenHttpMethod);
+
+    const capabilityFeature = read('src/features/capabilities/useCapabilities.ts');
+    expect(capabilityFeature).toMatch(/supportsCapabilityDirectory/);
+    expect(capabilityFeature).toMatch(/phase: 'unsupported'/);
+    const secretFeature = read('src/features/secrets/useSecretHandles.ts');
+    expect(secretFeature).toMatch(/supportsWriteOnlySecretHandles/);
+    expect(secretFeature).toMatch(/phase: 'unsupported'/);
+    const secretPanel = read('src/features/secrets/SecretHandlePanel.tsx');
+    expect(secretPanel).toMatch(/type="password"/);
+    expect(secretPanel).toMatch(/clearOneShotFields/);
+    expect(secretPanel).not.toMatch(/localStorage|sessionStorage|indexedDB|decrypt|resolveSecret/i);
 
     assertTaskHistoryFeatureBoundary(
       read('src/features/task-history/useTaskHistory.ts'),
@@ -340,6 +418,7 @@ describe('client boundaries', () => {
       'http://0.0.0.0:4318',
       "' } } }",
     ].join('');
+    const syntheticSecretResolver = ['const value = ', 'resolveSecret', '(handleId);'].join('');
     const manifest: PackageManifest = {
       dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
       devDependencies: { '@modelcontextprotocol/sdk': '2.0.0' },
@@ -355,6 +434,9 @@ describe('client boundaries', () => {
       /must not put runtime or credential data in browser storage/,
     );
     expect(forbiddenHttpMethod.test(syntheticConfigWrite)).toBe(true);
+    expect(() => assertAcceptedFinalWrites(syntheticSecretResolver, 'synthetic')).toThrowError(
+      /must use the centralized version-2 request helper/,
+    );
     expect(() => assertLoopbackProxy(syntheticNonLoopbackProxy, 'synthetic')).toThrowError(
       /must keep the loopback development proxy/,
     );

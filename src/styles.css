@@ -257,3 +257,16 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* Final local-first 1.0.0 control, capability, and write-only handle surfaces. */
+.work-detail .task-actions,
+.revision-list li .task-actions { margin-top: 10px; }
+.work-evidence { grid-template-columns: 72px minmax(0, 1fr) minmax(0, 1fr) auto auto; align-items: center; }
+.work-evidence .button-secondary { min-height: 28px; padding: 0 8px; }
+.revision-list li .task-actions input[type='password'],
+#secrets .task-field input { min-width: 0; width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid #d7d9d0; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; }
+.revision-list li .task-actions { flex-wrap: wrap; }
+@media (max-width: 420px) {
+  .work-evidence { grid-template-columns: 72px minmax(0, 1fr); }
+  .work-evidence .button-secondary { justify-self: start; }
+}
