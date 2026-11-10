@@ -25,8 +25,17 @@ describe('AgentWorkspace', () => {
   it('creates and edits a versioned profile using provider-neutral fields', async () => {
     fetchMock
       .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
-    render(<AgentWorkspace />);
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }))
+      .mockResolvedValueOnce(json({ agent: {
+        ...AGENT,
+        current: { ...REV1, name: 'Research', instructions: 'Be precise' },
+        revisions: [{ ...REV1, name: 'Research', instructions: 'Be precise' }],
+      } }, 201))
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }))
+      .mockResolvedValueOnce(json({ agent: AGENT }));
+    const onAgentsChanged = vi.fn();
+    render(<AgentWorkspace onAgentsChanged={onAgentsChanged} />);
     await screen.findByLabelText('名称');
     fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
     fireEvent.change(screen.getByLabelText('Instructions'), { target: { value: 'Be precise' } });
@@ -37,6 +46,7 @@ describe('AgentWorkspace', () => {
     expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({
       name: 'Research', instructions: 'Be precise', providerId: 'magpie', modelId: 'fixture/model',
     });
+    await waitFor(() => expect(onAgentsChanged).toHaveBeenCalledTimes(1));
   });
 
   it('shows an explicit unsupported state without calling Agent routes on older runtimes', async () => {
@@ -212,5 +222,59 @@ describe('AgentWorkspace', () => {
     await waitFor(() => expect(fetchMock.mock.calls.some(([path, init]) => path === `/v1/agents/${AGENT.id}/revisions/apply` && init?.method === 'POST')).toBe(true));
     const applyCall = fetchMock.mock.calls.find(([path]) => path === `/v1/agents/${AGENT.id}/revisions/apply`);
     expect(JSON.parse(String(applyCall?.[1]?.body))).toEqual({ revisionId: REV1.id, expectedRevisionId: REV2.id });
+  });
+
+  it('compares immutable revision fields and marks changed values', async () => {
+    const revised = { ...REV2, instructions: 'Use a shorter style', providerId: 'alternate', modelId: 'fixture/alt' };
+    const detailed = { ...AGENT, currentRevisionId: revised.id, current: revised, revisions: [REV1, revised] };
+    fetchMock
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [detailed] }))
+      .mockResolvedValueOnce(json({ models: [
+        { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture model', capabilities: ['chat'] },
+        { providerId: 'alternate', modelId: 'fixture/alt', reference: 'alternate:fixture/alt', displayName: 'Alternate model', capabilities: ['chat'] },
+      ] }))
+      .mockResolvedValueOnce(json({ agent: detailed }))
+      .mockResolvedValueOnce(json({ agent: detailed }));
+
+    render(<AgentWorkspace />);
+    expect(await screen.findByText('比较两个版本')).toBeTruthy();
+    expect(screen.getByText(/名称 ·/).textContent).toBe('名称 · 已变化');
+    expect(screen.getByText(/Instructions ·/).textContent).toBe('Instructions · 已变化');
+    expect(screen.getByText(/默认模型 ·/).textContent).toBe('默认模型 · 已变化');
+    expect(screen.getAllByText('Use a shorter style').length).toBeGreaterThan(0);
+
+    fireEvent.change(screen.getByLabelText('版本 A'), { target: { value: revised.id } });
+    fireEvent.change(screen.getByLabelText('版本 B'), { target: { value: revised.id } });
+    expect(screen.getByText('请选择两个不同的版本。')).toBeTruthy();
+  });
+
+  it('resets comparison to the new current revision after saving a new version', async () => {
+    const revised = { ...REV1, id: 'agr_00000000000000000000000000000002', name: 'Research v2', createdAt: '2026-01-02T00:00:00.000Z' };
+    let current = { ...AGENT, revisions: [REV1] };
+    fetchMock.mockImplementation(async (path: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (path === '/v1/runtime') return runtime();
+      if (path === '/v1/model-catalog') return catalog();
+      if (path === '/v1/agents/default') return json({ agent: current });
+      if (path === '/v1/agents' && method === 'GET') return json({ agents: [current] });
+      if (path === `/v1/agents/${AGENT.id}` && method === 'GET') return json({ agent: current });
+      if (path === `/v1/agents/${AGENT.id}` && method === 'PATCH') {
+        current = { ...current, currentRevisionId: revised.id, current: revised, revisions: [revised, REV1] };
+        return json({ agent: current });
+      }
+      return json({ error: `unexpected ${method} ${path}` }, 500);
+    });
+
+    render(<AgentWorkspace />);
+    await screen.findByLabelText('名称');
+    fireEvent.change(screen.getByLabelText('名称'), { target: { value: revised.name } });
+    fireEvent.click(screen.getByRole('button', { name: '保存新版本' }));
+
+    await screen.findByText('已保存为新的不可变版本。');
+    await waitFor(() => {
+      expect((screen.getByLabelText('版本 A') as HTMLSelectElement).value).toBe(revised.id);
+      expect((screen.getByLabelText('版本 B') as HTMLSelectElement).value).toBe(REV1.id);
+      expect(screen.getByText('名称 · 已变化')).toBeTruthy();
+    });
   });
 });

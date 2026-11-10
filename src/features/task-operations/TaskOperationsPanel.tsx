@@ -15,8 +15,8 @@ function isActive(state: string | undefined): boolean {
   return ['queued', 'running', 'cancelling'].includes(state ?? '');
 }
 
-export function TaskOperationsPanel() {
-  const operations = useTaskOperations();
+export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshToken?: number }) {
+  const operations = useTaskOperations(agentRefreshToken);
   const busy = operations.phase === 'submitting' || operations.phase === 'active';
   const modelsUnavailable = operations.phase === 'loading-models'
     || operations.phase === 'models-error'

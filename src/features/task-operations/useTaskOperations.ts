@@ -44,7 +44,7 @@ export interface OperationsState {
 
 const ACTIVE_STATES: readonly string[] = ['queued', 'running', 'cancelling'];
 
-export function useTaskOperations() {
+export function useTaskOperations(refreshToken = 0) {
   const [state, setState] = useState<OperationsState>({
     phase: 'loading-models',
     models: [],
@@ -58,6 +58,8 @@ export function useTaskOperations() {
     error: null,
   });
   const pollingController = useRef<AbortController | null>(null);
+  const selectedAgentIdRef = useRef('');
+  selectedAgentIdRef.current = state.selectedAgentId;
 
   const loadModels = useCallback(async (signal?: AbortSignal) => {
     setState((current) => ({ ...current, phase: 'loading-models', error: null }));
@@ -76,8 +78,10 @@ export function useTaskOperations() {
       if (signal?.aborted) return;
       const availableAgents = agents.filter((agent) => !agent.archived);
       const initialAgent = availableAgents.find((agent) => agent.id === defaultAgent?.id);
-      const initialModel = initialAgent
-        ? models.find((model) => model.providerId === initialAgent.current.providerId && model.modelId === initialAgent.current.modelId)
+      const retainedAgent = availableAgents.find((agent) => agent.id === selectedAgentIdRef.current);
+      const preferredAgent = retainedAgent ?? initialAgent;
+      const initialModel = preferredAgent
+        ? models.find((model) => model.providerId === preferredAgent.current.providerId && model.modelId === preferredAgent.current.modelId)
         : models[0];
       setState((current) => ({
         ...current,
@@ -89,7 +93,7 @@ export function useTaskOperations() {
           ? current.selectedAgentId
           : '',
         selectedModel: agentMode
-          ? initialAgent ? initialModel?.reference ?? '' : models[0]?.reference || ''
+          ? preferredAgent ? initialModel?.reference ?? '' : models[0]?.reference || ''
           : current.selectedModel || initialModel?.reference || models[0]?.reference || '',
       }));
     } catch (cause) {
@@ -221,7 +225,7 @@ export function useTaskOperations() {
       controller.abort();
       pollingController.current?.abort();
     };
-  }, [loadModels]);
+  }, [loadModels, refreshToken]);
 
   return {
     ...state,

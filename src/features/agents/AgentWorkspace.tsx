@@ -1,14 +1,37 @@
+import { useEffect, useState } from 'react';
 import { useAgents } from './useAgents.js';
+import type { AgentRevision } from '../../shared/api/agents.js';
 
 function providerName(providerId: string): string {
   return providerId;
 }
 
-export function AgentWorkspace() {
-  const agents = useAgents();
+function earliestRevision(revisions: readonly AgentRevision[]): AgentRevision | undefined {
+  return revisions.reduce<AgentRevision | undefined>((earliest, revision) => {
+    if (!earliest || revision.createdAt < earliest.createdAt) return revision;
+    return earliest;
+  }, undefined);
+}
+
+export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => void }) {
+  const agents = useAgents(onAgentsChanged);
   const selected = agents.selected;
+  const [compareLeftId, setCompareLeftId] = useState('');
+  const [compareRightId, setCompareRightId] = useState('');
   const busy = agents.phase === 'saving' || agents.phase === 'loading';
   const currentReference = agents.models.find((model) => model.reference === agents.modelReference);
+  const defaultCompareLeftId = selected?.currentRevisionId ?? '';
+  const defaultCompareRightId = selected ? earliestRevision(selected.revisions)?.id ?? selected.currentRevisionId : '';
+
+  useEffect(() => {
+    if (!selected) {
+      setCompareLeftId('');
+      setCompareRightId('');
+      return;
+    }
+    setCompareLeftId(selected.currentRevisionId);
+    setCompareRightId(earliestRevision(selected.revisions)?.id ?? selected.currentRevisionId);
+  }, [selected?.currentRevisionId, selected?.id, selected?.revisions.length]);
 
   return (
     <section className="agent-panel" id="agent-panel" aria-labelledby="agent-title">
@@ -135,6 +158,13 @@ export function AgentWorkspace() {
                   </li>
                 ))}
               </ol>
+              <RevisionComparison
+                revisions={selected.revisions}
+                leftId={compareLeftId || defaultCompareLeftId}
+                rightId={compareRightId || defaultCompareRightId}
+                onLeftChange={setCompareLeftId}
+                onRightChange={setCompareRightId}
+              />
             </div>
           )}
           {agents.message && <p className="config-message" role="status">{agents.message}</p>}
@@ -146,5 +176,74 @@ export function AgentWorkspace() {
         </>
       )}
     </section>
+  );
+}
+
+function RevisionComparison({
+  revisions,
+  leftId,
+  rightId,
+  onLeftChange,
+  onRightChange,
+}: {
+  revisions: readonly AgentRevision[];
+  leftId: string;
+  rightId: string;
+  onLeftChange: (id: string) => void;
+  onRightChange: (id: string) => void;
+}) {
+  const left = revisions.find((revision) => revision.id === leftId);
+  const right = revisions.find((revision) => revision.id === rightId);
+  const hasComparison = revisions.length > 1 && left && right && left.id !== right.id;
+
+  return (
+    <div className="revision-compare" aria-labelledby="revision-compare-title">
+      <div className="section-heading">
+        <div><p className="eyebrow">REVISION COMPARE</p><h3 id="revision-compare-title">比较两个版本</h3></div>
+        <span className="muted-label">只读比较</span>
+      </div>
+      {revisions.length < 2 ? <p className="task-hint">至少保存两个版本后才能比较。</p> : <>
+        <div className="revision-compare-selects">
+          <label htmlFor="revision-compare-left">版本 A</label>
+          <select id="revision-compare-left" value={leftId} onChange={(event) => onLeftChange(event.target.value)}>
+            {revisions.map((revision) => <option key={revision.id} value={revision.id}>{revision.name} · {revision.id}</option>)}
+          </select>
+          <label htmlFor="revision-compare-right">版本 B</label>
+          <select id="revision-compare-right" value={rightId} onChange={(event) => onRightChange(event.target.value)}>
+            {revisions.map((revision) => <option key={revision.id} value={revision.id}>{revision.name} · {revision.id}</option>)}
+          </select>
+        </div>
+        {!hasComparison && <p className="task-hint">请选择两个不同的版本。</p>}
+        {hasComparison && <div className="revision-compare-grid">
+          <CompareField label="名称" left={left.name} right={right.name} />
+          <CompareField label="Instructions" left={left.instructions} right={right.instructions} multiline />
+          <CompareField label="默认模型" left={`${left.providerId} / ${left.modelId}`} right={`${right.providerId} / ${right.modelId}`} />
+          <CompareField label="版本 id" left={left.id} right={right.id} mono />
+        </div>}
+      </>}
+    </div>
+  );
+}
+
+function CompareField({
+  label,
+  left,
+  right,
+  multiline = false,
+  mono = false,
+}: {
+  label: string;
+  left: string;
+  right: string;
+  multiline?: boolean;
+  mono?: boolean;
+}) {
+  const changed = left !== right;
+  return (
+    <div className={`compare-field${changed ? ' is-changed' : ''}`}>
+      <dt>{label}{changed ? ' · 已变化' : ' · 相同'}</dt>
+      <dd className={mono ? 'compare-mono' : undefined}><span>{left || '（空）'}</span><span>{right || '（空）'}</span></dd>
+      {multiline && <small>版本 A / 版本 B</small>}
+    </div>
   );
 }

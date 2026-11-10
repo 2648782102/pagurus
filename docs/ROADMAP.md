@@ -10,6 +10,7 @@ The product target is a user-managed collection of independently customizable Ag
 2. **Implemented:** Agent tasks explicitly bind the selected revision and pin the Runtime configuration revision plus effective provider/model. Retry preserves the original execution definition; legacy task behavior remains.
 3. **Implemented:** Pagurus supports create, edit, duplicate, selection/default, archive, history/rollback, provider-neutral model selection, Agent-bound task launch, and task inspection. Older runtimes keep the legacy task flow.
 4. **Implemented deterministic acceptance:** ADR 0021 verifies task pins across edits/config changes, model override, retry after edit/archive, cancellation/interruption, stale ids, default changes, global v1/v2 behavior, legacy `/v1/tasks`, CLI compatibility, streaming, and event replay over paired local HTTP runtimes. Deterministic API and UI fixtures also prove Agent A/B profile isolation, lifecycle operations, selection, and effective-model display.
+5. **Implemented read-only inspection:** ADR 0007 adds mixed Agent/legacy task history from the existing `GET /v1/tasks` route and field-level comparison for immutable Agent revisions. It adds no Runtime route and keeps all existing write and fallback paths.
 
 The existing v1/v2 configuration editor remains a generic runtime-wide JSON revision editor, separate from the Agent collection. The legacy task picker still uses Conchbase's Magpie-backed compatibility catalog when Agent capability is unavailable; this does not define Agent model identity or limit provider choices. The v2 composition executor makes no model call and Agent tasks do not implicitly run it.
 
@@ -21,6 +22,8 @@ The existing v1/v2 configuration editor remains a generic runtime-wide JSON revi
 - Generate or maintain typed clients from Conchbase's stable API contract.
 - Show both runtime configuration revision and Agent revision plus the effective model on each Agent-backed task.
 - Preserve a legacy task path for clients/runtimes that do not support Agent management.
+- Inspect persisted task history with state/Agent filters and server-pinned task details.
+- Compare two immutable Agent revisions without editing or persisting client-side preference state.
 
 ## Later capabilities
 
@@ -29,5 +32,6 @@ The existing v1/v2 configuration editor remains a generic runtime-wide JSON revi
 - Manage Skills, MCP connections, policies, and plugins only after Conchbase publishes lifecycle, secret, and grant boundaries.
 - Add portable profile import/export after a stable format and migration policy are accepted.
 - Add event streaming and remote pairing after Conchbase accepts reconnect, retention, authentication, and pairing contracts.
+- Add server-side history pagination/filtering or live updates only after Conchbase accepts ordering, retention, cursor, and transport contracts.
 - Decide on desktop packaging based on operating-system integration needs.
 - Add plugin management after Conchbase defines an isolated plugin host.

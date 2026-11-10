@@ -4,6 +4,7 @@ import {
   createTask,
   getTask,
   listModels,
+  listTasks,
   retryTask,
 } from '../src/shared/api/tasks.js';
 
@@ -70,6 +71,26 @@ describe('phase-1 task API client', () => {
     expect(fetchMock.mock.calls[2]?.[0]).toBe('/v1/tasks/task_fixture/retry');
   });
 
+  it('lists persisted tasks with the active configuration revision', async () => {
+    const agentTask = {
+      ...TASK,
+      id: 'task_agent',
+      agentId: 'agt_00000000000000000000000000000001',
+      agentRevisionId: 'agr_00000000000000000000000000000001',
+      providerId: 'magpie',
+      modelId: 'fixture/model',
+    };
+    fetchMock.mockResolvedValue(response({
+      tasks: [TASK, agentTask],
+      activeConfigurationRevisionId: 'cfg_active',
+    }));
+    await expect(listTasks()).resolves.toEqual({
+      tasks: [TASK, agentTask],
+      activeConfigurationRevisionId: 'cfg_active',
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/v1/tasks');
+  });
+
   it('does not declare a JSON body for bodyless POST operations', async () => {
     fetchMock.mockResolvedValueOnce(response({ task: TASK }));
     await cancelTask('task_fixture');
@@ -93,6 +114,12 @@ describe('phase-1 task API client', () => {
 
     fetchMock.mockResolvedValueOnce(response({ error: 'missing' }, 404));
     await expect(getTask('missing')).rejects.toThrow('任务不存在');
+
+    fetchMock.mockResolvedValueOnce(response({ tasks: [TASK] }));
+    await expect(listTasks()).rejects.toThrow('不符合契约');
+
+    fetchMock.mockResolvedValueOnce(response({ error: 'upstream unavailable' }, 502));
+    await expect(listTasks()).rejects.toThrow('Runtime 上游服务暂不可用');
   });
 
   it('validates the streaming progress field', async () => {

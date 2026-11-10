@@ -52,7 +52,7 @@ function selectedModelReference(models: readonly ProviderModel[], revision: Agen
   return models.find((model) => model.providerId === revision.providerId && model.modelId === revision.modelId)?.reference ?? '';
 }
 
-export function useAgents() {
+export function useAgents(onChanged?: () => void) {
   const [state, setState] = useState<AgentEditorState>(initialState);
   const selectedIdRef = useRef<string | undefined>(undefined);
   selectedIdRef.current = state.selected?.id;
@@ -112,6 +112,7 @@ export function useAgents() {
       const result = await action();
       const selectedId = selectResult && result && 'revisions' in result ? result.id : state.selected?.id;
       await load(undefined, selectedId);
+      onChanged?.();
       setState((current) => ({ ...current, message }));
     } catch (cause) {
       setState((current) => ({
@@ -120,7 +121,7 @@ export function useAgents() {
         error: cause instanceof Error ? cause.message : 'Agent 操作失败',
       }));
     }
-  }, [load, state.selected?.id]);
+  }, [load, onChanged, state.selected?.id]);
 
   const profile = (): AgentProfile | null => {
     const model = state.models.find((entry) => entry.reference === state.modelReference);

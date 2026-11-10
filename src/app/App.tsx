@@ -1,9 +1,16 @@
+import { useCallback, useState } from 'react';
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
 import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
+import { TaskHistoryPanel } from '../features/task-history/TaskHistoryPanel.js';
 
 export function App() {
+  const [agentRefreshToken, setAgentRefreshToken] = useState(0);
+  const handleAgentsChanged = useCallback(() => {
+    setAgentRefreshToken((current) => current + 1);
+  }, []);
+
   return (
     <div className="shell">
       <aside className="rail" aria-label="主导航">
@@ -31,9 +38,11 @@ export function App() {
 
         <RuntimeStatusPanel />
 
-        <AgentWorkspace />
+        <AgentWorkspace onAgentsChanged={handleAgentsChanged} />
 
-        <TaskOperationsPanel />
+        <TaskOperationsPanel agentRefreshToken={agentRefreshToken} />
+
+        <TaskHistoryPanel />
 
         <ConfigurationPanel />
 
@@ -48,6 +57,9 @@ export function App() {
               <span className="row-copy"><strong>任务运行</strong><small>创建、查看、取消和重试模型任务</small></span>
               <span className="row-state">已开放</span>
               <span className="row-arrow">↗</span>
+            </a>
+            <a className="workspace-row is-live" href="#task-history-title">
+              <span className="row-icon icon-tools">≋</span><span className="row-copy"><strong>任务历史</strong><small>按状态和 Agent 查看任务与固定版本</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>
             </a>
             <a className="workspace-row is-live" id="agents" href="#agent-title">
               <span className="row-icon icon-agent">A</span><span className="row-copy"><strong>Agent 配置</strong><small>管理独立版本、模型和任务身份</small></span><span className="row-state">已开放</span><span className="row-arrow">↗</span>

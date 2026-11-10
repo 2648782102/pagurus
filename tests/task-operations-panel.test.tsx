@@ -185,4 +185,40 @@ describe('TaskOperationsPanel', () => {
     expect((screen.getByLabelText('Agent') as HTMLSelectElement).value).toBe('');
     expect((screen.getByRole('button', { name: '开始任务' }) as HTMLButtonElement).disabled).toBe(true);
   });
+
+  it('reloads Agent choices when the parent reports an Agent change', async () => {
+    const revisedAgent = { ...AGENT, current: { ...REVISION, name: 'Writer' } };
+    const secondAgent = {
+      ...AGENT,
+      id: 'agt_00000000000000000000000000000002',
+      isDefault: false,
+      current: { ...REVISION, name: 'Second', modelId: 'fixture/alt' },
+    };
+    fetchMock
+      .mockResolvedValueOnce(json(RUNTIME))
+      .mockResolvedValueOnce(json({ models: [
+        { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
+        { providerId: 'magpie', modelId: 'fixture/alt', reference: 'magpie:fixture/alt', displayName: 'Alternate', capabilities: ['chat'] },
+      ] }))
+      .mockResolvedValueOnce(json({ agents: [revisedAgent, secondAgent] }))
+      .mockResolvedValueOnce(json({ agent: revisedAgent }))
+      .mockResolvedValueOnce(json(RUNTIME))
+      .mockResolvedValueOnce(json({ models: [
+        { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
+        { providerId: 'magpie', modelId: 'fixture/alt', reference: 'magpie:fixture/alt', displayName: 'Alternate', capabilities: ['chat'] },
+      ] }))
+      .mockResolvedValueOnce(json({ agents: [revisedAgent, secondAgent] }))
+      .mockResolvedValueOnce(json({ agent: revisedAgent }));
+
+    const { rerender } = render(<TaskOperationsPanel agentRefreshToken={0} />);
+    await screen.findByRole('option', { name: /Second/ });
+    fireEvent.change(screen.getByLabelText('Agent'), { target: { value: secondAgent.id } });
+    expect((screen.getByLabelText('本次使用模型') as HTMLSelectElement).value).toBe('magpie:fixture/alt');
+    rerender(<TaskOperationsPanel agentRefreshToken={1} />);
+
+    expect(await screen.findByRole('option', { name: /Writer/ })).toBeTruthy();
+    expect((screen.getByLabelText('Agent') as HTMLSelectElement).value).toBe(secondAgent.id);
+    expect((screen.getByLabelText('本次使用模型') as HTMLSelectElement).value).toBe('magpie:fixture/alt');
+    expect((screen.getByRole('button', { name: '开始任务' }) as HTMLButtonElement).disabled).toBe(false);
+  });
 });

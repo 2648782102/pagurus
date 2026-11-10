@@ -24,6 +24,11 @@ export interface Task {
   modelId?: string;
 }
 
+export interface TaskList {
+  tasks: Task[];
+  activeConfigurationRevisionId: string;
+}
+
 export interface ModelCatalogEntry {
   id: string;
   displayName: string;
@@ -65,6 +70,13 @@ function isTaskEnvelope(value: unknown): value is { task: Task } {
   return isRecord(value) && isTask(value.task);
 }
 
+function isTaskList(value: unknown): value is TaskList {
+  return isRecord(value)
+    && Array.isArray(value.tasks)
+    && value.tasks.every(isTask)
+    && typeof value.activeConfigurationRevisionId === 'string';
+}
+
 function isRetryEnvelope(value: unknown): value is { task: Task; retried: true } {
   return isRecord(value) && isTask(value.task) && value.retried === true;
 }
@@ -103,7 +115,7 @@ async function request<T>(
       throw new Error('任务当前状态不支持这个操作');
     }
     if (response.status === 502) {
-      throw new Error('模型目录暂不可用');
+      throw new Error(path === '/v1/models' ? '模型目录暂不可用' : 'Runtime 上游服务暂不可用');
     }
     if (response.status === 503) {
       throw new Error('Runtime 任务服务未就绪');
@@ -142,6 +154,10 @@ export async function createTask(
     signal,
   );
   return payload.task;
+}
+
+export async function listTasks(signal?: AbortSignal): Promise<TaskList> {
+  return request('/v1/tasks', isTaskList, { signal }, signal);
 }
 
 export async function getTask(taskId: string, signal?: AbortSignal): Promise<Task> {

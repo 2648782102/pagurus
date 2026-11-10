@@ -104,6 +104,25 @@ function assertAcceptedAgentWrites(source: string, label: string): void {
     .not.toMatch(/Authorization|apiKey|secretValue|credentialValue/);
 }
 
+function assertTaskHistoryFeatureBoundary(source: string, label: string): void {
+  expect(source, `${label} must not add a task history write`).not.toMatch(
+    /method:\s*['"](?:POST|PUT|PATCH|DELETE)['"]|\/v1\/tasks\/[^'"`]+\/(?:cancel|retry)/,
+  );
+  expect(source, `${label} must not define a second task-list schema`).not.toMatch(
+    /interface\s+(?:HistoryTask|TaskHistoryResponse)|type\s+(?:HistoryTask|TaskHistoryResponse)/,
+  );
+}
+
+function assertTaskListClientBoundary(source: string, label: string): void {
+  expect(source, `${label} must expose the existing task list route`).toMatch(
+    /export async function listTasks\(signal\?: AbortSignal\): Promise<TaskList>/,
+  );
+  expect(source, `${label} must use the existing task list route`).toContain("'/v1/tasks'");
+  expect(source, `${label} must keep task history on GET /v1/tasks`).toMatch(
+    /return request\('\/v1\/tasks', isTaskList, \{ signal \}, signal\);/,
+  );
+}
+
 function assertApiBoundary(source: string, label: string): void {
   expect(source, `${label} must keep the current health route`).toContain("getJson('/v1/health'");
   expect(source, `${label} must keep the current runtime route`).toContain("getJson('/v1/runtime'");
@@ -207,6 +226,7 @@ describe('AI-first entry documents', () => {
       '0004-versioned-configuration-client.md',
       '0005-composition-configuration-client.md',
       '0006-agent-management-client.md',
+      '0007-task-history-and-revision-comparison-client.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -225,6 +245,11 @@ describe('AI-first entry documents', () => {
     expect(fifth).toMatch(/composition-execution/);
     const sixth = read(`${recordsDir}/0006-agent-management-client.md`);
     expect(sixth).toMatch(/^Status: \*\*accepted for the Conchbase 0\.8\.0 Agent Runtime API/m);
+    const seventh = read(`${recordsDir}/0007-task-history-and-revision-comparison-client.md`);
+    expect(seventh).toMatch(/^Status: \*\*accepted for the Pagurus read-only task history and revision comparison slice\*\*$/m);
+    expect(seventh).toMatch(/Magpie remains a compatibility adapter/);
+    expect(seventh).toMatch(/Do not add a Runtime route/);
+    expect(seventh).toMatch(/Do not add SSE/);
   });
 });
 
@@ -237,6 +262,7 @@ describe('client boundaries', () => {
       'src/shared/api/configuration.ts',
     );
     assertAcceptedAgentWrites(read('src/shared/api/agents.ts'), 'src/shared/api/agents.ts');
+    assertTaskListClientBoundary(read('src/shared/api/tasks.ts'), 'src/shared/api/tasks.ts');
     assertLoopbackProxy(read('vite.config.ts'), 'vite.config.ts');
 
     for (const file of listSourceFiles('src')) {
@@ -244,6 +270,15 @@ describe('client boundaries', () => {
       assertNoForbiddenImportIn(source, file);
       assertNoForbiddenBrowserStorageIn(source, file);
     }
+
+    assertTaskHistoryFeatureBoundary(
+      read('src/features/task-history/useTaskHistory.ts'),
+      'src/features/task-history/useTaskHistory.ts',
+    );
+    assertTaskHistoryFeatureBoundary(
+      read('src/features/task-history/TaskHistoryPanel.tsx'),
+      'src/features/task-history/TaskHistoryPanel.tsx',
+    );
 
     const configurationSource = read('src/shared/api/configuration.ts');
     expect(configurationSource).toMatch(/schemaVersion: 2/);
