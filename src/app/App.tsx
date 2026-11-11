@@ -43,10 +43,7 @@ export function App() {
       case 'work':
         return <AttentionWorkbenchPanel runtime={runtimeStatus.runtime} />;
       case 'capabilities':
-        return <>
-          <CapabilityPanel runtime={runtimeStatus.runtime} />
-          <SecretHandlePanel runtime={runtimeStatus.runtime} />
-        </>;
+        return <CapabilityPanel runtime={runtimeStatus.runtime} />;
       case 'secrets':
         return <SecretHandlePanel runtime={runtimeStatus.runtime} />;
       case 'settings':
@@ -74,11 +71,11 @@ export function App() {
                 className={`nav-link${isActive ? ' is-active' : ''}`}
                 key={entry.id}
                 href={entry.href}
+                aria-label={`${entry.label}：${entry.hint}`}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <span className="nav-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                 <span className="nav-icon" aria-hidden="true">{entry.icon}</span>
-                <span className="sr-only">{entry.label}</span>
                 <span className="nav-copy"><strong>{entry.label}</strong><small>{entry.hint}</small></span>
               </a>
             );

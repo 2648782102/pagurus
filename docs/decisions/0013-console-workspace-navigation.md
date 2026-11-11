@@ -29,7 +29,7 @@ The Runtime contract remains Conchbase's exact 47-path OpenAPI. Pagurus must not
 ## Validation
 
 - `tests/app-placeholders.test.tsx` verifies implemented links and the absence of placeholder navigation.
-- `tests/workspace-navigation.test.tsx` verifies legacy aliases, single-workspace rendering, hash transitions, active navigation state, and keyboard-visible navigation.
+- `tests/workspace-navigation.test.tsx` verifies legacy aliases, single-workspace rendering, hash transitions, active navigation state, exact accessible names, exclusive capability/SecretHandle panel mounting, and keyboard-visible navigation.
 - `npm run check`, `npm test`, and `npm run build` must pass. CI runs all three commands.
 - A real local preview must show active navigation and the selected workspace against the running Conchbase and Vite proxy.
 

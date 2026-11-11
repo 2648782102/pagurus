@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App.js';
 import { resolveWorkspace } from '../src/app/useWorkspace.js';
@@ -117,5 +117,40 @@ describe('workspace navigation', () => {
     expect(document.getElementById('workspace-content')?.getAttribute('tabindex')).toBe('-1');
     expect(screen.getAllByRole('navigation', { name: '工作区' }).length).toBe(1);
     expect(screen.getAllByRole('link').length).toBeGreaterThan(7);
+  });
+
+  it('gives each workspace link one exact accessible name', () => {
+    render(<App />);
+    const navigation = screen.getByRole('navigation', { name: '工作区' });
+
+    for (const name of [
+      '总览：连接状态与快速入口',
+      'Agent 配置：身份、版本与默认模型',
+      '任务运行：运行一次任务与任务历史',
+      '持久工作：工作项、恢复与交付证据',
+      '能力目录：MCP、Skill、插件元数据',
+      '敏感信息：只写提交、轮换与收据',
+      '运行时设置：版本化配置与回滚',
+    ]) {
+      expect(within(navigation).getByRole('link', { name })).toBeTruthy();
+    }
+  });
+
+  it('keeps capability and sensitive-handle panels in separate workspaces', async () => {
+    render(<App />);
+    window.location.hash = '#capability-title';
+    fireEvent(window, new Event('hashchange'));
+
+    expect(await screen.findByRole('heading', { name: '能力与扩展记录' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '能力目录', level: 2 })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: '敏感信息句柄' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: '只写敏感信息' })).toBeNull();
+
+    window.location.hash = '#secrets-title';
+    fireEvent(window, new Event('hashchange'));
+
+    expect(await screen.findByRole('heading', { name: '只写敏感信息' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '敏感信息句柄', level: 2 })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: '能力目录', level: 2 })).toBeNull();
   });
 });
