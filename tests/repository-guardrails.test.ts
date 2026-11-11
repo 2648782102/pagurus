@@ -257,6 +257,15 @@ describe('AI-first entry documents', () => {
     expect(chineseReadme).toMatch(/最终本地优先 `1\.0\.0`/);
     expect(englishReadme).toMatch(/No plaintext secret is returned, rendered, or retained/);
     expect(chineseReadme).toMatch(/不回读、不展示、不保留明文/);
+    expect(englishReadme).toMatch(/quick start/);
+    expect(englishReadme).toMatch(/v1\.0\.0 release notes/);
+    expect(chineseReadme).toMatch(/快速开始/);
+    expect(chineseReadme).toMatch(/v1\.0\.0 发布说明/);
+    expect(read('docs/AI_HANDOFF.md')).toMatch(/Chinese release and quick-start documents/);
+    expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/AI-first 开发顺序/);
+    expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/契约事实源/);
+    expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/中文发布说明/);
+    expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/本 Release 同时附带上述中文文档资产/);
     expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
     expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
