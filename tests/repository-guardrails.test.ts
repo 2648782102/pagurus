@@ -364,6 +364,7 @@ describe('AI-first entry documents', () => {
       '0009-read-only-attention-workbench-client.md',
       '0010-final-local-first-client.md',
       '0011-ai-handoff-readiness-development-boundary.md',
+      '0012-optional-visual-overview-link.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -405,6 +406,11 @@ describe('AI-first entry documents', () => {
       /^Status: \*\*accepted repository development boundary; no client or Runtime API contract changes\*\*$/m,
     );
     expect(eleventh).toMatch(/does not accept a visual composition editor/);
+    const twelfth = read(`${recordsDir}/0012-optional-visual-overview-link.md`);
+    expect(twelfth).toMatch(
+      /^Status: \*\*accepted repository documentation boundary; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(twelfth).toMatch(/does not add a local copy of the SVG/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -448,6 +454,25 @@ describe('AI-first entry documents', () => {
     expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(
       /aiEntry\.requiredOrder/,
     );
+    const remoteOverview = 'https://github.com/2648782102/conchbase/blob/main/docs/VISUAL_OVERVIEW.zh-CN.md';
+    const englishReadme = read('README.md');
+    const chineseReadme = read('README.zh-CN.md');
+    expect(englishReadme).toContain(remoteOverview);
+    expect(englishReadme).toMatch(/human-facing illustration only, not a source of truth/);
+    expect(chineseReadme).toContain(remoteOverview);
+    expect(chineseReadme).toMatch(/仅供人类快速理解，不是事实源/);
+    for (const file of [
+      'docs/AI_HANDOFF.md',
+      'docs/AI_DEVELOPMENT.md',
+      'docs/OBJECTIVE_MODE.zh-CN.md',
+      'docs/QUICK_START.zh-CN.md',
+      'docs/RELEASE_NOTES_1.0.0.zh-CN.md',
+    ]) {
+      expect(read(file), `${file} must keep the visual out of the AI reading packet`).not.toMatch(
+        /VISUAL_OVERVIEW|conchbase-status-doodle\.svg/,
+      );
+    }
+    expect(readdirSync(path.join(repositoryRoot, 'docs')).filter((file) => file.endsWith('.svg'))).toEqual([]);
   });
 });
 
