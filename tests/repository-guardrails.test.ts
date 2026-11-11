@@ -249,11 +249,17 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'automated-accessibility-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'published-contract-fixture' && record.executableFixture === true,
+  )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
     expect(direction.requiresAcceptedAdr, `${direction.id} must require an accepted ADR`).toBe(true);
   }
-  expect(status.nextBoundedSlices.length).toBeGreaterThan(0);
+  expect(status.nextBoundedSlices.length).toBeGreaterThanOrEqual(0);
   for (const slice of status.nextBoundedSlices) {
     expect(slice.publicContractChange, `${slice.id} must not change the public contract`).toBe(false);
     if (slice.status === 'ready') {
@@ -339,6 +345,13 @@ describe('AI-first entry documents', () => {
     expect(chineseReadme).toMatch(/快速开始/);
     expect(chineseReadme).toMatch(/v1\.0\.0 发布说明/);
     expect(read('docs/AI_HANDOFF.md')).toMatch(/Chinese release and quick-start documents/);
+    expect(read('docs/AI_HANDOFF.md')).toMatch(/ADR 0014/);
+    expect(read('docs/AI_DEVELOPMENT.md')).toMatch(/tests\/interface-validation\.test\.tsx/);
+    expect(read('docs/VALIDATION_PLAN.md')).toMatch(/tests\/published-contract\.test\.ts/);
+    expect(read('docs/OBJECTIVE_MODE.zh-CN.md')).toMatch(/ADR 0014/);
+    expect(read('README.md')).toMatch(/ADR 0014/);
+    expect(read('README.zh-CN.md')).toMatch(/ADR 0014/);
+    expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/ADR 0014/);
     expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/AI-first 开发顺序/);
     expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/契约事实源/);
     expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/中文发布说明/);
@@ -366,6 +379,7 @@ describe('AI-first entry documents', () => {
       '0011-ai-handoff-readiness-development-boundary.md',
       '0012-optional-visual-overview-link.md',
       '0013-console-workspace-navigation.md',
+      '0014-interface-validation-boundary.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -418,10 +432,19 @@ describe('AI-first entry documents', () => {
     );
     expect(thirteenth).toMatch(/seven explicit workspaces/);
     expect(thirteenth).toMatch(/No Runtime route/);
+    const fourteenth = read(`${recordsDir}/0014-interface-validation-boundary.md`);
+    expect(fourteenth).toMatch(
+      /^Status: \*\*accepted repository development boundary; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(fourteenth).toMatch(/tests\/interface-validation\.test\.tsx/);
+    expect(fourteenth).toMatch(/tests\/published-contract\.test\.ts/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
     assertProjectStatus(read('docs/PROJECT_STATUS.json'), 'docs/PROJECT_STATUS.json');
+    const currentStatus = JSON.parse(read('docs/PROJECT_STATUS.json')) as ProjectStatus;
+    expect(currentStatus.nextBoundedSlices.every((slice) => slice.status !== 'ready'))
+      .toBe(true);
     assertSequentialHandoffReadOrder(read('docs/AI_HANDOFF.md'), 'docs/AI_HANDOFF.md');
 
     const objective = read('docs/OBJECTIVE_MODE.zh-CN.md');
@@ -603,7 +626,11 @@ describe('client boundaries', () => {
         ],
       },
       implemented: [{ id: 'final-local-first-client' }, { id: 'tool-approval-ui' }],
-      validationEvidence: [{ id: 'final-proxy-walkthrough', executableFixture: false }],
+      validationEvidence: [
+        { id: 'final-proxy-walkthrough', executableFixture: false },
+        { id: 'automated-accessibility-fixture', executableFixture: true },
+        { id: 'published-contract-fixture', executableFixture: true },
+      ],
       blockedDirections: [
         { id: 'tool-approval-ui', requiresAcceptedAdr: true },
         { id: 'visual-composition-editor', requiresAcceptedAdr: true },

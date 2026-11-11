@@ -77,6 +77,18 @@
       "summary": "A completed 54-request same-origin proxy walkthrough is documented as validation evidence, not as an executable Pagurus repository fixture.",
       "evidence": "docs/VALIDATION_PLAN.md",
       "executableFixture": false
+    },
+    {
+      "id": "automated-accessibility-fixture",
+      "summary": "An executable jsdom/CSS fixture covers skip-link focus, keyboard navigation, active state, visible focus, reduced motion, and narrow/wide responsive rules.",
+      "evidence": "tests/interface-validation.test.tsx",
+      "executableFixture": true
+    },
+    {
+      "id": "published-contract-fixture",
+      "summary": "An executable local fixture aligns typed-client paths, methods, and response envelopes with the paired Conchbase 47-path OpenAPI when the sibling checkout is present.",
+      "evidence": "tests/published-contract.test.ts",
+      "executableFixture": true
     }
   ],
   "blockedDirections": [
@@ -115,22 +127,7 @@
       "requiresRuntimeContract": true
     }
   ],
-  "nextBoundedSlices": [
-    {
-      "id": "automated-accessibility-validation",
-      "summary": "Add automated keyboard, focus, reduced-motion, and narrow/wide viewport fixtures without changing a Runtime route.",
-      "publicContractChange": false,
-      "requiresAcceptedAdr": false,
-      "status": "ready"
-    },
-    {
-      "id": "published-contract-validation",
-      "summary": "Validate existing typed-client fixtures more directly against the Conchbase OpenAPI contract without generating a second schema.",
-      "publicContractChange": false,
-      "requiresAcceptedAdr": false,
-      "status": "ready"
-    }
-  ],
+  "nextBoundedSlices": [],
   "invariants": [
     "Use only published Runtime API routes and keep response validation at the typed-client boundary.",
     "Never read or write Conchbase private files or database.",

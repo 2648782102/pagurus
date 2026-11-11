@@ -33,6 +33,7 @@ Agent model selection uses Conchbase's provider-neutral provider/model contract 
 
 - `npm run check`: TypeScript validation for app and test files.
 - `npm test`: Vitest tests for Runtime API responses, connection UI states, Agent/revision states, task operations and history, v1/v2 configuration states, version-2 work and platform clients, capability/SecretHandle panel no-leak fixtures, capability gating, and repository guardrails. Vitest discovers new test files under `tests/`; no package script change is needed for this slice.
+- `tests/interface-validation.test.tsx` and `tests/published-contract.test.ts` are ADR 0014's executable accessibility and published-contract fixtures. They use jsdom/CSS and the paired local OpenAPI checkout; they are validation evidence, not a real-browser audit or generated client types.
 - `npm run build`: production bundle and TypeScript project build.
 - CI runs all three commands.
 - Use deterministic local data. Never put credentials or user runtime data in fixtures, browser storage, logs, or bundles.
