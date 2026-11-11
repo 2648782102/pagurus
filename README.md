@@ -12,6 +12,8 @@ The current client connects to Conchbase, reports Runtime API state, manages Age
 
 The configuration panel remains a generic editor for one runtime-wide policy/capability revision, separate from individual Agent profiles. The v2 composition executor is deterministic and does not call a model; it is not model-driven multi-Agent execution.
 
+The console shell groups these implemented surfaces into seven labeled, hash-based workspaces with a persistent connection badge and active navigation. [ADR 0013](docs/decisions/0013-console-workspace-navigation.md) records this presentation-only boundary; it does not change the Runtime API, capability gates, or versioned contracts.
+
 Conchbase ADR 0021 exercises these published clients against the real Runtime and two independent Agents over deterministic live loopback HTTP. ADR 0007 adds only client-side read-only history and comparison on the existing contract. Its local Runtime screen has been validated manually and visually with mixed Agent/legacy tasks, provider success/error records, filters, refresh/recovery, revision comparison, and a 320px viewport. This closes local API acceptance and ADR 0007's screen walkthrough; automated real-provider conformance, accessibility, pagination/live-history, and remote-runtime validation remain separate layers.
 
 Agent profile and Agent task model selection use Conchbase's provider-neutral contract. The Magpie-backed catalog remains available for compatibility with older runtimes and legacy clients.

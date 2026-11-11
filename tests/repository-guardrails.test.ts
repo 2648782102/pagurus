@@ -365,6 +365,7 @@ describe('AI-first entry documents', () => {
       '0010-final-local-first-client.md',
       '0011-ai-handoff-readiness-development-boundary.md',
       '0012-optional-visual-overview-link.md',
+      '0013-console-workspace-navigation.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -411,6 +412,12 @@ describe('AI-first entry documents', () => {
       /^Status: \*\*accepted repository documentation boundary; no client or Runtime API contract changes\*\*$/m,
     );
     expect(twelfth).toMatch(/does not add a local copy of the SVG/);
+    const thirteenth = read(`${recordsDir}/0013-console-workspace-navigation.md`);
+    expect(thirteenth).toMatch(
+      /^Status: \*\*accepted workspace shell; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(thirteenth).toMatch(/seven explicit workspaces/);
+    expect(thirteenth).toMatch(/No Runtime route/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {

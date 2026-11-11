@@ -28,6 +28,8 @@ npm run dev
 
 默认访问 `http://127.0.0.1:5173/`，Vite 将 `/v1` 代理到 `http://127.0.0.1:4318`。如需真实模型任务，还要启动本机 Magpie 并在其中启用模型；当前 Magpie 只是兼容适配器，不是唯一未来供应商。Runtime 只监听 loopback；远程连接不是当前默认能力。
 
+控制台左侧提供七个已开放工作区：总览、Agent 配置、任务运行、持久工作、能力目录、敏感信息、运行时设置。工作台只渲染当前工作区；`#` 地址用于导航和恢复旧锚点，不保存偏好或 Runtime 状态。详见 [ADR 0013](decisions/0013-console-workspace-navigation.md)。
+
 ## 使用边界
 
 - 每个界面按 Conchbase 已发布 capability 门禁：`durable-work-contract`、`asynchronous-work-control`、`local-source-policy`、`capability-directory`、`write-only-secret-handles` 等。

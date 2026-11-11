@@ -4,7 +4,7 @@
   "pairedRepository": "conchbase",
   "project": "Pagurus / 寄居蟹",
   "release": "1.0.0",
-  "statusUpdatedAt": "2026-11-11",
+  "statusUpdatedAt": "2026-11-12",
   "objectiveMode": "target-mode",
   "developmentBoundaryAdr": "0011-ai-handoff-readiness-development-boundary.md",
   "runtimeContract": {
@@ -50,6 +50,11 @@
       "id": "no-plaintext-client-boundary",
       "summary": "One-shot SecretHandle values are cleared after submission; the client never receives, displays, stores, or resolves plaintext.",
       "evidence": "docs/decisions/0010-final-local-first-client.md"
+    },
+    {
+      "id": "workspace-console-shell",
+      "summary": "Seven labeled hash-based workspaces group the existing implemented surfaces without changing the published Runtime contract.",
+      "evidence": "docs/decisions/0013-console-workspace-navigation.md"
     }
   ],
   "validationEvidence": [

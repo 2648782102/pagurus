@@ -6,6 +6,8 @@
 
 寄居蟹 Pagurus 的 `1.0.0` 已与海螺 Conchbase 的精确 47 条 OpenAPI 路径配对闭环。Pagurus 是可选控制客户端：可以管理 Agent profile 与不可变版本、编辑独立全局配置、查看任务历史、控制持久工作、记录能力元数据，并一次性提交只写 SecretHandle value。海螺拥有执行、身份、任务、状态、密钥和权限；Pagurus 不读写私有数据库，也不定义第二套 schema。
 
+[ADR 0013](decisions/0013-console-workspace-navigation.md) 把已实现界面组织为七个 hash 工作区；这是不改变公开契约的控制台壳层，不是新功能或新 API。
+
 本轮「目标模式」不重开 `1.0.0`，也不把待定能力伪装成已实现功能。接手模型立即需要：
 
 - 机器可读现状：[`docs/PROJECT_STATUS.json`](PROJECT_STATUS.json)。

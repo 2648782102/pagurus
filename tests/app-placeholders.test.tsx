@@ -19,16 +19,24 @@ describe('App workspaces', () => {
       expect(screen.queryByLabelText(label)).toBeNull();
     }
 
-    expect(screen.getByRole('link', { name: 'Agent 配置' }).getAttribute('href')).toBe('#agent-panel');
-    expect(screen.getByRole('link', { name: /运行时配置/ }).getAttribute('href')).toBe('#configuration-title');
-    expect(screen.getByRole('link', { name: /任务运行/ }).getAttribute('href')).toBe('#task-operations-title');
+    expect(screen.getAllByRole('link', { name: /Agent 配置/ }).some(
+      (link) => link.getAttribute('href') === '#agent-panel',
+    )).toBe(true);
+    expect(screen.getAllByRole('link', { name: /运行时配置/ }).some(
+      (link) => link.getAttribute('href') === '#configuration-title',
+    )).toBe(true);
+    expect(screen.getAllByRole('link', { name: /任务运行/ }).some(
+      (link) => link.getAttribute('href') === '#task-operations-title',
+    )).toBe(true);
     expect(screen.getAllByRole('link', { name: /能力目录/ }).some(
       (link) => link.getAttribute('href') === '#capability-title',
     )).toBe(true);
     expect(screen.getAllByRole('link', { name: /敏感信息/ }).some(
       (link) => link.getAttribute('href') === '#secrets-title',
     )).toBe(true);
-    expect(screen.getByRole('link', { name: '运行时设置' }).getAttribute('href')).toBe('#configuration-title');
+    expect(screen.getAllByRole('link', { name: /运行时设置/ }).some(
+      (link) => link.getAttribute('href') === '#configuration-title',
+    )).toBe(true);
     expect(screen.getByText(/v1\.0/)).toBeTruthy();
     expect(document.body.textContent).not.toContain('配置入口建设中');
   });

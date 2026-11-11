@@ -12,6 +12,8 @@
 
 配置面板仍是编辑全局策略/能力配置版本的通用 JSON 编辑器，与各 Agent profile 分开管理。v2 组合执行器只做确定性执行、不调用模型，不代表模型驱动的多 Agent 执行。
 
+控制台壳层把这些已实现界面组织为七个带文字标签的 hash 工作区，并保留常驻连接状态与当前导航高亮。[ADR 0013](docs/decisions/0013-console-workspace-navigation.md) 记录了这个只改变表现层的边界；它不改变 Runtime API、capability 门禁或版本化契约。
+
 海螺 ADR 0021 已让这些已发布的客户端与真实 Runtime、两个独立 Agent 在确定性的本机 loopback HTTP 上完成闭环验收。ADR 0007 只在已有契约上增加客户端只读历史和版本比较，并已针对真实本地 Runtime 完成手工/视觉走查：混合 Agent/旧任务、成功与供应商错误记录、筛选、刷新恢复、只读版本比较和 320px 窄屏均可见。这标志着本地 API 验收和 ADR 0007 页面走查完成；自动化真实供应商一致性、无障碍、分页/实时历史和远程 Runtime 验证仍是独立层次。
 
 Agent profile 和 Agent 任务使用海螺的供应商中立模型契约。Magpie 兼容模型目录仍供旧 Runtime 与旧客户端使用。
