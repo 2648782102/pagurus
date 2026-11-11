@@ -39,7 +39,7 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。当前海螺兼容�
 
 ## 面向 AI 开发
 
-本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，再按其中顺序读取 [AI 交接说明](docs/AI_HANDOFF.md)、[机器可读项目状态](docs/PROJECT_STATUS.json)、[目标模式接手说明](docs/OBJECTIVE_MODE.zh-CN.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
+本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，并以 [`docs/PROJECT_STATUS.json`](docs/PROJECT_STATUS.json) 的 `aiEntry.requiredOrder` 为阅读顺序：[AI 交接说明](docs/AI_HANDOFF.md)、[机器可读项目状态](docs/PROJECT_STATUS.json)、[目标模式接手说明](docs/OBJECTIVE_MODE.zh-CN.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
 
 实现下一产品切片前请读已接受的 [ADR 0010](docs/decisions/0010-final-local-first-client.md)、历史 [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) / [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md)，以及海螺 [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) 和精确 47 条路径的 OpenAPI 契约。新增外部适配器、真实执行、稳定跨进程密钥或远程配对 UX 之前，两个仓库都必须先接受新的契约。
 

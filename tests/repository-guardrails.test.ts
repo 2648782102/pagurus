@@ -25,6 +25,9 @@ interface ProjectStatus {
     readonly pathCount: number;
     readonly frozen: boolean;
   };
+  readonly aiEntry: {
+    readonly requiredOrder: readonly string[];
+  };
   readonly implemented: readonly { readonly id: string }[];
   readonly validationEvidence: readonly { readonly id: string; readonly executableFixture?: boolean }[];
   readonly blockedDirections: readonly {
@@ -35,6 +38,8 @@ interface ProjectStatus {
     readonly id: string;
     readonly publicContractChange: boolean;
     readonly requiresAcceptedAdr: boolean;
+    readonly status: 'ready' | 'proposal';
+    readonly requiredAdr?: string;
   }[];
 }
 
@@ -233,6 +238,13 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.runtimeContract.version).toBe('1.0.0');
   expect(status.runtimeContract.pathCount).toBe(47);
   expect(status.runtimeContract.frozen).toBe(true);
+  expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
+    'AGENTS.md',
+    'docs/AI_HANDOFF.md',
+    'docs/PROJECT_STATUS.json',
+    'docs/OBJECTIVE_MODE.zh-CN.md',
+    'docs/AI_DEVELOPMENT.md',
+  ]);
   expect(status.implemented.some((record) => record.id === 'final-local-first-client')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
@@ -244,8 +256,23 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.nextBoundedSlices.length).toBeGreaterThan(0);
   for (const slice of status.nextBoundedSlices) {
     expect(slice.publicContractChange, `${slice.id} must not change the public contract`).toBe(false);
-    expect(slice.requiresAcceptedAdr, `${slice.id} must be executable without a new ADR`).toBe(false);
+    if (slice.status === 'ready') {
+      expect(slice.requiresAcceptedAdr, `${slice.id} must be executable without a new ADR`).toBe(false);
+      expect(slice.requiredAdr, `${slice.id} must not name a required ADR`).toBeUndefined();
+    } else {
+      expect(slice.requiresAcceptedAdr, `${slice.id} must require its accepted ADR`).toBe(true);
+      expect(slice.requiredAdr, `${slice.id} must name its required ADR`).toBeTruthy();
+    }
   }
+}
+
+function assertSequentialHandoffReadOrder(source: string, label: string): void {
+  const section = source.split('## Read in this order')[1]?.split('\n## ')[0];
+  expect(section, `${label} must contain a numbered reading order`).toBeTruthy();
+  const numbers = [...(section ?? '').matchAll(/^(\d+)\. /gm)].map((match) => Number(match[1]));
+  expect(numbers, `${label} must number its reading order sequentially without duplicates`).toEqual(
+    numbers.map((_value, index) => index + 1),
+  );
 }
 
 describe('AI-first entry documents', () => {
@@ -382,6 +409,7 @@ describe('AI-first entry documents', () => {
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
     assertProjectStatus(read('docs/PROJECT_STATUS.json'), 'docs/PROJECT_STATUS.json');
+    assertSequentialHandoffReadOrder(read('docs/AI_HANDOFF.md'), 'docs/AI_HANDOFF.md');
 
     const objective = read('docs/OBJECTIVE_MODE.zh-CN.md');
     expect(objective).toMatch(/最终目标状态/);
@@ -405,6 +433,20 @@ describe('AI-first entry documents', () => {
     }
     expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).not.toMatch(
       /OBJECTIVE_MODE\.zh-CN\.md|PROJECT_STATUS\.json|ADR 0011/,
+    );
+    expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/validationEvidence/);
+    expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/blockedDirections/);
+    for (const file of [
+      'docs/AI_HANDOFF.md',
+      'docs/OBJECTIVE_MODE.zh-CN.md',
+      'docs/QUICK_START.zh-CN.md',
+      'README.md',
+      'README.zh-CN.md',
+    ]) {
+      expect(read(file), `${file} must name the canonical AI reading order`).toMatch(/aiEntry\.requiredOrder/);
+    }
+    expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(
+      /aiEntry\.requiredOrder/,
     );
   });
 });
@@ -512,24 +554,79 @@ describe('client boundaries', () => {
       "' } } }",
     ].join('');
     const syntheticSecretResolver = ['const value = ', 'resolveSecret', '(handleId);'].join('');
-    const invalidStatus = {
+    const baseStatus = {
       schemaVersion: 1,
       repository: 'pagurus',
       release: '1.0.0',
       objectiveMode: 'target-mode',
       developmentBoundaryAdr: '0011-ai-handoff-readiness-development-boundary.md',
       runtimeContract: { version: '1.0.0', pathCount: 47, frozen: true },
+      aiEntry: {
+        requiredOrder: [
+          'AGENTS.md',
+          'docs/AI_HANDOFF.md',
+          'docs/PROJECT_STATUS.json',
+          'docs/OBJECTIVE_MODE.zh-CN.md',
+          'docs/AI_DEVELOPMENT.md',
+        ],
+      },
       implemented: [{ id: 'final-local-first-client' }, { id: 'tool-approval-ui' }],
       validationEvidence: [{ id: 'final-proxy-walkthrough', executableFixture: false }],
       blockedDirections: [
-        { id: 'tool-approval-ui', requiresAcceptedAdr: false },
+        { id: 'tool-approval-ui', requiresAcceptedAdr: true },
         { id: 'visual-composition-editor', requiresAcceptedAdr: true },
         { id: 'executable-capability-lifecycle', requiresAcceptedAdr: true },
         { id: 'remote-pairing-ux', requiresAcceptedAdr: true },
         { id: 'generated-client-types', requiresAcceptedAdr: true },
       ],
-      nextBoundedSlices: [{ id: 'validation', publicContractChange: false, requiresAcceptedAdr: false }],
+      nextBoundedSlices: [{
+        id: 'validation',
+        publicContractChange: false,
+        requiresAcceptedAdr: false,
+        status: 'ready',
+      }],
     };
+    const statusWithSlice = (slice: Record<string, unknown>) => ({
+      ...baseStatus,
+      nextBoundedSlices: [slice],
+    });
+    const invalidReadingOrder = {
+      ...baseStatus,
+      aiEntry: { requiredOrder: ['AGENTS.md', 'docs/AI_DEVELOPMENT.md'] },
+    };
+    const invalidBlockedStatus = {
+      ...baseStatus,
+      blockedDirections: [
+        { id: 'tool-approval-ui', requiresAcceptedAdr: false },
+        ...baseStatus.blockedDirections.slice(1),
+      ],
+    };
+    const invalidSliceStatus = statusWithSlice({
+      id: 'validation',
+      publicContractChange: false,
+      requiresAcceptedAdr: true,
+      status: 'ready',
+    });
+    const invalidProposalStatus = statusWithSlice({
+      id: 'validation',
+      publicContractChange: false,
+      requiresAcceptedAdr: false,
+      status: 'proposal',
+      requiredAdr: 'validation-test-boundary',
+    });
+    const invalidProposalMissingAdr = statusWithSlice({
+      id: 'validation',
+      publicContractChange: false,
+      requiresAcceptedAdr: true,
+      status: 'proposal',
+    });
+    const invalidReadyWithAdr = statusWithSlice({
+      id: 'validation',
+      publicContractChange: false,
+      requiresAcceptedAdr: false,
+      status: 'ready',
+      requiredAdr: 'validation-test-boundary',
+    });
     const manifest: PackageManifest = {
       dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
       devDependencies: { '@modelcontextprotocol/sdk': '2.0.0' },
@@ -559,8 +656,27 @@ describe('client boundaries', () => {
       lock,
       'synthetic',
     )).toThrowError(/must not contain zustand in package-lock.json/);
-    expect(() => assertProjectStatus(JSON.stringify(invalidStatus), 'synthetic')).toThrowError(
+    expect(() => assertProjectStatus(JSON.stringify(invalidBlockedStatus), 'synthetic')).toThrowError(
       /tool-approval-ui must require an accepted ADR/,
     );
+    expect(() => assertProjectStatus(JSON.stringify(invalidReadingOrder), 'synthetic')).toThrowError(
+      /must record the canonical AI reading order/,
+    );
+    expect(() => assertProjectStatus(JSON.stringify(invalidSliceStatus), 'synthetic')).toThrowError(
+      /validation must be executable without a new ADR/,
+    );
+    expect(() => assertProjectStatus(JSON.stringify(invalidProposalStatus), 'synthetic')).toThrowError(
+      /validation must require its accepted ADR/,
+    );
+    expect(() => assertProjectStatus(JSON.stringify(invalidProposalMissingAdr), 'synthetic')).toThrowError(
+      /validation must name its required ADR/,
+    );
+    expect(() => assertProjectStatus(JSON.stringify(invalidReadyWithAdr), 'synthetic')).toThrowError(
+      /validation must not name a required ADR/,
+    );
+    expect(() => assertSequentialHandoffReadOrder(
+      '## Read in this order\n\n1. A\n1. B\n',
+      'synthetic',
+    )).toThrowError(/must number its reading order sequentially/);
   });
 });

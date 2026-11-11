@@ -21,7 +21,7 @@
 1. 自动化无障碍夹具：覆盖键盘导航、可见焦点、减弱动效与窄/宽视口，不新增 Runtime 操作。
 2. 已发布契约验证：加强现有 typed-client 夹具对 Conchbase OpenAPI 的一致性检查，但不生成第二套 schema。
 
-每项工作都先读 `AGENTS.md`、本文、`docs/PROJECT_STATUS.json`，再按 `docs/AI_HANDOFF.md` 的阅读顺序进入英文契约文档。完成后运行 `npm run check`、`npm test`、`npm run build`，并同步更新受影响文档。
+每项工作都要按 `docs/PROJECT_STATUS.json` 的 `aiEntry.requiredOrder` 阅读：先读 `AGENTS.md`、`docs/AI_HANDOFF.md`、机器可读状态和本文，再读 `docs/AI_DEVELOPMENT.md`，然后按 `docs/AI_HANDOFF.md` 的阅读顺序进入英文契约文档。完成后运行 `npm run check`、`npm test`、`npm run build`，并同步更新受影响文档。
 
 ## 必须先立 ADR 才能做什么
 

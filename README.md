@@ -39,7 +39,7 @@ See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.m
 
 ## AI-first development
 
-This project is developed primarily by AI coding agents. Architecture, documentation, and validation are optimized for fast context loading, bounded changes, and deterministic verification; future human handoff is not a product requirement. Start with [`AGENTS.md`](AGENTS.md), then read the [AI handoff](docs/AI_HANDOFF.md), machine-readable [project status](docs/PROJECT_STATUS.json), Chinese [target-mode brief](docs/OBJECTIVE_MODE.zh-CN.md), and [development guide](docs/AI_DEVELOPMENT.md).
+This project is developed primarily by AI coding agents. Architecture, documentation, and validation are optimized for fast context loading, bounded changes, and deterministic verification; future human handoff is not a product requirement. Start with [`AGENTS.md`](AGENTS.md), then follow `docs/PROJECT_STATUS.json`'s `aiEntry.requiredOrder`: the [AI handoff](docs/AI_HANDOFF.md), machine-readable [project status](docs/PROJECT_STATUS.json), Chinese [target-mode brief](docs/OBJECTIVE_MODE.zh-CN.md), and [development guide](docs/AI_DEVELOPMENT.md).
 
 Before implementing the next product slice, read accepted [ADR 0010](docs/decisions/0010-final-local-first-client.md), historical [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) / [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md), and Conchbase [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) plus its exact 47-path OpenAPI contract. Do not add external adapters, execution, stable cross-process keys, or remote pairing UX until separate contracts are accepted in both repositories.
 

@@ -115,13 +115,15 @@
       "id": "automated-accessibility-validation",
       "summary": "Add automated keyboard, focus, reduced-motion, and narrow/wide viewport fixtures without changing a Runtime route.",
       "publicContractChange": false,
-      "requiresAcceptedAdr": false
+      "requiresAcceptedAdr": false,
+      "status": "ready"
     },
     {
       "id": "published-contract-validation",
       "summary": "Validate existing typed-client fixtures more directly against the Conchbase OpenAPI contract without generating a second schema.",
       "publicContractChange": false,
-      "requiresAcceptedAdr": false
+      "requiresAcceptedAdr": false,
+      "status": "ready"
     }
   ],
   "invariants": [
