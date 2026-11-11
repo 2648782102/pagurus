@@ -31,7 +31,7 @@ Consequences: a small documentation and test slice that preserves all boundaries
 1. `docs/PROJECT_STATUS.json` is the machine-readable current-state index for Pagurus. `docs/OBJECTIVE_MODE.zh-CN.md` is the Chinese target-mode brief.
 2. Every status record uses `implemented`, `validation_evidence`, or `blocked_direction`. Only `implemented` records describe current behavior. Every `blocked_direction` record sets `requiresAcceptedAdr: true`.
 3. The status index records the paired repositories, the frozen 47-path Runtime contract, accepted ADR 0010, the published client surfaces, and the requirement that new Runtime operations be accepted in Conchbase before Pagurus changes.
-4. `docs/AI_HANDOFF.md`, `docs/AI_DEVELOPMENT.md`, `README.md`, `README.zh-CN.md`, and `docs/QUICK_START.zh-CN.md` link the objective brief and status index. The Chinese documents remain reading entry points; English documents, Conchbase OpenAPI, and accepted ADRs remain the source of truth.
+4. `docs/AI_HANDOFF.md`, `docs/AI_DEVELOPMENT.md`, `README.md`, `README.zh-CN.md`, and `docs/QUICK_START.zh-CN.md` link the objective brief and status index. The `v1.0.0` release notes and attached Release assets remain an immutable publication snapshot and do not link post-release artifacts. Chinese documents remain reading entry points; English documents, Conchbase OpenAPI, and accepted ADRs remain the source of truth.
 5. `tests/repository-guardrails.test.ts` parses the status JSON, checks the classification and ADR gate, and verifies the links from the entry documents. It is updated in the same slice as this accepted development-boundary ADR.
 
 ## Executable boundary

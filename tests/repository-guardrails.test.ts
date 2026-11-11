@@ -399,11 +399,13 @@ describe('AI-first entry documents', () => {
       'docs/AI_HANDOFF.md',
       'docs/AI_DEVELOPMENT.md',
       'docs/QUICK_START.zh-CN.md',
-      'docs/RELEASE_NOTES_1.0.0.zh-CN.md',
     ]) {
       expect(read(file), `${file} must link the machine-readable status`).toMatch(/PROJECT_STATUS\.json/);
       expect(read(file), `${file} must link the Chinese objective brief`).toMatch(/OBJECTIVE_MODE\.zh-CN\.md/);
     }
+    expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).not.toMatch(
+      /OBJECTIVE_MODE\.zh-CN\.md|PROJECT_STATUS\.json|ADR 0011/,
+    );
   });
 });
 

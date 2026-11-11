@@ -43,7 +43,6 @@
 - [中文发布说明](RELEASE_NOTES_1.0.0.zh-CN.md)
 - [英文 README](../README.md)
 - [AI 交接说明](AI_HANDOFF.md)、[开发约定](AI_DEVELOPMENT.md)、[架构](ARCHITECTURE.md)、[技术栈](TECH_STACK.md)、[验证计划](VALIDATION_PLAN.md)
-- [目标模式接手说明](OBJECTIVE_MODE.zh-CN.md)、[机器可读项目状态](PROJECT_STATUS.json)、[ADR 0011](decisions/0011-ai-handoff-readiness-development-boundary.md)
 
 本 Release 同时附带上述中文文档资产，便于离线阅读和交付给其他开发模型。
 
