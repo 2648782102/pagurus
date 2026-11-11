@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "repository": "pagurus",
+  "pairedRepository": "conchbase",
+  "project": "Pagurus / 寄居蟹",
+  "release": "1.0.0",
+  "statusUpdatedAt": "2026-11-11",
+  "objectiveMode": "target-mode",
+  "developmentBoundaryAdr": "0011-ai-handoff-readiness-development-boundary.md",
+  "runtimeContract": {
+    "owner": "conchbase",
+    "openApi": "https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml",
+    "version": "1.0.0",
+    "pathCount": 47,
+    "frozen": true,
+    "clientAdr": "0010-final-local-first-client.md"
+  },
+  "aiEntry": {
+    "requiredOrder": [
+      "AGENTS.md",
+      "docs/AI_HANDOFF.md",
+      "docs/PROJECT_STATUS.json",
+      "docs/OBJECTIVE_MODE.zh-CN.md",
+      "docs/AI_DEVELOPMENT.md"
+    ],
+    "chineseReadingEntry": [
+      "README.zh-CN.md",
+      "docs/QUICK_START.zh-CN.md",
+      "docs/RELEASE_NOTES_1.0.0.zh-CN.md"
+    ],
+    "humanHandoffIsProductRequirement": false
+  },
+  "implemented": [
+    {
+      "id": "api-client-authority",
+      "summary": "Pagurus is an optional API client; Conchbase owns execution, identity, task state, durable work, secrets, and permissions.",
+      "evidence": "AGENTS.md"
+    },
+    {
+      "id": "final-local-first-client",
+      "summary": "The paired 1.0.0 control client implements Agent management, configuration, task history, work control, capability records, and a write-only SecretHandle editor over published routes.",
+      "evidence": "docs/decisions/0010-final-local-first-client.md"
+    },
+    {
+      "id": "capability-gating",
+      "summary": "Every final surface checks its published Runtime capability, and every write uses an accepted typed client route.",
+      "evidence": "docs/ARCHITECTURE.md"
+    },
+    {
+      "id": "no-plaintext-client-boundary",
+      "summary": "One-shot SecretHandle values are cleared after submission; the client never receives, displays, stores, or resolves plaintext.",
+      "evidence": "docs/decisions/0010-final-local-first-client.md"
+    }
+  ],
+  "validationEvidence": [
+    {
+      "id": "three-command-ci",
+      "summary": "Pagurus runs npm run check, npm test, and npm run build in CI.",
+      "commands": [
+        "npm run check",
+        "npm test",
+        "npm run build"
+      ]
+    },
+    {
+      "id": "paired-runtime-acceptance",
+      "summary": "Conchbase's executable opt-in paired test dynamically imports published Pagurus clients over deterministic live loopback HTTP.",
+      "evidence": "https://github.com/2648782102/conchbase/blob/main/tests/agent-paired-runtime.test.ts"
+    },
+    {
+      "id": "final-proxy-walkthrough",
+      "summary": "A completed 54-request same-origin proxy walkthrough is documented as validation evidence, not as an executable Pagurus repository fixture.",
+      "evidence": "docs/VALIDATION_PLAN.md",
+      "executableFixture": false
+    }
+  ],
+  "blockedDirections": [
+    {
+      "id": "tool-approval-ui",
+      "summary": "Tool request/approval presentation and decisions require a real Conchbase execution authorization contract and a paired Pagurus ADR.",
+      "requiresAcceptedAdr": true,
+      "requiresRuntimeContract": true
+    },
+    {
+      "id": "visual-composition-editor",
+      "summary": "Topology-neutral visual composition editing requires its own accepted client ADR and must not hardcode a canonical topology.",
+      "requiresAcceptedAdr": true
+    },
+    {
+      "id": "executable-capability-lifecycle",
+      "summary": "Install/enable/grant workflows, MCP servers, Skills, plugins, and process lifecycle require Runtime lifecycle and isolation contracts.",
+      "requiresAcceptedAdr": true,
+      "requiresRuntimeContract": true
+    },
+    {
+      "id": "remote-pairing-ux",
+      "summary": "Remote runtime discovery, production pairing UX, desktop packaging, and cloud deployment require separate accepted contracts.",
+      "requiresAcceptedAdr": true,
+      "requiresRuntimeContract": true
+    },
+    {
+      "id": "generated-client-types",
+      "summary": "Generated client types require a separately accepted stable schema contract; current typed clients mirror the published OpenAPI explicitly.",
+      "requiresAcceptedAdr": true
+    },
+    {
+      "id": "stable-cross-process-secret-custody",
+      "summary": "OS keychain custody and replayable encrypted-at-rest values require a new Conchbase security ADR and a paired client boundary.",
+      "requiresAcceptedAdr": true,
+      "requiresRuntimeContract": true
+    }
+  ],
+  "nextBoundedSlices": [
+    {
+      "id": "automated-accessibility-validation",
+      "summary": "Add automated keyboard, focus, reduced-motion, and narrow/wide viewport fixtures without changing a Runtime route.",
+      "publicContractChange": false,
+      "requiresAcceptedAdr": false
+    },
+    {
+      "id": "published-contract-validation",
+      "summary": "Validate existing typed-client fixtures more directly against the Conchbase OpenAPI contract without generating a second schema.",
+      "publicContractChange": false,
+      "requiresAcceptedAdr": false
+    }
+  ],
+  "invariants": [
+    "Use only published Runtime API routes and keep response validation at the typed-client boundary.",
+    "Never read or write Conchbase private files or database.",
+    "Never store provider/tool credentials, SecretHandle plaintext, or runtime state in browser storage, bundles, URLs, logs, or errors.",
+    "Gate every final surface on its published Runtime capability.",
+    "Do not create a second Agent, task, work, configuration, or SecretHandle schema.",
+    "Distinguish implemented behavior from roadmap and validation evidence."
+  ]
+}

@@ -2,7 +2,7 @@
 
 > **AI-first project:** Pagurus is developed primarily by AI coding agents. Optimize the repository for fast, accurate agent context loading, bounded changes, and deterministic validation; human handoff is not a product requirement. Keep implementation explicit, typed, and easy to inspect. Start with `AGENTS.md`, then follow this handoff.
 
-Chinese release and quick-start documents are available in [README.zh-CN.md](../README.zh-CN.md), [QUICK_START.zh-CN.md](QUICK_START.zh-CN.md), and [RELEASE_NOTES_1.0.0.zh-CN.md](RELEASE_NOTES_1.0.0.zh-CN.md). English repository documents, Conchbase OpenAPI, and accepted ADRs remain the source of truth.
+Chinese release and quick-start documents are available in [README.zh-CN.md](../README.zh-CN.md), [QUICK_START.zh-CN.md](QUICK_START.zh-CN.md), and [RELEASE_NOTES_1.0.0.zh-CN.md](RELEASE_NOTES_1.0.0.zh-CN.md). For target mode, read the machine-readable [project status](PROJECT_STATUS.json) and the Chinese [objective-mode brief](OBJECTIVE_MODE.zh-CN.md) immediately after this handoff; they separate implemented behavior, validation evidence, and ADR-gated directions. English repository documents, Conchbase OpenAPI, and accepted ADRs remain the source of truth.
 
 This document is the starting packet for a coding model that has not seen the design conversation. It separates actual behavior from the intended product.
 
@@ -20,6 +20,7 @@ Conchbase [ADR 0022](https://github.com/2648782102/conchbase/blob/main/docs/deci
 
 1. `AGENTS.md` — mandatory client/security constraints and AI-first development rule.
 2. This handoff, then `docs/AI_DEVELOPMENT.md`.
+3. `docs/PROJECT_STATUS.json` and `docs/OBJECTIVE_MODE.zh-CN.md` — current target-mode state and bounded-slice index. Read these before selecting a task.
 3. [ADR 0002](decisions/0002-phase-one-task-operations.md) — accepted phase-1 task operations client.
 4. [ADR 0003](decisions/0003-streaming-output-progress-client.md) — accepted streaming progress client.
 5. [ADR 0004](decisions/0004-versioned-configuration-client.md) — accepted Conchbase `0.4.0` v1 configuration revision client.

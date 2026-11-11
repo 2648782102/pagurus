@@ -12,7 +12,7 @@ Agent model selection uses Conchbase's provider-neutral provider/model contract 
 
 ## Change loop
 
-1. Read `AGENTS.md`, this guide, and the owning architecture/API document. Treat the current repository state as authoritative.
+1. Read `AGENTS.md`, `docs/AI_HANDOFF.md`, `docs/PROJECT_STATUS.json`, `docs/OBJECTIVE_MODE.zh-CN.md`, this guide, and the owning architecture/API document. Treat the current repository state as authoritative. Do not select a `blockedDirections` item without an accepted ADR.
 2. Inspect `git status` and the files in the affected feature before editing. Preserve unrelated user changes.
 3. Implement a complete UI slice with loading, connected, disconnected, error, and permission states where applicable. Keep runtime state authoritative in Conchbase.
 4. If a feature requires a new runtime operation, define and document it in Conchbase first; never invent a competing schema here. The task history slice uses the existing `GET /v1/tasks` response; the final workbench and platform panels use only published `1.0.0` routes.

@@ -34,12 +34,12 @@ Vite 会把 `/v1` 请求代理到 `http://127.0.0.1:4318`。当前海螺兼容�
 - 模型与工具密钥不会以明文交给界面。
 - 每个任务都固定运行时配置版本；Agent 任务还会固定不可变的 Agent 版本和生效的 provider/model。
 
-架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[ADR 0006](docs/decisions/0006-agent-management-client.md)、[ADR 0007](docs/decisions/0007-task-history-and-revision-comparison-client.md)，再读海螺仓库中的 [ADR 0020](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0020-multi-agent-and-provider-neutral-model-contract.md)、[ADR 0021](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0021-cross-repository-paired-runtime-acceptance.md) 与 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。中文文档：[快速开始](docs/QUICK_START.zh-CN.md)、[v1.0.0 发布说明](docs/RELEASE_NOTES_1.0.0.zh-CN.md)。English: [README.md](README.md).
+架构说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。接手开发的模型请先读 [AI 交接说明](docs/AI_HANDOFF.md)、[机器可读项目状态](docs/PROJECT_STATUS.json)、[目标模式接手说明](docs/OBJECTIVE_MODE.zh-CN.md)、[ADR 0010](docs/decisions/0010-final-local-first-client.md) 与 [ADR 0011](docs/decisions/0011-ai-handoff-readiness-development-boundary.md)，再读海螺 [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) 与 [AI 任务队列](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md)。中文文档：[快速开始](docs/QUICK_START.zh-CN.md)、[v1.0.0 发布说明](docs/RELEASE_NOTES_1.0.0.zh-CN.md)。English: [README.md](README.md).
 技术栈、路线图和验证计划见 [docs/TECH_STACK.md](docs/TECH_STACK.md)、[docs/ROADMAP.md](docs/ROADMAP.md) 与 [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md)。配套 Runtime：[Conchbase 海螺](https://github.com/2648782102/conchbase)。
 
 ## 面向 AI 开发
 
-本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，再按其中顺序读取 [AI 交接说明](docs/AI_HANDOFF.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
+本项目主要由 AI 编码 Agent 开发，代码结构、说明和验证流程优先服务于 AI 快速理解、完成边界清楚的改动并确定性验证；不把后续由人类接手作为产品要求。每次开始前先读根目录 [`AGENTS.md`](AGENTS.md)，再按其中顺序读取 [AI 交接说明](docs/AI_HANDOFF.md)、[机器可读项目状态](docs/PROJECT_STATUS.json)、[目标模式接手说明](docs/OBJECTIVE_MODE.zh-CN.md) 和 [开发约定](docs/AI_DEVELOPMENT.md)。
 
 实现下一产品切片前请读已接受的 [ADR 0010](docs/decisions/0010-final-local-first-client.md)、历史 [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) / [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md)，以及海螺 [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) 和精确 47 条路径的 OpenAPI 契约。新增外部适配器、真实执行、稳定跨进程密钥或远程配对 UX 之前，两个仓库都必须先接受新的契约。
 

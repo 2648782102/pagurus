@@ -2,7 +2,7 @@
 
 This project is built primarily by AI coding agents. Optimize architecture, documentation, and validation for agents to understand, change, and verify bounded tasks quickly. Human handoff is not a product requirement. Keep code explicit and legible; this principle is not permission for opaque code or speculative abstraction.
 
-Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked architecture and technology documents. Treat this repository as the source of truth; do not rely on context from another chat.
+Read `docs/AI_HANDOFF.md` first, then `docs/PROJECT_STATUS.json`, `docs/OBJECTIVE_MODE.zh-CN.md`, `docs/AI_DEVELOPMENT.md`, and the linked architecture and technology documents. Treat this repository as the source of truth; do not rely on context from another chat.
 
 ## Product invariants
 
@@ -29,5 +29,6 @@ Read `docs/AI_HANDOFF.md` first, then `docs/AI_DEVELOPMENT.md` and the linked ar
 - If a feature needs a new Runtime API, propose and document it in Conchbase first; do not invent a second schema here.
 - Record meaningful UI/API decisions in `docs/` and mark undecided choices as proposals.
 - Keep `tests/repository-guardrails.test.ts` passing; update it only alongside an accepted ADR or a documented development-boundary change.
+- Read `docs/PROJECT_STATUS.json` before selecting a task; `blockedDirections` are not implemented behavior and require an accepted ADR.
 - Run `npm run check`, `npm test`, and `npm run build` after code changes. CI runs all three commands.
 

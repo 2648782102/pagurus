@@ -14,6 +14,30 @@ interface PackageLock {
   readonly packages?: Record<string, unknown>;
 }
 
+interface ProjectStatus {
+  readonly schemaVersion: number;
+  readonly repository: string;
+  readonly release: string;
+  readonly objectiveMode: string;
+  readonly developmentBoundaryAdr: string;
+  readonly runtimeContract: {
+    readonly version: string;
+    readonly pathCount: number;
+    readonly frozen: boolean;
+  };
+  readonly implemented: readonly { readonly id: string }[];
+  readonly validationEvidence: readonly { readonly id: string; readonly executableFixture?: boolean }[];
+  readonly blockedDirections: readonly {
+    readonly id: string;
+    readonly requiresAcceptedAdr: boolean;
+  }[];
+  readonly nextBoundedSlices: readonly {
+    readonly id: string;
+    readonly publicContractChange: boolean;
+    readonly requiresAcceptedAdr: boolean;
+  }[];
+}
+
 const forbiddenPackages: readonly string[] = [
   'better-sqlite3',
   'sqlite3',
@@ -199,6 +223,31 @@ function assertDependencyBoundaries(
   }
 }
 
+function assertProjectStatus(source: string, label: string): void {
+  const status = JSON.parse(source) as ProjectStatus;
+  expect(status.schemaVersion, `${label} must use status schema version 1`).toBe(1);
+  expect(status.repository, `${label} must identify the client repository`).toBe('pagurus');
+  expect(status.release, `${label} must record the current release`).toBe('1.0.0');
+  expect(status.objectiveMode, `${label} must record target mode`).toBe('target-mode');
+  expect(status.developmentBoundaryAdr).toBe('0011-ai-handoff-readiness-development-boundary.md');
+  expect(status.runtimeContract.version).toBe('1.0.0');
+  expect(status.runtimeContract.pathCount).toBe(47);
+  expect(status.runtimeContract.frozen).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'final-local-first-client')).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
+  )).toBe(true);
+  expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
+  for (const direction of status.blockedDirections) {
+    expect(direction.requiresAcceptedAdr, `${direction.id} must require an accepted ADR`).toBe(true);
+  }
+  expect(status.nextBoundedSlices.length).toBeGreaterThan(0);
+  for (const slice of status.nextBoundedSlices) {
+    expect(slice.publicContractChange, `${slice.id} must not change the public contract`).toBe(false);
+    expect(slice.requiresAcceptedAdr, `${slice.id} must be executable without a new ADR`).toBe(false);
+  }
+}
+
 describe('AI-first entry documents', () => {
   it('keeps the client and implemented/planned boundary explicit', () => {
     const agents = read('AGENTS.md');
@@ -212,6 +261,7 @@ describe('AI-first entry documents', () => {
       'Do not put provider/tool credentials in browser storage, frontend bundles, logs, or Git.',
       'Run `npm run check`, `npm test`, and `npm run build` after code changes.',
       'Keep `tests/repository-guardrails.test.ts` passing; update it only alongside an accepted ADR or a documented development-boundary change.',
+      'Read `docs/PROJECT_STATUS.json` before selecting a task; `blockedDirections` are not implemented behavior and require an accepted ADR.',
     ]) {
       expect(agents, `AGENTS.md must keep: ${phrase}`).toContain(phrase);
     }
@@ -286,6 +336,7 @@ describe('AI-first entry documents', () => {
       '0008-human-attention-workbench-proposal.md',
       '0009-read-only-attention-workbench-client.md',
       '0010-final-local-first-client.md',
+      '0011-ai-handoff-readiness-development-boundary.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -322,6 +373,37 @@ describe('AI-first entry documents', () => {
     expect(tenth).toMatch(/47 unique OpenAPI paths/);
     expect(tenth).toMatch(/restart invalidation/);
     expect(tenth).toMatch(/Runtime capability gating remains explicit/);
+    const eleventh = read(`${recordsDir}/0011-ai-handoff-readiness-development-boundary.md`);
+    expect(eleventh).toMatch(
+      /^Status: \*\*accepted repository development boundary; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(eleventh).toMatch(/does not accept a visual composition editor/);
+  });
+
+  it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
+    assertProjectStatus(read('docs/PROJECT_STATUS.json'), 'docs/PROJECT_STATUS.json');
+
+    const objective = read('docs/OBJECTIVE_MODE.zh-CN.md');
+    expect(objective).toMatch(/最终目标状态/);
+    expect(objective).toMatch(/立刻能做什么/);
+    expect(objective).toMatch(/必须先立 ADR 才能做什么/);
+    expect(objective).toMatch(/辩证取舍/);
+    expect(objective).toMatch(/PROJECT_STATUS\.json/);
+    expect(objective).toMatch(/ADR 0011/);
+    expect(objective).toMatch(/不变量/);
+
+    for (const file of [
+      'AGENTS.md',
+      'README.md',
+      'README.zh-CN.md',
+      'docs/AI_HANDOFF.md',
+      'docs/AI_DEVELOPMENT.md',
+      'docs/QUICK_START.zh-CN.md',
+      'docs/RELEASE_NOTES_1.0.0.zh-CN.md',
+    ]) {
+      expect(read(file), `${file} must link the machine-readable status`).toMatch(/PROJECT_STATUS\.json/);
+      expect(read(file), `${file} must link the Chinese objective brief`).toMatch(/OBJECTIVE_MODE\.zh-CN\.md/);
+    }
   });
 });
 
@@ -428,6 +510,24 @@ describe('client boundaries', () => {
       "' } } }",
     ].join('');
     const syntheticSecretResolver = ['const value = ', 'resolveSecret', '(handleId);'].join('');
+    const invalidStatus = {
+      schemaVersion: 1,
+      repository: 'pagurus',
+      release: '1.0.0',
+      objectiveMode: 'target-mode',
+      developmentBoundaryAdr: '0011-ai-handoff-readiness-development-boundary.md',
+      runtimeContract: { version: '1.0.0', pathCount: 47, frozen: true },
+      implemented: [{ id: 'final-local-first-client' }, { id: 'tool-approval-ui' }],
+      validationEvidence: [{ id: 'final-proxy-walkthrough', executableFixture: false }],
+      blockedDirections: [
+        { id: 'tool-approval-ui', requiresAcceptedAdr: false },
+        { id: 'visual-composition-editor', requiresAcceptedAdr: true },
+        { id: 'executable-capability-lifecycle', requiresAcceptedAdr: true },
+        { id: 'remote-pairing-ux', requiresAcceptedAdr: true },
+        { id: 'generated-client-types', requiresAcceptedAdr: true },
+      ],
+      nextBoundedSlices: [{ id: 'validation', publicContractChange: false, requiresAcceptedAdr: false }],
+    };
     const manifest: PackageManifest = {
       dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
       devDependencies: { '@modelcontextprotocol/sdk': '2.0.0' },
@@ -457,5 +557,8 @@ describe('client boundaries', () => {
       lock,
       'synthetic',
     )).toThrowError(/must not contain zustand in package-lock.json/);
+    expect(() => assertProjectStatus(JSON.stringify(invalidStatus), 'synthetic')).toThrowError(
+      /tool-approval-ui must require an accepted ADR/,
+    );
   });
 });
