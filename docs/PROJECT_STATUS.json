@@ -60,6 +60,11 @@
       "id": "organization-console-direction",
       "summary": "The Organization Console product and delivery direction is accepted as a paired long-range target, not implemented behavior.",
       "evidence": "docs/decisions/0015-organization-console-direction.md"
+    },
+    {
+      "id": "organization-console-contract-direction",
+      "summary": "Pagurus ADR 0017 accepts the paired typed-client and authority boundary for Conchbase's accepted but unimplemented 1.1.0 organization contract; no connected UI is implemented.",
+      "evidence": "docs/decisions/0017-organization-console-public-contract-boundary.md"
     }
   ],
   "validationEvidence": [
@@ -135,7 +140,7 @@
       "id": "organization-console",
       "summary": "Single-entry primary conversation, attention-first project supervision, worker/delegation inspection, reports, and archive browsing over published organization contracts.",
       "requiresAcceptedAdr": true,
-      "requiredAdr": "docs/decisions/0016-organization-console-delivery-boundary.md",
+      "requiredAdr": "docs/decisions/0017-organization-console-public-contract-boundary.md",
       "runtimeTarget": "https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md"
     }
   ],
@@ -145,7 +150,7 @@
       "summary": "Prepare non-authoritative client design and fixtures for the Organization Console without connected routes or a second schema.",
       "status": "proposal",
       "requiresAcceptedAdr": true,
-      "requiredAdr": "docs/decisions/0016-organization-console-delivery-boundary.md",
+      "requiredAdr": "docs/decisions/0017-organization-console-public-contract-boundary.md",
       "publicContractChange": false
     }
   ],

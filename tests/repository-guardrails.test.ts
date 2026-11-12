@@ -382,6 +382,7 @@ describe('AI-first entry documents', () => {
       '0014-interface-validation-boundary.md',
       '0015-organization-console-direction.md',
       '0016-organization-console-delivery-boundary.md',
+      '0017-organization-console-public-contract-boundary.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -454,6 +455,13 @@ describe('AI-first entry documents', () => {
     expect(sixteenth).toMatch(/Organization Console/);
     expect(sixteenth).toMatch(/Published contract gate/);
     expect(sixteenth).toMatch(/ADRs 0030–0034/);
+    const seventeenth = read(`${recordsDir}/0017-organization-console-public-contract-boundary.md`);
+    expect(seventeenth).toMatch(
+      /^Status: \*\*accepted paired client contract direction; no connected organization UI is implemented\*\*$/m,
+    );
+    expect(seventeenth).toMatch(/typed-client/);
+    expect(seventeenth).toMatch(/No second Runtime schema/);
+    expect(seventeenth).toMatch(/1\.1\.0/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -472,6 +480,7 @@ describe('AI-first entry documents', () => {
     expect(objective).toMatch(/ADR 0011/);
     expect(objective).toMatch(/Organization Console/);
     expect(objective).toMatch(/0016-organization-console-delivery-boundary\.md/);
+    expect(objective).toMatch(/0017-organization-console-public-contract-boundary\.md/);
     expect(objective).toMatch(/不变量/);
 
     for (const file of [
@@ -490,7 +499,7 @@ describe('AI-first entry documents', () => {
     );
     expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/validationEvidence/);
     expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/blockedDirections/);
-    expect(read('docs/AI_HANDOFF.md')).toMatch(/ADRs 0015–0016/);
+    expect(read('docs/AI_HANDOFF.md')).toMatch(/ADRs 0015–0017/);
     expect(read('README.md')).toMatch(/ADR 0016/);
     expect(read('README.zh-CN.md')).toMatch(/ADR 0016/);
     expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/ORGANIZATION_RUNTIME_TARGET/);

@@ -8,7 +8,7 @@
 
 当前最终客户端目标已提升为**完整 Organization Console**：单一主会话、attention-first 概览、项目树、员工/委派检查器、结构化报告与归档视图。用户仍然只跟一个入口 Agent 对话，不维护多个 worker 会话。Pagurus 只展示 Conchbase 已发布的组织状态，并提交有界命令。
 
-完整运行时目标见海螺 [Organization Runtime 最终目标规格](https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md)。客户端方向由 [ADR 0015](decisions/0015-organization-console-direction.md) 接受，交付边界由 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 接受；两者都不表示已实现。
+完整运行时目标见海螺 [Organization Runtime 最终目标规格](https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md)。客户端方向由 [ADR 0015](decisions/0015-organization-console-direction.md) 接受，交付边界由 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 接受，配对公开契约边界由 [ADR 0017](decisions/0017-organization-console-public-contract-boundary.md) 接受；三者都不表示已实现。
 
 [ADR 0013](decisions/0013-console-workspace-navigation.md) 把已实现界面组织为七个 hash 工作区；这是不改变公开契约的控制台壳层，不是新功能或新 API。未来组织的界面落点必须由后续配对 ADR 决定。
 
@@ -19,13 +19,13 @@
 - 已接受客户端契约：[ADR 0010](decisions/0010-final-local-first-client.md)。
 - Runtime 契约事实源：[Conchbase OpenAPI](https://github.com/2648782102/conchbase/blob/main/docs/openapi.yaml) 与 [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md)。
 - 验证范围：[`docs/VALIDATION_PLAN.md`](VALIDATION_PLAN.md)。
-- 远期客户端方向：[ADR 0015](decisions/0015-organization-console-direction.md) 与 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md)。
+- 远期客户端方向：[ADR 0015](decisions/0015-organization-console-direction.md)、[ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 与 [ADR 0017](decisions/0017-organization-console-public-contract-boundary.md)。
 
 ## 立刻能做什么
 
 [ADR 0014](decisions/0014-interface-validation-boundary.md) 已把两个可直接推进的验证切片闭合为可执行夹具：`tests/interface-validation.test.tsx` 覆盖键盘导航、可见焦点、减弱动效与窄/宽视口规则；`tests/published-contract.test.ts` 在配对的 Conchbase 本地检出存在时，对 typed-client 路径、方法和响应 envelope 与 47 条 OpenAPI 做一致性检查。两者记录在 `docs/PROJECT_STATUS.json` 的 `validationEvidence` 中，不生成第二套 schema，也不是真实浏览器无障碍审计。
 
-目前 `nextBoundedSlices` 只有组织控制台规格的 ADR 门控提案，没有 `status: "ready"` 条目。连接的组织 UI 必须等 Conchbase 发布版本化组织公开契约，并由 Pagurus 再接受配对客户端实现 ADR 后才能开工。
+目前 `nextBoundedSlices` 只有组织控制台规格提案，没有 `status: "ready"` 条目。配对客户端 ADR 0017 已经接受，但连接的组织 UI 仍必须等待 Conchbase 的 `1.1.0` 组织路由实现与端到端夹具；ADR 本身不开放路由，也不把 mock 当作 live。
 
 每项工作都要按 `docs/PROJECT_STATUS.json` 的 `aiEntry.requiredOrder` 阅读：先读 `AGENTS.md`、`docs/AI_HANDOFF.md`、机器可读状态和本文，再读 `docs/AI_DEVELOPMENT.md`，然后按 `docs/AI_HANDOFF.md` 的阅读顺序进入英文契约文档。完成后运行 `npm run check`、`npm test`、`npm run build`，并同步更新受影响文档。
 
@@ -57,4 +57,4 @@
 - 模型隐喻不是机器状态；HR/员工不是 UI role enum。
 - mock 与 fixture 绝不能呈现为 live Runtime 状态。
 
-> 本文件由 [ADR 0011](decisions/0011-ai-handoff-readiness-development-boundary.md) 接受为开发边界资料，并由 [ADR 0015](decisions/0015-organization-console-direction.md) 与 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 提升到完整 Organization Console 目标；它不是新客户端或 Runtime API 契约，也不使任何 `blockedDirections` 成为已实现行为。
+> 本文件由 [ADR 0011](decisions/0011-ai-handoff-readiness-development-boundary.md) 接受为开发边界资料，并由 [ADR 0015](decisions/0015-organization-console-direction.md)、[ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 与 [ADR 0017](decisions/0017-organization-console-public-contract-boundary.md) 提升到完整 Organization Console 目标；它不是新客户端或 Runtime API 契约，也不使任何 `blockedDirections` 成为已实现行为。
