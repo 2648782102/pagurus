@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { CapabilityPanel } from '../features/capabilities/CapabilityPanel.js';
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
+import { OrganizationConsolePanel } from '../features/organization/OrganizationConsolePanel.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
 import { SecretHandlePanel } from '../features/secrets/SecretHandlePanel.js';
@@ -33,6 +34,8 @@ export function App() {
 
   const workspaceContent = (id: WorkspaceId) => {
     switch (id) {
+      case 'organization':
+        return <OrganizationConsolePanel runtime={runtimeStatus.runtime} />;
       case 'agents':
         return <AgentWorkspace onAgentsChanged={handleAgentsChanged} />;
       case 'tasks':
@@ -112,7 +115,7 @@ export function App() {
             <aside className="page-aside" aria-label="当前工作区提示">
               <span className="page-aside-label">当前工作区</span>
               <strong>{current.label}</strong>
-              <span>{workspace.workspaces.length} 个工作区 · 7 个已开放</span>
+              <span>{workspace.workspaces.length} 个工作区 · {workspace.workspaces.length} 个已开放</span>
             </aside>
           </header>
 
@@ -125,6 +128,11 @@ export function App() {
               <span className="muted-label">本地优先 · 全部已开放</span>
             </div>
             <div className="workspace-list">
+              <a className="workspace-row is-live" href="#organization-console">
+                <span className="row-icon icon-agent" aria-hidden="true">◎</span>
+                <span className="row-copy"><strong>组织主会话</strong><small>提交主意图、处理 Attention、查看项目与委派审计</small></span>
+                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
+              </a>
               <a className="workspace-row is-live" id="tasks" href="#task-operations-title">
                 <span className="row-icon icon-tools" aria-hidden="true">↗</span>
                 <span className="row-copy"><strong>任务运行</strong><small>创建、查看、取消和重试模型任务</small></span>

@@ -24,6 +24,12 @@ interface ProjectStatus {
     readonly version: string;
     readonly pathCount: number;
     readonly frozen: boolean;
+    readonly additive?: {
+      readonly version: string;
+      readonly pathCount: number;
+      readonly frozen: boolean;
+      readonly clientAdr?: string;
+    };
   };
   readonly aiEntry: {
     readonly requiredOrder: readonly string[];
@@ -93,6 +99,10 @@ const acceptedPlatformPostRoutes = [
   "'/v1/secret-handles/use-receipts'",
 ];
 const acceptedFinalPostRoutes = [...acceptedWorkPostRoutes, ...acceptedPlatformPostRoutes];
+const acceptedOrganizationPostRoutes = [
+  "'/v1/organization/session/intents'",
+  '`/v1/organization/attention/${encodeURIComponent(attentionId)}/${kind}`',
+];
 const forbiddenSecretResolver = /\bplaintextSecret|secretValue|resolveSecret|decryptSecret\b/i;
 
 function read(relativePath: string): string {
@@ -238,6 +248,12 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.runtimeContract.version).toBe('1.0.0');
   expect(status.runtimeContract.pathCount).toBe(47);
   expect(status.runtimeContract.frozen).toBe(true);
+  expect(status.runtimeContract.additive).toEqual({
+    version: '1.1.0',
+    pathCount: 18,
+    frozen: true,
+    clientAdr: '0017-organization-console-public-contract-boundary.md',
+  });
   expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
     'AGENTS.md',
     'docs/AI_HANDOFF.md',
@@ -246,6 +262,8 @@ function assertProjectStatus(source: string, label: string): void {
     'docs/AI_DEVELOPMENT.md',
   ]);
   expect(status.implemented.some((record) => record.id === 'final-local-first-client')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'organization-typed-client')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'organization-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -254,6 +272,9 @@ function assertProjectStatus(source: string, label: string): void {
   )).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'published-contract-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'organization-client-fixture' && record.executableFixture === true,
   )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
@@ -584,6 +605,17 @@ describe('client boundaries', () => {
       /SecretHandleRecord[\s\S]{0,500}value:\s*string[\s\S]{0,500}valueDigest:/,
     );
 
+    const organizationClient = read('src/shared/api/organization.ts');
+    assertAcceptedFinalWrites(
+      organizationClient,
+      'src/shared/api/organization.ts',
+      acceptedOrganizationPostRoutes,
+      /export async function requestJson</,
+    );
+    expect(organizationClient).toMatch(/ORGANIZATION_CONTRACT_VERSION = '1\.1\.0'/);
+    expect(organizationClient).toMatch(/supportsOrganizationContract/);
+    expect(organizationClient).not.toMatch(/\/v1\/work\/triggers|\/v1\/tool-requests/);
+
     const workFeature = read('src/features/work/useAttentionWorkbench.ts');
     expect(workFeature).toMatch(/supportsDurableWorkContract/);
     expect(workFeature).toMatch(/supportsAsynchronousWorkControl/);
@@ -619,7 +651,17 @@ describe('client boundaries', () => {
     expect(panelSource).not.toMatch(/可视化组合编辑器|Agent 层级|三层/i);
     for (const file of listSourceFiles('src')) {
       expect(read(file), `${file} must not call Conchbase tool ledger routes`).not.toMatch(/\/v1\/tool-requests/);
-      expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(/Router|Worker|three-layer|layered|hierarchy/i);
+      const canonicalTopology = /Router|Worker\b|three-layer|layered|hierarchy/i;
+      if (file.includes('organization') || file.includes('Organization')) {
+        expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
+          /Router|three-layer|layered|hierarchy/i,
+        );
+        expect(read(file), `${file} must use only published organization worker terminology`).not.toMatch(
+          /\bWorker\b(?!Id|Record)/,
+        );
+      } else {
+        expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(canonicalTopology);
+      }
     }
   });
 
@@ -646,7 +688,17 @@ describe('client boundaries', () => {
       release: '1.0.0',
       objectiveMode: 'target-mode',
       developmentBoundaryAdr: '0011-ai-handoff-readiness-development-boundary.md',
-      runtimeContract: { version: '1.0.0', pathCount: 47, frozen: true },
+      runtimeContract: {
+        version: '1.0.0',
+        pathCount: 47,
+        frozen: true,
+        additive: {
+          version: '1.1.0',
+          pathCount: 18,
+          frozen: true,
+          clientAdr: '0017-organization-console-public-contract-boundary.md',
+        },
+      },
       aiEntry: {
         requiredOrder: [
           'AGENTS.md',
@@ -656,11 +708,17 @@ describe('client boundaries', () => {
           'docs/AI_DEVELOPMENT.md',
         ],
       },
-      implemented: [{ id: 'final-local-first-client' }, { id: 'tool-approval-ui' }],
+      implemented: [
+        { id: 'final-local-first-client' },
+        { id: 'organization-typed-client' },
+        { id: 'organization-console' },
+        { id: 'tool-approval-ui' },
+      ],
       validationEvidence: [
         { id: 'final-proxy-walkthrough', executableFixture: false },
         { id: 'automated-accessibility-fixture', executableFixture: true },
         { id: 'published-contract-fixture', executableFixture: true },
+        { id: 'organization-client-fixture', executableFixture: true },
       ],
       blockedDirections: [
         { id: 'tool-approval-ui', requiresAcceptedAdr: true },

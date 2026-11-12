@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export type WorkspaceId =
   | 'overview'
+  | 'organization'
   | 'agents'
   | 'tasks'
   | 'work'
@@ -32,6 +33,17 @@ export const WORKSPACES: readonly WorkspaceDefinition[] = [
     href: '#overview',
     hint: '连接状态与快速入口',
     aliases: ['', 'page-title', 'runtime-title', 'next-title', 'workspace-content'],
+  },
+  {
+    id: 'organization',
+    label: '组织主会话',
+    section: '组织台',
+    title: '单一主会话组织台',
+    description: '提交用户意图，attention-first 查看项目、员工委派、工作项、结构化汇报与归档证据；所有状态只来自 Runtime。',
+    icon: '◎',
+    href: '#organization-console',
+    hint: '主意图、Attention 与项目审计',
+    aliases: ['organization', 'organization-console', 'organization-title'],
   },
   {
     id: 'agents',

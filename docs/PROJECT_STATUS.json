@@ -13,7 +13,13 @@
     "version": "1.0.0",
     "pathCount": 47,
     "frozen": true,
-    "clientAdr": "0010-final-local-first-client.md"
+    "clientAdr": "0010-final-local-first-client.md",
+    "additive": {
+      "version": "1.1.0",
+      "pathCount": 18,
+      "frozen": true,
+      "clientAdr": "0017-organization-console-public-contract-boundary.md"
+    }
   },
   "aiEntry": {
     "requiredOrder": [
@@ -63,8 +69,18 @@
     },
     {
       "id": "organization-console-contract-direction",
-      "summary": "Pagurus ADR 0017 accepts the paired typed-client and authority boundary for Conchbase's accepted but unimplemented 1.1.0 organization contract; no connected UI is implemented.",
+      "summary": "Pagurus ADR 0017 accepted the paired typed-client and authority boundary for Conchbase's additive 1.1.0 organization contract; the typed client and console are now connected to published Runtime state.",
       "evidence": "docs/decisions/0017-organization-console-public-contract-boundary.md"
+    },
+    {
+      "id": "organization-typed-client",
+      "summary": "The client publishes explicit 1.1.0 organization types, gates on version discovery, submits bounded intents, decides Attention with expected versions, and reads only published facts.",
+      "evidence": "src/shared/api/organization.ts"
+    },
+    {
+      "id": "organization-console",
+      "summary": "A single primary-conversation workspace orders Attention first and exposes read-only project, proposal, delegation, work-item, report, and event views without local authority computation.",
+      "evidence": "src/features/organization/OrganizationConsolePanel.tsx"
     }
   ],
   "validationEvidence": [
@@ -98,6 +114,12 @@
       "id": "published-contract-fixture",
       "summary": "An executable local fixture aligns typed-client paths, methods, and response envelopes with the paired Conchbase 47-path OpenAPI when the sibling checkout is present.",
       "evidence": "tests/published-contract.test.ts",
+      "executableFixture": true
+    },
+    {
+      "id": "organization-client-fixture",
+      "summary": "Executable fixtures align the additive 65-path OpenAPI, typed organization client contracts, 202 intent/attention writes, and a published-state-only console panel.",
+      "evidence": "tests/organization-api.test.ts",
       "executableFixture": true
     }
   ],
@@ -135,25 +157,9 @@
       "summary": "OS keychain custody and replayable encrypted-at-rest values require a new Conchbase security ADR and a paired client boundary.",
       "requiresAcceptedAdr": true,
       "requiresRuntimeContract": true
-    },
-    {
-      "id": "organization-console",
-      "summary": "Single-entry primary conversation, attention-first project supervision, worker/delegation inspection, reports, and archive browsing over published organization contracts.",
-      "requiresAcceptedAdr": true,
-      "requiredAdr": "docs/decisions/0017-organization-console-public-contract-boundary.md",
-      "runtimeTarget": "https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md"
     }
   ],
-  "nextBoundedSlices": [
-    {
-      "id": "organization-console-specification",
-      "summary": "Prepare non-authoritative client design and fixtures for the Organization Console without connected routes or a second schema.",
-      "status": "proposal",
-      "requiresAcceptedAdr": true,
-      "requiredAdr": "docs/decisions/0017-organization-console-public-contract-boundary.md",
-      "publicContractChange": false
-    }
-  ],
+  "nextBoundedSlices": [],
   "invariants": [
     "Use only published Runtime API routes and keep response validation at the typed-client boundary.",
     "Never read or write Conchbase private files or database.",

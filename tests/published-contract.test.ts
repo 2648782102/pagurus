@@ -78,6 +78,14 @@ const expectedEnvelopes: readonly string[] = [
   'SecretHandleUseReceiptList',
 ];
 
+const organizationClientOperations: readonly PublishedOperation[] = [
+  { path: '/v1/organization/session', method: 'GET' },
+  { path: '/v1/organization/session/intents', method: 'POST' },
+  { path: '/v1/organization/events', method: 'GET' },
+  { path: '/v1/organization/attention/{attentionId}/answer', method: 'POST' },
+  { path: '/v1/organization/attention/{attentionId}/withdraw', method: 'POST' },
+];
+
 function parsePublishedOperations(spec: string): Set<string> {
   const operations = new Set<string>();
   const pathPattern = /^ {2}(\/v1\/[^:]+):$/gm;
@@ -110,7 +118,7 @@ describe('published contract validation', () => {
     if (!existsSync(openApiPath)) return;
     const spec = readFileSync(openApiPath, 'utf8');
     const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
-    expect(paths.length).toBe(47);
+    expect(paths.length).toBe(65);
     expect(spec).toMatch(/^  version: 1\.0\.0$/m);
 
     const published = parsePublishedOperations(spec);
@@ -120,5 +128,20 @@ describe('published contract validation', () => {
     for (const schema of expectedEnvelopes) {
       expect(spec, `${schema} must be documented`).toMatch(new RegExp(`^ {4}${schema}:$`, 'm'));
     }
+  });
+
+  it('aligns the additive organization typed client with the published 1.1.0 path set', () => {
+    if (!existsSync(openApiPath)) return;
+    const spec = readFileSync(openApiPath, 'utf8');
+    const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
+    expect(paths.length).toBe(65);
+    expect(spec).toMatch(/organizationContract:/);
+    expect(spec).toMatch(/organizationPaths:\s*\n\s*const: 18/);
+
+    const published = parsePublishedOperations(spec);
+    for (const { path, method } of organizationClientOperations) {
+      expect(published.has(`${method} ${path}`), `${method} ${path} must be published`).toBe(true);
+    }
+    expect(spec).not.toMatch(/^\s{2}\/v1\/organization\/session\/clear:/m);
   });
 });
