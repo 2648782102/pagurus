@@ -81,6 +81,11 @@
       "id": "organization-console",
       "summary": "A single primary-conversation workspace orders Attention first and exposes read-only project, proposal, delegation, work-item, report, and event views without local authority computation.",
       "evidence": "src/features/organization/OrganizationConsolePanel.tsx"
+    },
+    {
+      "id": "boss-mode-connected-console",
+      "summary": "The organization console submits natural-language primary intents through the published 1.1.0 intent route and waits for Runtime-published project, Agent revision, and WorkItem state; it never computes organization authority locally.",
+      "evidence": "src/features/organization/useOrganizationConsole.ts"
     }
   ],
   "validationEvidence": [

@@ -264,6 +264,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'final-local-first-client')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'organization-typed-client')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'organization-console')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'boss-mode-connected-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -712,6 +713,7 @@ describe('client boundaries', () => {
         { id: 'final-local-first-client' },
         { id: 'organization-typed-client' },
         { id: 'organization-console' },
+        { id: 'boss-mode-connected-console' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
