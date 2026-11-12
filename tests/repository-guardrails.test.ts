@@ -380,6 +380,7 @@ describe('AI-first entry documents', () => {
       '0012-optional-visual-overview-link.md',
       '0013-console-workspace-navigation.md',
       '0014-interface-validation-boundary.md',
+      '0015-organization-console-direction.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -438,6 +439,13 @@ describe('AI-first entry documents', () => {
     );
     expect(fourteenth).toMatch(/tests\/interface-validation\.test\.tsx/);
     expect(fourteenth).toMatch(/tests\/published-contract\.test\.ts/);
+    const fifteenth = read(`${recordsDir}/0015-organization-console-direction.md`);
+    expect(fifteenth).toMatch(
+      /^Status: \*\*accepted paired client product direction; development boundary; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(fifteenth).toMatch(/Organization Console/);
+    expect(fifteenth).toMatch(/No second Runtime schema/);
+    expect(fifteenth).toMatch(/ADR 0030/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
