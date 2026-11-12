@@ -6,7 +6,7 @@ Date: 2026-11-13 (Asia/Shanghai).
 
 ## Context
 
-Pagurus ADR 0015 accepts the Organization Console product direction. Conchbase ADRs 0030–0034 and the Chinese [Organization Runtime target](../../../ORGANIZATION_RUNTIME_TARGET.zh-CN.md) define the long-range runtime objective and contract gates. The client needs its own delivery boundary so later models know what to build, what to wait for, and what must never be implemented locally.
+Pagurus ADR 0015 accepts the Organization Console product direction. Conchbase ADRs 0030–0034 and the Chinese [Organization Runtime target](../../../ORGANIZATION_RUNTIME_TARGET.zh-CN.md) define the long-range runtime objective and contract gates. Conchbase ADRs 0035–0036 add internal persistence and execution/reporting boundaries only. The client needs its own delivery boundary so later models know what to build, what to wait for, and what must never be implemented locally.
 
 ## Decision
 
