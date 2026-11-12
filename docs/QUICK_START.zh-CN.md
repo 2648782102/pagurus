@@ -44,9 +44,10 @@ npm run dev
 1. 先读根目录 [`AGENTS.md`](../AGENTS.md)，确认 AI-first 原则和产品不变量。
 2. 读 [AI 交接说明](AI_HANDOFF.md)，再读 [机器可读项目状态](PROJECT_STATUS.json) 与 [目标模式接手说明](OBJECTIVE_MODE.zh-CN.md)，先区分已实现、验证证据与必须先立 ADR 的方向。
 3. 读 [开发约定](AI_DEVELOPMENT.md)，并以 `PROJECT_STATUS.json` 的 `aiEntry.requiredOrder` 为准。
-4. 读 [架构](ARCHITECTURE.md)、[技术栈](TECH_STACK.md)、[验证计划](VALIDATION_PLAN.md)、[ADR 0010](decisions/0010-final-local-first-client.md)、[ADR 0011](decisions/0011-ai-handoff-readiness-development-boundary.md) 与 [ADR 0014](decisions/0014-interface-validation-boundary.md)。
+4. 读 [架构](ARCHITECTURE.md)、[技术栈](TECH_STACK.md)、[验证计划](VALIDATION_PLAN.md)、[ADR 0010](decisions/0010-final-local-first-client.md)、[ADR 0011](decisions/0011-ai-handoff-readiness-development-boundary.md)、[ADR 0014](decisions/0014-interface-validation-boundary.md)、[ADR 0015](decisions/0015-organization-console-direction.md) 与 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md)。
+5. 在进入组织界面开发前，读海螺[组织运行时最终目标](https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md)；连接 UI 必须等待版本化 Runtime 契约和配对实现 ADR。
 5. 读 Conchbase [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md) 与其 47 条路径 OpenAPI 契约。
-6. 修改客户端前确认 `src/shared/api/` 的类型校验边界与 `src/features/<capability>/` 的局部状态边界。
+7. 修改客户端前确认 `src/shared/api/` 的类型校验边界与 `src/features/<capability>/` 的局部状态边界。
 
 每次改动后运行 `npm run check`、`npm test`、`npm run build`，并同步更新受影响文档。需要新 Runtime 操作时，先在 Conchbase 定义并接受契约；不要在客户端静默发明第二套 schema。
 

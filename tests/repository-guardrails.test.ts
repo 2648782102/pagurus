@@ -381,6 +381,7 @@ describe('AI-first entry documents', () => {
       '0013-console-workspace-navigation.md',
       '0014-interface-validation-boundary.md',
       '0015-organization-console-direction.md',
+      '0016-organization-console-delivery-boundary.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -446,6 +447,13 @@ describe('AI-first entry documents', () => {
     expect(fifteenth).toMatch(/Organization Console/);
     expect(fifteenth).toMatch(/No second Runtime schema/);
     expect(fifteenth).toMatch(/ADR 0030/);
+    const sixteenth = read(`${recordsDir}/0016-organization-console-delivery-boundary.md`);
+    expect(sixteenth).toMatch(
+      /^Status: \*\*accepted paired client delivery direction; no client or Runtime API contract changes\*\*$/m,
+    );
+    expect(sixteenth).toMatch(/Organization Console/);
+    expect(sixteenth).toMatch(/Published contract gate/);
+    expect(sixteenth).toMatch(/ADRs 0030–0034/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -462,6 +470,8 @@ describe('AI-first entry documents', () => {
     expect(objective).toMatch(/辩证取舍/);
     expect(objective).toMatch(/PROJECT_STATUS\.json/);
     expect(objective).toMatch(/ADR 0011/);
+    expect(objective).toMatch(/Organization Console/);
+    expect(objective).toMatch(/0016-organization-console-delivery-boundary\.md/);
     expect(objective).toMatch(/不变量/);
 
     for (const file of [
@@ -480,6 +490,10 @@ describe('AI-first entry documents', () => {
     );
     expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/validationEvidence/);
     expect(read('docs/decisions/0011-ai-handoff-readiness-development-boundary.md')).toMatch(/blockedDirections/);
+    expect(read('docs/AI_HANDOFF.md')).toMatch(/ADRs 0015–0016/);
+    expect(read('README.md')).toMatch(/ADR 0016/);
+    expect(read('README.zh-CN.md')).toMatch(/ADR 0016/);
+    expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/ORGANIZATION_RUNTIME_TARGET/);
     for (const file of [
       'docs/AI_HANDOFF.md',
       'docs/OBJECTIVE_MODE.zh-CN.md',

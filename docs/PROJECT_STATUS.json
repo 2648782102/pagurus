@@ -4,7 +4,7 @@
   "pairedRepository": "conchbase",
   "project": "Pagurus / 寄居蟹",
   "release": "1.0.0",
-  "statusUpdatedAt": "2026-11-12",
+  "statusUpdatedAt": "2026-11-13",
   "objectiveMode": "target-mode",
   "developmentBoundaryAdr": "0011-ai-handoff-readiness-development-boundary.md",
   "runtimeContract": {
@@ -55,6 +55,11 @@
       "id": "workspace-console-shell",
       "summary": "Seven labeled hash-based workspaces group the existing implemented surfaces without changing the published Runtime contract.",
       "evidence": "docs/decisions/0013-console-workspace-navigation.md"
+    },
+    {
+      "id": "organization-console-direction",
+      "summary": "The Organization Console product and delivery direction is accepted as a paired long-range target, not implemented behavior.",
+      "evidence": "docs/decisions/0015-organization-console-direction.md"
     }
   ],
   "validationEvidence": [
@@ -125,9 +130,25 @@
       "summary": "OS keychain custody and replayable encrypted-at-rest values require a new Conchbase security ADR and a paired client boundary.",
       "requiresAcceptedAdr": true,
       "requiresRuntimeContract": true
+    },
+    {
+      "id": "organization-console",
+      "summary": "Single-entry primary conversation, attention-first project supervision, worker/delegation inspection, reports, and archive browsing over published organization contracts.",
+      "requiresAcceptedAdr": true,
+      "requiredAdr": "docs/decisions/0016-organization-console-delivery-boundary.md",
+      "runtimeTarget": "https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md"
     }
   ],
-  "nextBoundedSlices": [],
+  "nextBoundedSlices": [
+    {
+      "id": "organization-console-specification",
+      "summary": "Prepare non-authoritative client design and fixtures for the Organization Console without connected routes or a second schema.",
+      "status": "proposal",
+      "requiresAcceptedAdr": true,
+      "requiredAdr": "docs/decisions/0016-organization-console-delivery-boundary.md",
+      "publicContractChange": false
+    }
+  ],
   "invariants": [
     "Use only published Runtime API routes and keep response validation at the typed-client boundary.",
     "Never read or write Conchbase private files or database.",
