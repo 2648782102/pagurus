@@ -38,6 +38,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [streamConnected, setStreamConnected] = useState(false);
+  const [streamAttempt, setStreamAttempt] = useState(0);
   const pollRef = useRef<number | null>(null);
   const streamRef = useRef<AgentChatStream | null>(null);
   const conversationRef = useRef<AgentChatConversation | null>(null);
@@ -107,14 +108,19 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     streamRef.current?.close();
     streamRef.current = null;
     setStreamConnected(false);
+    setStreamAttempt(0);
     if (!supported || !conversation || typeof EventSource === 'undefined') return;
     const current = conversation;
     let closed = false;
     const stream = openAgentChatStream(current.id, null, {
-      onReconnect: () => setStreamConnected(false),
+      onReconnect: (_cursor, attempt) => {
+        setStreamConnected(false);
+        setStreamAttempt(attempt);
+      },
       onFrame: (frame) => {
         if (closed) return;
         setStreamConnected(true);
+        setStreamAttempt(0);
         if (frame.kind === 'snapshot' && frame.conversation) {
           const snapshot = frame.conversation;
           setConversation((previous) => previous ? mergeConversation(previous, snapshot) : snapshot);
@@ -234,6 +240,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     activeAgent,
     hasPending,
     streamConnected,
+    streamAttempt,
     loadAgents,
     refreshConversation,
     startConversation,

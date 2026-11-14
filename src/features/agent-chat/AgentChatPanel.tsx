@@ -75,7 +75,11 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               <p className="agent-chat-subtitle">思考强度：{chat.conversation.reasoningEffort}</p>
               {chat.hasPending && (
                 <p className="agent-chat-subtitle" role="status">
-                  {chat.streamConnected ? '实时连接' : '轮询同步'}
+                  {chat.streamConnected
+                    ? '实时连接'
+                    : chat.streamAttempt > 0
+                      ? `实时流重连中（第 ${chat.streamAttempt} 次），当前轮询同步`
+                      : '轮询同步'}
                 </p>
               )}
             </div>
