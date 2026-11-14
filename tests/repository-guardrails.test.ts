@@ -42,6 +42,12 @@ interface ProjectStatus {
     readonly frozen: boolean;
     readonly clientAdr?: string;
   };
+  readonly conversation?: {
+    readonly version: string;
+    readonly pathCount: number;
+    readonly frozen: boolean;
+    readonly clientAdr?: string;
+  };
   };
   readonly aiEntry: {
     readonly requiredOrder: readonly string[];
@@ -73,7 +79,7 @@ const forbiddenPackages: readonly string[] = [
 
 const forbiddenImport = /(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"](node:fs|node:fs\/promises|node:sqlite|better-sqlite3|sqlite3|openai|@anthropic-ai\/sdk|@modelcontextprotocol\/sdk|@tanstack\/react-query|zustand)['"]/;
 const nonLoopbackAddress = /0\.0\.0\.0|::\/0/;
-const readOnlyFetch = /await fetch\(path, \{\s*headers: \{ Accept: 'application\/json' \},\s*signal,\s*\}\)/;
+const readOnlyFetch = /await fetch\(path, \{[\s\S]*?headers: \{ Accept: 'application\/json'[\s\S]*?signal,\s*\}\)/;
 const forbiddenBrowserStorage = /\b(?:localStorage|sessionStorage|indexedDB)\b/;
 const forbiddenHttpMethod = /\bmethod:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/;
 const acceptedTaskPosts = [
@@ -278,6 +284,12 @@ function assertProjectStatus(source: string, label: string): void {
     frozen: true,
     clientAdr: '0021-isolated-execution-console-v2.md',
   });
+  expect(status.runtimeContract.conversation).toEqual({
+    version: '1.4.0',
+    pathCount: 2,
+    frozen: true,
+    clientAdr: '0022-primary-conversation-console.md',
+  });
   expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
     'AGENTS.md',
     'docs/AI_HANDOFF.md',
@@ -291,6 +303,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'boss-mode-connected-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'controlled-execution-console-v1')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'isolated-execution-console-v2')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'primary-conversation-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -308,6 +321,9 @@ function assertProjectStatus(source: string, label: string): void {
   )).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'isolated-execution-console-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'primary-conversation-console-fixture' && record.executableFixture === true,
   )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
@@ -443,6 +459,7 @@ describe('AI-first entry documents', () => {
       '0019-controlled-execution-console-direction.md',
       '0020-controlled-execution-console-v1.md',
       '0021-isolated-execution-console-v2.md',
+      '0022-primary-conversation-console.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -531,6 +548,9 @@ describe('AI-first entry documents', () => {
     const twentyFirst = read(`${recordsDir}/0021-isolated-execution-console-v2.md`);
     expect(twentyFirst).toMatch(/^Status: \*\*accepted paired client contract for Conchbase isolated execution v2\*\*$/m);
     expect(twentyFirst).toMatch(/executionRunContract: "1\.3\.0"/);
+    const twentySecond = read(`${recordsDir}/0022-primary-conversation-console.md`);
+    expect(twentySecond).toMatch(/^Status: \*\*accepted paired client contract for Conchbase primary conversation projection\*\*$/m);
+    expect(twentySecond).toMatch(/conversationContract: "1\.4\.0"/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -704,6 +724,10 @@ describe('client boundaries', () => {
         expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
           /Router|three-layer|layered|hierarchy/i,
         );
+      } else if (file.endsWith('.css') || file.includes('conversation') || file.includes('Conversation')) {
+        expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
+          /Router|three-layer|layered|hierarchy/i,
+        );
       } else if (file.includes('organization') || file.includes('Organization')) {
         expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
           /Router|three-layer|layered|hierarchy/i,
@@ -762,6 +786,12 @@ describe('client boundaries', () => {
           frozen: true,
           clientAdr: '0021-isolated-execution-console-v2.md',
         },
+        conversation: {
+          version: '1.4.0',
+          pathCount: 2,
+          frozen: true,
+          clientAdr: '0022-primary-conversation-console.md',
+        },
       },
       aiEntry: {
         requiredOrder: [
@@ -780,6 +810,7 @@ describe('client boundaries', () => {
         { id: 'organization-console-usability' },
         { id: 'controlled-execution-console-v1' },
         { id: 'isolated-execution-console-v2' },
+        { id: 'primary-conversation-console' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
@@ -790,6 +821,7 @@ describe('client boundaries', () => {
         { id: 'boss-mode-product-loop-fixture', executableFixture: true },
         { id: 'controlled-execution-console-fixture', executableFixture: true },
         { id: 'isolated-execution-console-fixture', executableFixture: true },
+        { id: 'primary-conversation-console-fixture', executableFixture: true },
         { id: 'isolated-execution-console-fixture', executableFixture: true },
       ],
       blockedDirections: [

@@ -96,7 +96,7 @@ describe('Organization Console', () => {
     expect(screen.getByRole('heading', { name: 'Attention 优先队列' })).toBeTruthy();
     expect(screen.getAllByText('project_alpha').length).toBeGreaterThan(0);
     expect(screen.getByText('sha256_instructions')).toBeTruthy();
-    expect(screen.getByText(/202 仅代表意图被接受/)).toBeTruthy();
+    expect(screen.getByText(/conversationContract: 1\.4\.0/)).toBeTruthy();
     expect(screen.queryByText(/归档项目/)).toBeNull();
     expect(screen.queryByText(/创建 Agent revision/)).toBeNull();
   });

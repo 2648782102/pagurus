@@ -25,7 +25,7 @@
 
 [ADR 0014](decisions/0014-interface-validation-boundary.md) 已把两个可直接推进的验证切片闭合为可执行夹具：`tests/interface-validation.test.tsx` 覆盖键盘导航、可见焦点、减弱动效与窄/宽视口规则；`tests/published-contract.test.ts` 在配对的 Conchbase 本地检出存在时，对 typed-client 路径、方法和响应 envelope 与 47 条 OpenAPI 做一致性检查。两者记录在 `docs/PROJECT_STATUS.json` 的 `validationEvidence` 中，不生成第二套 schema，也不是真实浏览器无障碍审计。
 
-目前 `nextBoundedSlices` 为空。配对客户端 ADR 0017/0018、Conchbase ADR 0041 的 `1.1.0` 路由与双仓产品闭环夹具已经闭合；组织 UI 只展示已发布 Runtime 状态，不把 mock 当作 live。真实工具执行、外部 Source、跨进程密钥与生产远端配对仍是独立门控方向。
+目前 `nextBoundedSlices` 为空。配对客户端 ADR 0017/0018、Conchbase ADR 0041 的 `1.1.0` 路由与双仓产品闭环夹具已经闭合；ADR 0020/0021/0022 分别连接受控执行、隔离执行 run 与 Runtime 发布的主会话对话栏。组织 UI 只展示已发布 Runtime 状态，不把 mock 当作 live，也不伪造 transcript。真实工具执行、外部 Source、持久化消息撰写、跨进程密钥与生产远端配对仍是独立门控方向。
 
 每项工作都要按 `docs/PROJECT_STATUS.json` 的 `aiEntry.requiredOrder` 阅读：先读 `AGENTS.md`、`docs/AI_HANDOFF.md`、机器可读状态和本文，再读 `docs/AI_DEVELOPMENT.md`，然后按 `docs/AI_HANDOFF.md` 的阅读顺序进入英文契约文档。完成后运行 `npm run check`、`npm test`、`npm run build`，并同步更新受影响文档。
 

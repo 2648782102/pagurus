@@ -371,6 +371,30 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
   .organization-card-timeline, .organization-card-projects { grid-row: auto; }
 }
 
+.conversation-panel { display: grid; gap: 14px; margin-top: 20px; padding: 18px; border: 1px solid #b9d5c7; border-radius: 12px; background: #f4f8f3; }
+.conversation-panel .section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 0; }
+.conversation-panel h3 { margin: 0; font-size: 14px; }
+.conversation-thread { display: grid; gap: 10px; max-height: 520px; overflow: auto; padding: 4px; }
+.conversation-message { display: grid; gap: 8px; max-width: min(760px, 92%); padding: 12px 14px; border: 1px solid #dce6dd; border-radius: 12px; background: #fff; }
+.conversation-message-user { justify-self: end; border-color: #b9d5c7; background: #edf6f0; }
+.conversation-message-boss, .conversation-message-runtime { justify-self: start; }
+.conversation-message-worker { justify-self: start; border-color: #e3d9bd; background: #fffdf5; }
+.conversation-message header, .conversation-message footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.conversation-message header strong { font-size: 11px; }
+.conversation-message header span, .conversation-message footer span { color: var(--teal); font-size: 10px; font-weight: 600; }
+.conversation-message header code, .conversation-message footer code { color: var(--muted); font: 9px var(--mono); overflow-wrap: anywhere; }
+.conversation-message p { margin: 0; color: var(--ink); font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.conversation-message footer { padding-top: 6px; border-top: 1px solid #eceae3; }
+.conversation-composer { display: grid; gap: 9px; padding-top: 14px; border-top: 1px solid #dce6dd; }
+.conversation-composer label { color: #4d5a53; font-size: 11px; font-weight: 600; }
+.conversation-composer textarea { width: 100%; min-height: 82px; padding: 11px 12px; border: 1px solid #cfd9d1; border-radius: 9px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; line-height: 1.6; resize: vertical; }
+.conversation-composer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.conversation-composer-actions .task-note { flex: 1 1 320px; margin-top: 0; padding-top: 0; border-top: 0; }
+@media (max-width: 760px) {
+  .conversation-panel { padding: 14px; }
+  .conversation-message { max-width: 100%; }
+}
+
 /* Final local-first 1.0.0 control, capability, and write-only handle surfaces. */
 .work-detail .task-actions,
 .revision-list li .task-actions { margin-top: 10px; }

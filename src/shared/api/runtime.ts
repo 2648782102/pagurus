@@ -19,6 +19,8 @@ export interface RuntimeInfo {
   executionPaths?: number;
   executionRunContract?: '1.3.0';
   executionRunPaths?: number;
+  conversationContract?: '1.4.0';
+  conversationPaths?: number;
 }
 
 export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
@@ -49,16 +51,19 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.executionContract === undefined || value.executionContract === '1.2.0')
     && (value.executionPaths === undefined || Number.isInteger(value.executionPaths))
     && (value.executionRunContract === undefined || value.executionRunContract === '1.3.0')
-    && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths));
+    && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths))
+    && (value.conversationContract === undefined || value.conversationContract === '1.4.0')
+    && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths));
 }
 
-async function getJson<T>(
+export async function fetchJson<T>(
   path: string,
-  isPayload: (value: unknown) => value is T,
+  init?: RequestInit,
   signal?: AbortSignal,
 ): Promise<T> {
   const response = await fetch(path, {
-    headers: { Accept: 'application/json' },
+    ...(init ?? {}),
+    headers: { Accept: 'application/json', ...(init?.headers ?? {}) },
     signal,
   });
 
@@ -67,10 +72,18 @@ async function getJson<T>(
   }
 
   const payload: unknown = await response.json();
+  return payload as T;
+}
+
+async function getJson<T>(
+  path: string,
+  isPayload: (value: unknown) => value is T,
+  signal?: AbortSignal,
+): Promise<T> {
+  const payload: unknown = await fetchJson<unknown>(path, undefined, signal);
   if (!isPayload(payload)) {
     throw new Error(`Runtime returned an invalid response from ${path}`);
   }
-
   return payload;
 }
 

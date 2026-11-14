@@ -1,4 +1,6 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { decideOrganizationAttention } from '../../shared/api/organization.js';
+import { PrimaryConversationPanel } from './PrimaryConversationPanel.js';
 import { useOrganizationConsole } from './useOrganizationConsole.js';
 
 const EVENT_LABELS: Readonly<Record<string, string>> = {
@@ -68,26 +70,17 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
       {consoleState.lastUpdatedAt && <p className="muted-label">最近同步：{consoleState.lastUpdatedAt}</p>}
 
       {consoleState.supported && <>
-        <div className="organization-composer">
-          <label htmlFor="organization-intent">主会话意图</label>
-          <textarea
-            id="organization-intent"
-            value={consoleState.intentText}
-            onChange={(event) => consoleState.setIntentText(event.target.value)}
-            placeholder="例如：启动一个项目并安排后续规划；这里只提交用户意图，状态由 Conchbase 发布。"
-            rows={3}
-            disabled={consoleState.busy}
-          />
-          <button
-            className="button-primary"
-            type="button"
-            onClick={consoleState.submitIntent}
-            disabled={consoleState.busy || consoleState.intentText.trim().length === 0}
-          >
-            {consoleState.busy ? '提交中…' : '提交意图'}
-          </button>
-          <p className="task-note">202 仅代表意图被接受；项目、员工和委派状态必须等待 Runtime 发布，界面不会本地推演。</p>
-        </div>
+        <PrimaryConversationPanel
+          runtime={runtime}
+          intentText={consoleState.intentText}
+          busy={consoleState.busy}
+          onIntentTextChange={consoleState.setIntentText}
+          onSubmitIntent={async () => { await consoleState.submitIntent(); }}
+          onDecideAttention={async (attentionId, expectedVersion, kind) => {
+            await decideOrganizationAttention(attentionId, kind, expectedVersion);
+            await consoleState.load();
+          }}
+        />
 
         <div className="organization-summary" aria-label="组织状态摘要">
           <div><strong>{consoleState.projects.length}</strong><span>项目</span></div>

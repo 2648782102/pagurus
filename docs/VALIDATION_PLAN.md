@@ -32,6 +32,7 @@ This covers Agent management and task binding, read-only task history, revision 
 4. **Integration:** fake Runtime API with deterministic responses; no provider secrets and no public-network dependency.
 5. **Visual/accessibility/manual:** narrow and wide viewport screenshots, reduced-motion preference, keyboard-only navigation, real-browser accessibility checks, and a complete screen walkthrough against a real local Conchbase runtime. ADR 0014's repository-level jsdom/CSS fixture is complete but narrower.
 6. **Real-provider conformance:** live selected local provider fixtures that do not enter CI credentials and remain distinct from ADR 0021's deterministic fake gateway and Conchbase ADR 0028's compatibility fixture.
+- `tests/conversation-api.test.ts` and `tests/conversation-panel.test.tsx` are executable primary-conversation fixtures. They cover the typed 1.4.0 client, discovery gating, cursor pages, complete composer rendering, published message kinds, Attention actions, and unsupported Runtime fallback. Conchbase `tests/primary-conversation.test.ts` covers the deterministic projection and no-private-state boundary.
 7. **Final work controls and SecretHandle no-leak:** sentinel fixtures prove no plaintext secret enters rendered DOM, component state serialization, browser storage, URLs, logs, errors, or client responses; control fixtures cover explicit authorization, denied, stopped, resumed, delivery-pending, capability-disabled, and offline states without inventing a second Runtime schema.
 
 ## Initial critical scenarios
