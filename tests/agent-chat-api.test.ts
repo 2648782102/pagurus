@@ -12,11 +12,11 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.7.0', agentChatPaths: 5,
+  agentChatContract: '1.8.0', agentChatPaths: 6,
 };
 
 const conversation = {
-  version: '1.7.0',
+  version: '1.8.0',
   id: `chat_${'a'.repeat(24)}`,
   agentId: 'agt_alpha',
   agentRevisionId: 'agr_alpha',
@@ -51,7 +51,7 @@ describe('agent chat typed client', () => {
     fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.7.0', agents: [
+        return Promise.resolve(json({ version: '1.8.0', agents: [
           {
             id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
             providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
@@ -68,7 +68,7 @@ describe('agent chat typed client', () => {
       }
       if (path === `/v1/agent-chat/conversations/${conversation.id}/messages`) {
         return Promise.resolve(json({
-          version: '1.7.0',
+          version: '1.8.0',
           conversationId: conversation.id,
           userMessage: conversation.messages[0],
           assistantMessage: {
@@ -94,10 +94,10 @@ describe('agent chat typed client', () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('gates on 1.7.0 discovery and publishes the exact five paths', () => {
+  it('gates on 1.7.0 discovery and publishes the exact six paths', () => {
     expect(supportsAgentChat(runtime)).toBe(true);
     expect(supportsAgentChat({ ...runtime, agentChatPaths: 3 })).toBe(false);
-    expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(5);
+    expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(6);
   });
 
   it('prefers the Runtime-owned Boss Agent', async () => {

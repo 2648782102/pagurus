@@ -35,7 +35,7 @@ npm run dev
 ## 使用边界
 
 - 每个界面按 Conchbase 已发布 capability 门禁：`durable-work-contract`、`asynchronous-work-control`、`local-source-policy`、`capability-directory`、`write-only-secret-handles` 等。
-- 组织主会话按可选的 `organizationContract: 1.1.0` 与 `organizationPaths: 18` 门禁；受控执行按 `executionContract: 1.2.0` / `executionPaths: 8`，隔离执行 run 按 `executionRunContract: 1.3.0` / `executionRunPaths: 8`，主会话对话按 `conversationContract: 1.4.0` / `conversationPaths: 2`，独立 Agent 对话按 `agentChatContract: 1.7.0` / `agentChatPaths: 5` 门禁。它们都只把文本/显式写请求发给 Runtime，不本地推导权限。
+- 组织主会话按可选的 `organizationContract: 1.1.0` 与 `organizationPaths: 18` 门禁；受控执行按 `executionContract: 1.2.0` / `executionPaths: 8`，隔离执行 run 按 `executionRunContract: 1.3.0` / `executionRunPaths: 8`，主会话对话按 `conversationContract: 1.4.0` / `conversationPaths: 2`，独立 Agent 对话按 `agentChatContract: 1.8.0` / `agentChatPaths: 6` 门禁。它们都只把文本/显式写请求发给 Runtime，不本地推导权限。
 - Agent 版本与全局运行时配置版本分开管理；Agent 任务固定两者及生效 provider/model。
 - v2 组合执行器是确定性、拓扑中立的遍历，不代表模型驱动多 Agent 执行。
 - 能力目录记录只是配置数据；安装、启用、授权和工具执行仍是不同概念，当前未实现。
@@ -64,9 +64,10 @@ npm run dev
 - [v1.4.0 中文发布说明](RELEASE_NOTES_1.4.0.zh-CN.md)
 - [v1.5.0 中文发布说明](RELEASE_NOTES_1.5.0.zh-CN.md)
 - [v1.7.0 中文发布说明](RELEASE_NOTES_1.7.0.zh-CN.md)
+- [v1.8.0 中文发布说明](RELEASE_NOTES_1.8.0.zh-CN.md)
 - [目标模式接手说明](OBJECTIVE_MODE.zh-CN.md)
 - [机器可读项目状态](PROJECT_STATUS.json)
 - [英文 README](../README.md)
 - [Conchbase 中文快速开始](https://github.com/2648782102/conchbase/blob/main/docs/QUICK_START.zh-CN.md)
 
-`v1.0.0` 是历史发布快照；`v1.1.0` 描述 Boss Mode 组织控制台，`v1.2.0` 描述受控执行控制台 v1，`v1.3.0` 描述隔离执行控制台 v2，`v1.4.0` 描述主会话对话投影，`v1.5.0` 描述独立 Agent 对话控制台，`v1.7.0` 增加有界工具活动与对话内审批。仓库内的中文文档与 Release notes 保持一致。
+`v1.0.0` 是历史发布快照；`v1.1.0` 描述 Boss Mode 组织控制台，`v1.2.0` 描述受控执行控制台 v1，`v1.3.0` 描述隔离执行控制台 v2，`v1.4.0` 描述主会话对话投影，`v1.5.0` 描述独立 Agent 对话控制台，`v1.7.0` 增加有界工具活动与对话内审批，`v1.8.0` 增加可续传的实时事件流。仓库内的中文文档与 Release notes 保持一致。

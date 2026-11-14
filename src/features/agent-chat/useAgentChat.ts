@@ -8,12 +8,14 @@ import {
   listAgentChatAgents,
   listAgentChatModels,
   listAgentChatConversations,
+  openAgentChatStream,
   postAgentChatMessage,
   supportsAgentChat,
   type AgentChatAgent,
   type AgentChatConversation,
   type AgentChatModel,
   type AgentChatReasoningEffort,
+  type AgentChatStream,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 
@@ -34,7 +36,9 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [streamConnected, setStreamConnected] = useState(false);
   const pollRef = useRef<number | null>(null);
+  const streamRef = useRef<AgentChatStream | null>(null);
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
 
@@ -86,7 +90,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   useEffect(() => {
     const pending = conversation?.messages.some((message) =>
       message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
-    if (!pending) {
+    if (!pending || streamConnected) {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
       return;
@@ -96,7 +100,43 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
     };
-  }, [conversation, refreshConversation]);
+  }, [conversation, refreshConversation, streamConnected]);
+
+  useEffect(() => {
+    streamRef.current?.close();
+    streamRef.current = null;
+    setStreamConnected(false);
+    if (!supported || !conversation || typeof EventSource === 'undefined') return;
+    const current = conversation;
+    let closed = false;
+    const stream = openAgentChatStream(current.id, null, {
+      onFrame: (frame) => {
+        if (closed) return;
+        setStreamConnected(true);
+        if (frame.kind === 'snapshot' && frame.conversation) {
+          setConversation(frame.conversation);
+          return;
+        }
+        if (frame.kind !== 'message' || !frame.message) return;
+        const incoming = frame.message;
+        setConversation((previous) => {
+          if (!previous || previous.id !== current.id) return previous;
+          const index = previous.messages.findIndex((entry) => entry.id === incoming.id);
+          const messages = index >= 0
+            ? previous.messages.map((entry) => entry.id === incoming.id ? incoming : entry)
+            : [...previous.messages, incoming];
+          return { ...previous, messages };
+        });
+      },
+    });
+    streamRef.current = stream;
+    return () => {
+      closed = true;
+      stream.close();
+      setStreamConnected(false);
+      if (streamRef.current === stream) streamRef.current = null;
+    };
+  }, [conversation?.id, supported]);
 
   const startConversation = useCallback(async () => {
     if (!supported || !selectedAgentId || busy) return;

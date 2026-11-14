@@ -1,6 +1,6 @@
 import { fetchJson, type RuntimeInfo } from './runtime.js';
 
-export const AGENT_CHAT_CONTRACT_VERSION = '1.7.0';
+export const AGENT_CHAT_CONTRACT_VERSION = '1.8.0';
 
 export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/agents',
@@ -8,6 +8,7 @@ export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/conversations/{conversationId}',
   '/v1/agent-chat/conversations/{conversationId}/messages',
   '/v1/agent-chat/conversations/{conversationId}/approval',
+  '/v1/agent-chat/conversations/{conversationId}/events',
 ] as const);
 
 export const BOSS_AGENT_ID = 'boss-agent';
@@ -138,6 +139,16 @@ export interface AgentChatApprovalResult {
   readonly assistantMessage: AgentChatMessage;
 }
 
+export interface AgentChatStreamFrame {
+  readonly version: typeof AGENT_CHAT_CONTRACT_VERSION;
+  readonly conversationId: string;
+  readonly kind: 'snapshot' | 'message';
+  readonly eventId: string | null;
+  readonly messageId: string | null;
+  readonly message: AgentChatMessage | null;
+  readonly conversation: AgentChatConversation | null;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -230,6 +241,16 @@ function isApprovalResult(value: unknown): value is AgentChatApprovalResult {
   return isVersioned(value)
     && typeof value.conversationId === 'string'
     && isMessage(value.assistantMessage);
+}
+
+function isStreamFrame(value: unknown): value is AgentChatStreamFrame {
+  return isVersioned(value)
+    && typeof value.conversationId === 'string'
+    && (value.kind === 'snapshot' || value.kind === 'message')
+    && (value.eventId === null || typeof value.eventId === 'string')
+    && (value.messageId === null || typeof value.messageId === 'string')
+    && (value.message === null || isMessage(value.message))
+    && (value.conversation === null || isConversation(value.conversation));
 }
 
 export function supportsAgentChat(runtime: RuntimeInfo | null): boolean {
@@ -340,4 +361,33 @@ export async function decideAgentChatApproval(
   );
   if (!isApprovalResult(value)) throw new Error('Runtime returned an invalid Agent Chat approval result.');
   return value;
+}
+
+export interface AgentChatStream {
+  readonly close: () => void;
+}
+
+export function openAgentChatStream(
+  conversationId: string,
+  cursor: string | null,
+  handlers: {
+    readonly onFrame: (frame: AgentChatStreamFrame) => void;
+    readonly onError?: (cause: unknown) => void;
+  },
+): AgentChatStream {
+  const query = cursor === null ? '' : `?after=${encodeURIComponent(cursor)}`;
+  const source = new EventSource(
+    `/v1/agent-chat/conversations/${encodeURIComponent(conversationId)}/events${query}`,
+  );
+  source.addEventListener('agent-chat', (event) => {
+    try {
+      const value: unknown = JSON.parse((event as MessageEvent<string>).data);
+      if (isStreamFrame(value)) handlers.onFrame(value);
+      else handlers.onError?.(new Error('Runtime returned an invalid Agent Chat stream frame.'));
+    } catch (cause) {
+      handlers.onError?.(cause);
+    }
+  });
+  source.onerror = (cause) => handlers.onError?.(cause);
+  return Object.freeze({ close: () => source.close() });
 }
