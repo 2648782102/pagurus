@@ -31,6 +31,10 @@ const conversation = {
     state: 'published',
     taskId: null,
     error: null,
+    phase: 'accepted',
+    progress: null,
+    updatedAt: '2026-11-14T00:00:00.000Z',
+    replyToId: null,
   }],
 };
 
@@ -71,8 +75,12 @@ describe('agent chat typed client', () => {
             sequence: 2,
             author: 'assistant',
             body: '',
-            state: 'pending',
+            state: 'thinking',
             taskId: 'task_alpha',
+            phase: 'preparing',
+            progress: null,
+            updatedAt: '2026-11-14T00:00:00.000Z',
+            replyToId: null,
           },
         }, 202));
       }
@@ -100,6 +108,6 @@ describe('agent chat typed client', () => {
     await expect(createAgentChatConversation({ agentId: 'agt_alpha' })).resolves.toMatchObject({ id: conversation.id });
     await expect(getAgentChatConversation(conversation.id)).resolves.toMatchObject({ agentId: 'agt_alpha' });
     await expect(postAgentChatMessage(conversation.id, { text: '你好', idempotencyKey: 'key' }))
-      .resolves.toMatchObject({ assistantMessage: { state: 'pending' } });
+      .resolves.toMatchObject({ assistantMessage: { state: 'thinking' } });
   });
 });

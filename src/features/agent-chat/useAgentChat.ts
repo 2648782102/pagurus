@@ -3,6 +3,7 @@ import {
   createAgentChatConversation,
   getAgentChatConversation,
   isBossAgent,
+  isPendingAgentChatState,
   listAgentChatAgents,
   postAgentChatMessage,
   supportsAgentChat,
@@ -57,7 +58,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   }, []);
 
   useEffect(() => {
-    const pending = conversation?.messages.some((message) => message.state === 'pending') ?? false;
+    const pending = conversation?.messages.some((message) =>
+      message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
     if (!pending) {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
@@ -117,7 +119,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     () => agents.find((agent) => agent.id === (conversation?.agentId ?? selectedAgentId)),
     [agents, conversation?.agentId, selectedAgentId],
   );
-  const hasPending = conversation?.messages.some((message) => message.state === 'pending') ?? false;
+  const hasPending = conversation?.messages.some((message) =>
+    message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
 
   return {
     supported,

@@ -2,6 +2,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentChatPanel } from '../src/features/agent-chat/AgentChatPanel.js';
+import { AgentChatThread } from '../src/features/agent-chat/AgentChatThread.js';
+import type { AgentChatMessage } from '../src/shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
@@ -56,10 +58,10 @@ describe('Agent Chat panel', () => {
           ...conversation,
           messages: [{
             id: `amsg_${'b'.repeat(24)}`, sequence: 1, author: 'user', body: '你好',
-            state: 'published', taskId: null, error: null,
+            state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: null,
           }, {
             id: `amsg_${'c'.repeat(24)}`, sequence: 2, author: 'assistant', body: '你好，我是 Agent。',
-            state: 'succeeded', taskId: 'task_alpha', error: null,
+            state: 'replied', taskId: 'task_alpha', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: null,
           }],
         }));
       }
@@ -69,11 +71,11 @@ describe('Agent Chat panel', () => {
           conversationId: conversation.id,
           userMessage: {
             id: `amsg_${'b'.repeat(24)}`, sequence: 1, author: 'user', body: '你好',
-            state: 'published', taskId: null, error: null,
+            state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: null,
           },
           assistantMessage: {
             id: `amsg_${'c'.repeat(24)}`, sequence: 2, author: 'assistant', body: '你好，我是 Agent。',
-            state: 'succeeded', taskId: 'task_alpha', error: null,
+            state: 'replied', taskId: 'task_alpha', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: null,
           },
         }, 202));
       }
@@ -96,6 +98,22 @@ describe('Agent Chat panel', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(screen.getByText('你好，我是 Agent。')).toBeTruthy());
     expect(screen.getByText('你好')).toBeTruthy();
+  });
+
+  it('renders thinking, organizing, waiting attention, and unavailable states', async () => {
+    const messages: readonly AgentChatMessage[] = [
+      { id: `amsg_${'d'.repeat(24)}`, sequence: 1, author: 'user', body: '问题', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: null },
+      { id: `amsg_${'e'.repeat(24)}`, sequence: 2, author: 'assistant', body: '', state: 'thinking', taskId: null, error: null, phase: 'preparing', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}` },
+      { id: `amsg_${'f'.repeat(24)}`, sequence: 3, author: 'assistant', body: '正在汇总', state: 'organizing', taskId: null, error: null, phase: 'organization', progress: 25, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}` },
+      { id: `amsg_${'0'.repeat(24)}`, sequence: 4, author: 'assistant', body: '需要确认', state: 'waiting_attention', taskId: null, error: null, phase: 'human', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}` },
+      { id: `amsg_${'1'.repeat(24)}`, sequence: 5, author: 'assistant', body: '目录不可用', state: 'unavailable', taskId: null, error: 'Model catalog is unavailable.', phase: 'terminal', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}` },
+    ];
+    render(<AgentChatThread messages={messages} agentName="老板 Agent" />);
+    expect(screen.getByText('正在思考…')).toBeTruthy();
+    expect(screen.getByText('正在组织工作…')).toBeTruthy();
+    expect(screen.getByText('等待你的确认')).toBeTruthy();
+    expect(screen.getByText('模型服务暂不可用')).toBeTruthy();
+    expect(screen.getByText('正在汇总')).toBeTruthy();
   });
 
   it('keeps Shift Enter as a newline and hides technical details by default', async () => {

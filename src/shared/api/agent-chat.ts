@@ -18,7 +18,26 @@ export function isBossAgent(agent: Pick<AgentChatAgent, 'id' | 'providerId' | 'm
 }
 
 export type AgentChatMessageAuthor = 'user' | 'assistant' | 'runtime';
-export type AgentChatMessageState = 'published' | 'pending' | 'succeeded' | 'failed' | 'cancelled';
+export type AgentChatMessageState =
+  | 'published'
+  | 'pending'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'thinking'
+  | 'streaming'
+  | 'organizing'
+  | 'waiting_attention'
+  | 'replied'
+  | 'unavailable';
+
+export type AgentChatMessagePhase =
+  | 'accepted'
+  | 'preparing'
+  | 'model'
+  | 'organization'
+  | 'human'
+  | 'terminal';
 
 export interface AgentChatAgent {
   readonly id: string;
@@ -38,6 +57,22 @@ export interface AgentChatMessage {
   readonly state: AgentChatMessageState;
   readonly taskId: string | null;
   readonly error: string | null;
+  readonly phase: AgentChatMessagePhase;
+  readonly progress: number | null;
+  readonly updatedAt: string;
+  readonly replyToId: string | null;
+}
+
+export function isTerminalAgentChatState(state: AgentChatMessageState): boolean {
+  return state === 'replied'
+    || state === 'succeeded'
+    || state === 'failed'
+    || state === 'cancelled'
+    || state === 'unavailable';
+}
+
+export function isPendingAgentChatState(state: AgentChatMessageState): boolean {
+  return !isTerminalAgentChatState(state) && state !== 'published';
 }
 
 export interface AgentChatConversation {
@@ -77,8 +112,14 @@ function isAgent(value: unknown): value is AgentChatAgent {
     && typeof value.archived === 'boolean';
 }
 
-const MESSAGE_STATES: readonly string[] = ['published', 'pending', 'succeeded', 'failed', 'cancelled'];
+const MESSAGE_STATES: readonly string[] = [
+  'published', 'pending', 'succeeded', 'failed', 'cancelled',
+  'thinking', 'streaming', 'organizing', 'waiting_attention', 'replied', 'unavailable',
+];
 const MESSAGE_AUTHORS: readonly string[] = ['user', 'assistant', 'runtime'];
+const MESSAGE_PHASES: readonly string[] = [
+  'accepted', 'preparing', 'model', 'organization', 'human', 'terminal',
+];
 
 function isMessage(value: unknown): value is AgentChatMessage {
   return isRecord(value)
@@ -88,7 +129,12 @@ function isMessage(value: unknown): value is AgentChatMessage {
     && typeof value.body === 'string'
     && typeof value.state === 'string' && MESSAGE_STATES.includes(value.state)
     && (value.taskId === null || typeof value.taskId === 'string')
-    && (value.error === null || typeof value.error === 'string');
+    && (value.error === null || typeof value.error === 'string')
+    && typeof value.phase === 'string' && MESSAGE_PHASES.includes(value.phase)
+    && (value.progress === null || (Number.isInteger(value.progress)
+      && (value.progress as number) >= 0 && (value.progress as number) <= 100))
+    && typeof value.updatedAt === 'string'
+    && (value.replyToId === null || typeof value.replyToId === 'string');
 }
 
 function isConversation(value: unknown): value is AgentChatConversation {

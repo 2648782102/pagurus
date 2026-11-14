@@ -319,6 +319,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'agent-chat-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-agent-chat-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'codex-style-agent-chat-flow')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'agent-chat-conversation-states-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -348,6 +349,9 @@ function assertProjectStatus(source: string, label: string): void {
   )).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'codex-style-agent-chat-flow-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'agent-chat-conversation-states-console-fixture' && record.executableFixture === true,
   )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
@@ -487,6 +491,7 @@ describe('AI-first entry documents', () => {
       '0023-agent-chat-console.md',
       '0024-boss-agent-chat-console.md',
       '0025-codex-style-agent-chat-flow.md',
+      '0026-agent-chat-conversation-states-console.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -587,6 +592,9 @@ describe('AI-first entry documents', () => {
     const twentyFifth = read(`${recordsDir}/0025-codex-style-agent-chat-flow.md`);
     expect(twentyFifth).toMatch(/^Status: \*\*accepted paired client UX boundary; no Runtime API contract changes\*\*$/m);
     expect(twentyFifth).toMatch(/Enter to send/);
+    const twentySixth = read(`${recordsDir}/0026-agent-chat-conversation-states-console.md`);
+    expect(twentySixth).toMatch(/^Status: \*\*accepted paired client contract for Conchbase Agent Chat states\*\*$/m);
+    expect(twentySixth).toMatch(/thinking/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -856,6 +864,7 @@ describe('client boundaries', () => {
         { id: 'agent-chat-console' },
         { id: 'boss-agent-chat-console' },
         { id: 'codex-style-agent-chat-flow' },
+        { id: 'agent-chat-conversation-states-console' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
@@ -870,6 +879,7 @@ describe('client boundaries', () => {
         { id: 'agent-chat-console-fixture', executableFixture: true },
         { id: 'boss-agent-chat-console-fixture', executableFixture: true },
         { id: 'codex-style-agent-chat-flow-fixture', executableFixture: true },
+        { id: 'agent-chat-conversation-states-console-fixture', executableFixture: true },
         { id: 'isolated-execution-console-fixture', executableFixture: true },
       ],
       blockedDirections: [

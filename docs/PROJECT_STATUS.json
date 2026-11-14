@@ -150,6 +150,11 @@
       "id": "codex-style-agent-chat-flow",
       "summary": "Pagurus ADR 0025 reshapes Agent Chat into a setup-to-conversation flow with a continuous thread, persistent bottom composer, Enter-to-send behavior, hidden technical details, and Runtime-published replies.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
+    },
+    {
+      "id": "agent-chat-conversation-states-console",
+      "summary": "Pagurus ADR 0026 renders the full Runtime-published Agent Chat lifecycle: thinking, streaming, organizing, waiting_attention, replied, failed, unavailable, and cancelled states.",
+      "evidence": "src/features/agent-chat/AgentChatThread.tsx"
     }
   ],
   "validationEvidence": [
@@ -230,6 +235,12 @@
     {
       "id": "codex-style-agent-chat-flow-fixture",
       "summary": "Executable fixtures cover setup-to-chat transition, hidden setup after start, continuous message rendering, Enter/Shift+Enter composer behavior, optional session details, and unsupported Runtime fallback.",
+      "evidence": "tests/agent-chat-panel.test.tsx",
+      "executableFixture": true
+    },
+    {
+      "id": "agent-chat-conversation-states-console-fixture",
+      "summary": "Executable fixtures cover expanded typed-client state fields and visible thinking/streaming/organizing/waiting-attention/replied/failed/unavailable/cancelled rendering.",
       "evidence": "tests/agent-chat-panel.test.tsx",
       "executableFixture": true
     }
