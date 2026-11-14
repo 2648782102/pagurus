@@ -177,6 +177,7 @@ describe('Agent Chat panel', () => {
       />,
     );
     expect(screen.getByText('等待你批准工具调用')).toBeTruthy();
+    expect(screen.getByText('等待你批准工具调用').closest('article')?.getAttribute('aria-busy')).toBe('false');
     expect(screen.getByText('写入文件')).toBeTruthy();
     expect(screen.getByText('workspace_write')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '批准并继续' }));

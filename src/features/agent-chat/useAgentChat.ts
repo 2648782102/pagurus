@@ -105,6 +105,15 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   }, [conversation, refreshConversation, streamConnected]);
 
   useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      void refreshConversation();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refreshConversation]);
+
+  useEffect(() => {
     streamRef.current?.close();
     streamRef.current = null;
     setStreamConnected(false);

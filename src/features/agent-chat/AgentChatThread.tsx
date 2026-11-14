@@ -25,7 +25,7 @@ const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
 
 function isWorking(state: AgentChatMessageState): boolean {
   return state === 'thinking' || state === 'streaming' || state === 'organizing'
-    || state === 'pending' || state === 'waiting_approval';
+    || state === 'pending';
 }
 
 function messageBody(message: AgentChatMessage): string {
