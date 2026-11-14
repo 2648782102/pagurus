@@ -1,6 +1,6 @@
 import { fetchJson, type RuntimeInfo } from './runtime.js';
 
-export const AGENT_CHAT_CONTRACT_VERSION = '1.5.0';
+export const AGENT_CHAT_CONTRACT_VERSION = '1.6.0';
 
 export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/agents',
@@ -90,7 +90,25 @@ export interface AgentChatConversation {
   readonly providerId: string;
   readonly modelId: string;
   readonly configurationRevisionId: string;
+  readonly reasoningEffort: AgentChatReasoningEffort;
   readonly messages: readonly AgentChatMessage[];
+}
+
+export type AgentChatReasoningEffort = 'low' | 'medium' | 'high';
+
+export interface AgentChatConversationSummary {
+  readonly id: string;
+  readonly agentId: string;
+  readonly reasoningEffort: AgentChatReasoningEffort;
+  readonly createdAt: string;
+  readonly messageCount: number;
+  readonly lastMessagePreview: string;
+}
+
+export interface AgentChatConversationList {
+  readonly version: typeof AGENT_CHAT_CONTRACT_VERSION;
+  readonly conversations: readonly AgentChatConversationSummary[];
+  readonly defaultModelId: string | null;
 }
 
 export interface AgentChatMessageResult {
@@ -160,6 +178,7 @@ function isConversation(value: unknown): value is AgentChatConversation {
     && typeof value.providerId === 'string'
     && typeof value.modelId === 'string'
     && typeof value.configurationRevisionId === 'string'
+    && (value.reasoningEffort === 'low' || value.reasoningEffort === 'medium' || value.reasoningEffort === 'high')
     && Array.isArray(value.messages) && value.messages.every(isMessage);
 }
 
@@ -198,6 +217,7 @@ export async function createAgentChatConversation(
   input: {
     readonly agentId?: string;
     readonly modelOverride?: { readonly providerId: string; readonly modelId: string };
+    readonly reasoningEffort?: AgentChatReasoningEffort;
   } = {},
   signal?: AbortSignal,
 ): Promise<AgentChatConversation> {
@@ -208,6 +228,30 @@ export async function createAgentChatConversation(
   }, signal);
   if (!isConversation(value)) throw new Error('Runtime returned an invalid Agent Chat conversation.');
   return value;
+}
+
+export async function listAgentChatConversations(
+  limit = 20,
+  signal?: AbortSignal,
+): Promise<AgentChatConversationList> {
+  const value: unknown = await fetchJson<unknown>(
+    `/v1/agent-chat/conversations?limit=${encodeURIComponent(String(limit))}`,
+    undefined,
+    signal,
+  );
+  if (!isVersioned(value)
+    || !Array.isArray((value as { conversations?: unknown }).conversations)
+    || !((value as { conversations: unknown[] }).conversations.every((entry) => isRecord(entry)
+      && typeof entry.id === 'string'
+      && typeof entry.agentId === 'string'
+      && typeof entry.createdAt === 'string'
+      && Number.isInteger(entry.messageCount)
+      && typeof entry.lastMessagePreview === 'string'))
+    || !((value as { defaultModelId?: unknown }).defaultModelId === null
+      || typeof (value as { defaultModelId?: unknown }).defaultModelId === 'string')) {
+    throw new Error('Runtime returned an invalid Agent Chat conversation list.');
+  }
+  return value as unknown as AgentChatConversationList;
 }
 
 export async function getAgentChatConversation(

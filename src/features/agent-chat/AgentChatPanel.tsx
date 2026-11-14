@@ -17,7 +17,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
         <>
           <div className="section-heading"><h2 id="agent-chat-title">Agent 对话</h2></div>
           <div className="work-notice" role="status">
-            <p>当前 Runtime 未发布 <code>agentChatContract: 1.5.0</code>，Agent 对话保持关闭。</p>
+            <p>当前 Runtime 未发布 <code>agentChatContract: 1.6.0</code>，Agent 对话保持关闭。</p>
           </div>
         </>
       ) : !chat.conversation ? (
@@ -47,6 +47,17 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               ))}
             </select>
             <p className="agent-chat-setup-note">模型列表来自 Magpie；供应商、凭证与路由仍在 Magpie 中由用户配置。</p>
+            <label htmlFor="agent-chat-reasoning">思考强度</label>
+            <select id="agent-chat-reasoning" value={chat.reasoningEffort}
+              onChange={(event) => chat.setReasoningEffort(event.target.value as 'low' | 'medium' | 'high')}
+              disabled={chat.busy}>
+              <option value="low">低 · 更快</option>
+              <option value="medium">中 · 平衡</option>
+              <option value="high">高 · 更深</option>
+            </select>
+            {chat.recent.length > 0 && (
+              <p className="agent-chat-setup-note">已恢复最近会话；重新开始会创建新会话。</p>
+            )}
             <button className="button-primary" type="button" onClick={chat.startConversation}
               disabled={chat.busy || chat.selectedAgentId.length === 0}>
               {chat.busy ? '正在开启…' : '开始对话'}
@@ -61,6 +72,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               <p className="agent-chat-kicker">正在对话</p>
               <h2 id="agent-chat-title">{activeName}</h2>
               <p className="agent-chat-subtitle">{chat.conversation.providerId}:{chat.conversation.modelId}</p>
+              <p className="agent-chat-subtitle">思考强度：{chat.conversation.reasoningEffort}</p>
             </div>
             <div className="agent-chat-header-actions">
               <button className="button-secondary" type="button" onClick={() => chat.setDetailsOpen(!chat.detailsOpen)}

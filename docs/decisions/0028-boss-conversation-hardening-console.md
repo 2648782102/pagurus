@@ -15,6 +15,7 @@ Conchbase ADR 0050 separates pure Boss conversation from organization execution 
 3. `organizing` is labeled “正在执行组织动作…” because it now appears only after Runtime has accepted an organization action. Model waiting uses `thinking` or `streaming`.
 4. `streaming` progress is rendered from Runtime-published `progress`; Pagurus never invents partial text or progress.
 5. Following Conchbase ADR 0051, the Agent Chat setup screen reads `/v1/model-catalog`, offers a model selector, and sends an optional `modelOverride` when creating a conversation. The client does not store provider credentials or invent a model catalog.
+6. Following Conchbase ADR 0055, the client gates on Agent Chat `1.6.0`, restores the most recent Runtime-owned conversation on load, and offers a reasoning-effort selector (`low` / `medium` / `high`) pinned at conversation creation. It stores no transcript and no conversation id in browser storage.
 
 ## Options
 

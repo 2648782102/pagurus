@@ -6,11 +6,13 @@ import {
   isPendingAgentChatState,
   listAgentChatAgents,
   listAgentChatModels,
+  listAgentChatConversations,
   postAgentChatMessage,
   supportsAgentChat,
   type AgentChatAgent,
   type AgentChatConversation,
   type AgentChatModel,
+  type AgentChatReasoningEffort,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 
@@ -24,6 +26,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [models, setModels] = useState<readonly AgentChatModel[]>([]);
   const [selectedModelReference, setSelectedModelReference] = useState('');
+  const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('medium');
+  const [recent, setRecent] = useState<readonly { id: string; agentId: string; lastMessagePreview: string }[]>([]);
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -36,14 +40,26 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const loadAgents = useCallback(async () => {
     if (!supported) return;
     try {
-      const [list, catalog] = await Promise.all([
+      const [list, catalog, history] = await Promise.all([
         listAgentChatAgents(),
         listAgentChatModels().catch(() => [] as readonly AgentChatModel[]),
+        listAgentChatConversations().catch(() => null),
       ]);
       const available = list.filter((agent) => !agent.archived);
       setAgents(available);
       setModels(catalog);
-      setSelectedModelReference((current) => current || catalog[0]?.reference || '');
+      const preferred = history?.defaultModelId
+        ? catalog.find((model) => model.modelId === history.defaultModelId)
+        : undefined;
+      setSelectedModelReference((current) => current || preferred?.reference || catalog[0]?.reference || '');
+      setRecent(history?.conversations ?? []);
+      if (history?.conversations[0]) {
+        try {
+          setConversation(await getAgentChatConversation(history.conversations[0].id));
+        } catch {
+          setConversation(null);
+        }
+      }
       setSelectedAgentId((current) => current || available.find((agent) => isBossAgent(agent))?.id
         || available.find((agent) => agent.isDefault)?.id
         || available[0]?.id || '');
@@ -89,6 +105,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       const selectedModel = models.find((model) => model.reference === selectedModelReference);
       const created = await createAgentChatConversation({
         agentId: selectedAgentId,
+        reasoningEffort,
         ...(selectedModel
           ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
           : {}),
@@ -101,7 +118,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     } finally {
       setBusy(false);
     }
-  }, [busy, models, selectedAgentId, selectedModelReference, supported]);
+  }, [busy, models, reasoningEffort, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
     setConversation(null);
@@ -159,5 +176,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     startConversation,
     resetConversation,
     sendMessage,
+    reasoningEffort,
+    setReasoningEffort,
+    recent,
   };
 }

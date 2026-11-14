@@ -8,16 +8,17 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.5.0', agentChatPaths: 4,
+  agentChatContract: '1.6.0', agentChatPaths: 4,
 };
 
 const conversation = {
-  version: '1.5.0',
+  version: '1.6.0',
   id: `chat_${'a'.repeat(24)}`,
   agentId: 'agt_alpha',
   agentRevisionId: 'agr_alpha',
   providerId: 'magpie',
   modelId: 'fixture/chat-model',
+  reasoningEffort: 'medium',
   configurationRevisionId: 'cfg_alpha',
   messages: [],
 };
@@ -32,7 +33,7 @@ describe('Agent Chat panel', () => {
     vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.5.0', agents: [{
+        return Promise.resolve(json({ version: '1.6.0', agents: [{
           id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
           providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
         }, {
@@ -48,6 +49,9 @@ describe('Agent Chat panel', () => {
           providerId: 'magpie', modelId: 'fixture/alt-model',
           reference: 'magpie:fixture/alt-model', displayName: 'Alternate Chat Model', capabilities: ['chat'],
         }] }));
+      }
+      if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+        return Promise.resolve(json({ version: '1.6.0', conversations: [], defaultModelId: null }));
       }
       if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') {
         const body = JSON.parse(String(init.body ?? '{}')) as { agentId?: string };
@@ -76,7 +80,7 @@ describe('Agent Chat panel', () => {
       }
       if (path === `/v1/agent-chat/conversations/${conversation.id}/messages`) {
         return Promise.resolve(json({
-          version: '1.5.0',
+          version: '1.6.0',
           conversationId: conversation.id,
           userMessage: {
             id: `amsg_${'b'.repeat(24)}`, sequence: 1, author: 'user', body: '你好',
@@ -165,6 +169,6 @@ describe('Agent Chat panel', () => {
     render(<AgentChatPanel runtime={{
       ...runtime, agentChatContract: undefined, agentChatPaths: undefined,
     }} />);
-    expect(await screen.findByText(/agentChatContract: 1\.5\.0/)).toBeTruthy();
+    expect(await screen.findByText(/agentChatContract: 1\.6\.0/)).toBeTruthy();
   });
 });
