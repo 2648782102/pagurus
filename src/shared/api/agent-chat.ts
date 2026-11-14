@@ -142,7 +142,7 @@ export interface AgentChatApprovalResult {
 export interface AgentChatStreamFrame {
   readonly version: typeof AGENT_CHAT_CONTRACT_VERSION;
   readonly conversationId: string;
-  readonly kind: 'snapshot' | 'message';
+  readonly kind: 'snapshot' | 'message' | 'health';
   readonly eventId: string | null;
   readonly messageId: string | null;
   readonly message: AgentChatMessage | null;
@@ -246,7 +246,7 @@ function isApprovalResult(value: unknown): value is AgentChatApprovalResult {
 function isStreamFrame(value: unknown): value is AgentChatStreamFrame {
   return isVersioned(value)
     && typeof value.conversationId === 'string'
-    && (value.kind === 'snapshot' || value.kind === 'message')
+    && (value.kind === 'snapshot' || value.kind === 'message' || value.kind === 'health')
     && (value.eventId === null || typeof value.eventId === 'string')
     && (value.messageId === null || typeof value.messageId === 'string')
     && (value.message === null || isMessage(value.message))

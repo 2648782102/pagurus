@@ -131,4 +131,24 @@ describe('Agent Chat stream client', () => {
     expect(second!.closed).toBe(true);
     vi.useRealTimers();
   });
+
+  it('accepts a health frame without changing the cursor', () => {
+    vi.stubGlobal('EventSource', FakeEventSource);
+    const frames: { kind: string }[] = [];
+    const stream = openAgentChatStream('chat_' + 'e'.repeat(24), null, {
+      onFrame: (frame) => frames.push(frame),
+    });
+    FakeEventSource.instances[0]!.emit({
+      version: '1.8.0',
+      conversationId: `chat_${'e'.repeat(24)}`,
+      kind: 'health',
+      eventId: 'evt_000000000010',
+      messageId: null,
+      message: null,
+      conversation: null,
+    });
+    expect(frames.map((frame) => frame.kind)).toEqual(['health']);
+    expect(stream.cursor()).toBe('evt_000000000010');
+    stream.close();
+  });
 });
