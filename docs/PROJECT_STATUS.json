@@ -155,6 +155,11 @@
       "id": "agent-chat-conversation-states-console",
       "summary": "Pagurus ADR 0026 renders the full Runtime-published Agent Chat lifecycle: thinking, streaming, organizing, waiting_attention, replied, failed, unavailable, and cancelled states.",
       "evidence": "src/features/agent-chat/AgentChatThread.tsx"
+    },
+    {
+      "id": "boss-conversation-console",
+      "summary": "Pagurus ADR 0027 records that natural Boss conversation replies remain Runtime-published messages in the existing Agent Chat flow, with no client authority or new API contract.",
+      "evidence": "docs/decisions/0027-boss-conversation-console.md"
     }
   ],
   "validationEvidence": [

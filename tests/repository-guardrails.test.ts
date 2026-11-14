@@ -320,6 +320,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'boss-agent-chat-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'codex-style-agent-chat-flow')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'agent-chat-conversation-states-console')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'boss-conversation-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -492,6 +493,7 @@ describe('AI-first entry documents', () => {
       '0024-boss-agent-chat-console.md',
       '0025-codex-style-agent-chat-flow.md',
       '0026-agent-chat-conversation-states-console.md',
+      '0027-boss-conversation-console.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -595,6 +597,9 @@ describe('AI-first entry documents', () => {
     const twentySixth = read(`${recordsDir}/0026-agent-chat-conversation-states-console.md`);
     expect(twentySixth).toMatch(/^Status: \*\*accepted paired client contract for Conchbase Agent Chat states\*\*$/m);
     expect(twentySixth).toMatch(/thinking/);
+    const twentySeventh = read(`${recordsDir}/0027-boss-conversation-console.md`);
+    expect(twentySeventh).toMatch(/^Status: \*\*accepted paired client documentation boundary; no client or Runtime API contract changes\*\*$/m);
+    expect(twentySeventh).toMatch(/Runtime-published/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -865,6 +870,7 @@ describe('client boundaries', () => {
         { id: 'boss-agent-chat-console' },
         { id: 'codex-style-agent-chat-flow' },
         { id: 'agent-chat-conversation-states-console' },
+        { id: 'boss-conversation-console' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
