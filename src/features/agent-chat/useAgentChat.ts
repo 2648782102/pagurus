@@ -18,6 +18,7 @@ import {
   type AgentChatStream,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { mergeConversation } from './merge-conversation.js';
 
 function errorText(cause: unknown): string {
   return cause instanceof Error ? cause.message.slice(0, 240) : 'Agent 对话失败';
@@ -110,11 +111,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     const current = conversation;
     let closed = false;
     const stream = openAgentChatStream(current.id, null, {
+      onReconnect: () => setStreamConnected(false),
       onFrame: (frame) => {
         if (closed) return;
         setStreamConnected(true);
         if (frame.kind === 'snapshot' && frame.conversation) {
-          setConversation(frame.conversation);
+          const snapshot = frame.conversation;
+          setConversation((previous) => previous ? mergeConversation(previous, snapshot) : snapshot);
           return;
         }
         if (frame.kind !== 'message' || !frame.message) return;
@@ -230,6 +233,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     setDetailsOpen,
     activeAgent,
     hasPending,
+    streamConnected,
     loadAgents,
     refreshConversation,
     startConversation,

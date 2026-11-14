@@ -35,6 +35,10 @@ class FakeEventSource {
   emit(payload: unknown): void {
     this.listeners.get('agent-chat')?.({ data: JSON.stringify(payload) } as MessageEvent<string>);
   }
+
+  fail(): void {
+    this.onerror?.(new Error('disconnected'));
+  }
 }
 
 afterEach(() => {
@@ -96,5 +100,35 @@ describe('Agent Chat stream client', () => {
     FakeEventSource.instances[0]!.emit({ version: '1.8.0', kind: 'message' });
     expect(frames).toHaveLength(0);
     expect(errors).toHaveLength(1);
+  });
+
+  it('reconnects with the last event id after a disconnect', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('EventSource', FakeEventSource);
+    const frames: unknown[] = [];
+    const stream = openAgentChatStream('chat_' + 'c'.repeat(24), null, {
+      onFrame: (frame) => frames.push(frame),
+    });
+    const first = FakeEventSource.instances[0]!;
+    first.emit({
+      version: '1.8.0',
+      conversationId: `chat_${'c'.repeat(24)}`,
+      kind: 'message',
+      eventId: 'evt_000000000077',
+      messageId: `amsg_${'d'.repeat(24)}`,
+      message: null,
+      conversation: null,
+    });
+    expect(stream.cursor()).toBe('evt_000000000077');
+    expect(stream.connected()).toBe(true);
+    first.fail();
+    expect(stream.connected()).toBe(false);
+    vi.advanceTimersByTime(600);
+    const second = FakeEventSource.instances[1];
+    expect(second).toBeTruthy();
+    expect(second!.url).toContain('?after=evt_000000000077');
+    stream.close();
+    expect(second!.closed).toBe(true);
+    vi.useRealTimers();
   });
 });

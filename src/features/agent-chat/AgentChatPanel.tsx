@@ -73,6 +73,11 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               <h2 id="agent-chat-title">{activeName}</h2>
               <p className="agent-chat-subtitle">{chat.conversation.providerId}:{chat.conversation.modelId}</p>
               <p className="agent-chat-subtitle">思考强度：{chat.conversation.reasoningEffort}</p>
+              {chat.hasPending && (
+                <p className="agent-chat-subtitle" role="status">
+                  {chat.streamConnected ? '实时连接' : '轮询同步'}
+                </p>
+              )}
             </div>
             <div className="agent-chat-header-actions">
               <button className="button-secondary" type="button" onClick={() => chat.setDetailsOpen(!chat.detailsOpen)}
