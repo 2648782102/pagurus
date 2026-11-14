@@ -141,6 +141,12 @@
   ],
   "blockedDirections": [
     {
+      "id": "controlled-execution-console",
+      "summary": "Capability grants, approvals, execution controls, and lifecycle UI are accepted as the next paired direction by ADR 0019 but require Runtime contracts, implementation ADRs, and deterministic fixtures.",
+      "requiresAcceptedAdr": true,
+      "directionAdr": "docs/decisions/0019-controlled-execution-console-direction.md"
+    },
+    {
       "id": "tool-approval-ui",
       "summary": "Tool request/approval presentation and decisions require a real Conchbase execution authorization contract and a paired Pagurus ADR.",
       "requiresAcceptedAdr": true,

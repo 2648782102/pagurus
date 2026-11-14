@@ -378,6 +378,8 @@ describe('AI-first entry documents', () => {
     expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/契约事实源/);
     expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/中文发布说明/);
     expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/本 Release 同时附带上述中文文档资产/);
+    expect(read('docs/RELEASE_NOTES_1.1.0.zh-CN.md')).toMatch(/Boss Mode `1\.1\.0`/);
+    expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/组织主会话/);
     expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
     expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
@@ -406,6 +408,7 @@ describe('AI-first entry documents', () => {
       '0016-organization-console-delivery-boundary.md',
       '0017-organization-console-public-contract-boundary.md',
       '0018-boss-mode-console-product-loop.md',
+      '0019-controlled-execution-console-direction.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
