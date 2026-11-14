@@ -12,11 +12,13 @@
 ## 本次发布内容
 
 - 新增「组织主会话」工作区，提交自然语言意图并显示 Runtime 发布的项目、员工提案、Delegation、WorkItem、报告、Attention 与事件。
+- 组织台增加主会话事件时间线、项目/线程检查器、Attention 详情、报告与工作项视图、自动刷新、最近同步时间和事件游标增量读取；所有详情仍只来自 published `1.1.0` 路由。
 - org typed client 明确校验 `1.1.0` 响应 envelope；提交意图只携带 `text` 与 `idempotencyKey`，不再本地推导 `expectedSequence`。
 - Attention-first 队列读取 Runtime 发布的 `expectedVersion`，回答/撤回使用该版本；`202` 仅显示“意图已接受”，随后刷新已发布状态。
 - Runtime capability 通过可选的 `organizationContract: "1.1.0"` 与 `organizationPaths: 18` 门禁；session 响应不再要求原始 events，事件通过 `/v1/organization/events` 读取。
 - 界面保持只读审计边界：不创建 Agent revision、不计算 Delegation 继承、不决定 archive/resume、不读写 Conchbase 私有文件或数据库。
 - 双仓 fake-provider live loopback fixture 动态导入 Pagurus typed organization client，覆盖多项目、并发 worker、Attention 回答和归档恢复。
+- 组织台可用性夹具覆盖时间线、项目线程、自动刷新、typed detail reads、事件游标以及响应式/键盘守卫。
 
 ## 本地运行
 

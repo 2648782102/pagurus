@@ -56,8 +56,23 @@ describe('Organization Console', () => {
       if (path.includes('/v1/health')) return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
       if (path.includes('/v1/runtime')) return Promise.resolve(json(runtime));
       if (path === '/v1/organization/session') return Promise.resolve(json(session));
+      if (path === '/v1/organization/work-items') {
+        return Promise.resolve(json({ version: '1.1.0', workItems: [] }));
+      }
+      if (path.startsWith('/v1/organization/projects/') && path.endsWith('/threads')) {
+        return Promise.resolve(json({
+          version: '1.1.0',
+          projectId: 'project_alpha',
+          threads: [{ eventId: 'evt_alpha', sequence: 1, type: 'organization.project_opened' }],
+        }));
+      }
       if (path.includes('/v1/organization/events')) {
-        return Promise.resolve(json({ version: '1.1.0', events: [], nextCursor: null, hasMore: false }));
+        return Promise.resolve(json({
+          version: '1.1.0',
+          events: [{ id: 'evt_alpha', sequence: 1, type: 'organization.project_opened', projectId: 'project_alpha', data: {}, expectedVersion: 1 }],
+          nextCursor: 'evt_alpha',
+          hasMore: false,
+        }));
       }
       return Promise.resolve(json({}));
     }));
@@ -74,8 +89,12 @@ describe('Organization Console', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: '单一主会话组织台' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '主会话时间线' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '项目与归档' })).toBeTruthy();
+    expect(screen.getByText('项目创建')).toBeTruthy();
+    expect(screen.getByLabelText('自动刷新')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Attention 优先队列' })).toBeTruthy();
-    expect(screen.getByText('project_alpha')).toBeTruthy();
+    expect(screen.getAllByText('project_alpha').length).toBeGreaterThan(0);
     expect(screen.getByText('sha256_instructions')).toBeTruthy();
     expect(screen.getByText(/202 仅代表意图被接受/)).toBeTruthy();
     expect(screen.queryByText(/归档项目/)).toBeNull();

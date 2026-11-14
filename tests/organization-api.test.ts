@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   decideOrganizationAttention,
+  getOrganizationAttention,
   getOrganizationEvents,
+  getOrganizationProjectThreads,
   getOrganizationSession,
-  listOrganizationAttention,
+  listOrganizationDelegations,
+  listOrganizationAttentionFrom,
+  listOrganizationReports,
+  listOrganizationWorkItems,
   organizationWorkerProposals,
   submitOrganizationIntent,
   supportsOrganizationContract,
@@ -65,6 +70,25 @@ describe('organization typed client', () => {
         return Promise.resolve(json({ version: '1.1.0', attentionRequest: session.attentionRequests[0] }));
       }
       if (path.startsWith('/v1/organization/events')) return Promise.resolve(json(eventPage));
+      if (path.startsWith('/v1/organization/projects/') && path.endsWith('/threads')) {
+        return Promise.resolve(json({
+          version: '1.1.0',
+          projectId: 'project_alpha',
+          threads: [{ eventId: 'evt_alpha', sequence: 1, type: 'organization.project_opened' }],
+        }));
+      }
+      if (path.startsWith('/v1/organization/attention/')) {
+        return Promise.resolve(json({ version: '1.1.0', attentionRequest: session.attentionRequests[0] }));
+      }
+      if (path === '/v1/organization/reports') {
+        return Promise.resolve(json({ version: '1.1.0', reports: [] }));
+      }
+      if (path === '/v1/organization/work-items') {
+        return Promise.resolve(json({ version: '1.1.0', workItems: [] }));
+      }
+      if (path === '/v1/organization/delegations') {
+        return Promise.resolve(json({ version: '1.1.0', delegations: [] }));
+      }
       if (path === '/v1/organization/session') return Promise.resolve(json(session));
       return Promise.resolve(json({}));
     });
@@ -96,7 +120,16 @@ describe('organization typed client', () => {
   it('reads published facts, orders attention first, and keeps proposals digest-only', async () => {
     await expect(getOrganizationSession()).resolves.toEqual(session);
     await expect(getOrganizationEvents()).resolves.toEqual(eventPage);
-    expect(listOrganizationAttention(session as never).attentionRequests[0]?.state).toBe('open');
+    await expect(getOrganizationProjectThreads('project_alpha')).resolves.toMatchObject({
+      projectId: 'project_alpha',
+    });
+    await expect(getOrganizationAttention('attention_alpha')).resolves.toMatchObject({
+      version: '1.1.0',
+    });
+    await expect(listOrganizationReports()).resolves.toEqual({ version: '1.1.0', reports: [] });
+    await expect(listOrganizationWorkItems()).resolves.toEqual({ version: '1.1.0', workItems: [] });
+    await expect(listOrganizationDelegations()).resolves.toEqual({ version: '1.1.0', delegations: [] });
+    expect(listOrganizationAttentionFrom(session as never).attentionRequests[0]?.state).toBe('open');
     expect(organizationWorkerProposals(session as never)[0]).toMatchObject({
       workerId: 'worker_alpha',
       instructionsDigest: 'sha256_instructions',

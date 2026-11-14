@@ -262,6 +262,34 @@ function isProjectList(value: unknown): value is OrganizationProjectList {
     && Array.isArray(value.projects) && value.projects.every(isProject);
 }
 
+function isProjectView(value: unknown): value is OrganizationProjectView {
+  return isVersioned(value) && isRecord(value) && isProject(value.project);
+}
+
+function isProjectThreadList(value: unknown): value is OrganizationProjectThreadList {
+  return isVersioned(value) && isRecord(value) && isBoundedString(value.projectId)
+    && Array.isArray(value.threads) && value.threads.every((thread) => isRecord(thread)
+      && isBoundedString(thread.eventId) && Number.isInteger(thread.sequence)
+      && typeof thread.type === 'string');
+}
+
+function isReportList(value: unknown): value is OrganizationReportList {
+  return isVersioned(value) && isRecord(value) && Array.isArray(value.reports)
+    && value.reports.every(isReport);
+}
+
+function isWorkItemList(value: unknown): value is OrganizationWorkItemList {
+  return isVersioned(value) && isRecord(value) && Array.isArray(value.workItems)
+    && value.workItems.every((item) => isRecord(item)
+      && isBoundedString(item.workItemId) && isBoundedString(item.projectId)
+      && isBoundedString(item.workerId) && typeof item.state === 'string');
+}
+
+function isDelegationList(value: unknown): value is OrganizationDelegationList {
+  return isVersioned(value) && isRecord(value) && Array.isArray(value.delegations)
+    && value.delegations.every(isDelegation);
+}
+
 function isAttentionView(value: unknown): value is OrganizationAttentionView {
   return isVersioned(value) && isRecord(value) && isAttention(value.attentionRequest);
 }
@@ -302,7 +330,58 @@ export function listOrganizationProjectsFrom(
   return Object.freeze({ version: ORGANIZATION_CONTRACT_VERSION, projects: session.projects });
 }
 
-export function listOrganizationAttention(
+export function getOrganizationProject(
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<OrganizationProjectView> {
+  return requestJson(
+    `/v1/organization/projects/${encodeURIComponent(projectId)}`,
+    isProjectView,
+    { signal },
+  );
+}
+
+export function getOrganizationProjectThreads(
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<OrganizationProjectThreadList> {
+  return requestJson(
+    `/v1/organization/projects/${encodeURIComponent(projectId)}/threads`,
+    isProjectThreadList,
+    { signal },
+  );
+}
+
+export function listOrganizationReports(
+  signal?: AbortSignal,
+): Promise<OrganizationReportList> {
+  return requestJson('/v1/organization/reports', isReportList, { signal });
+}
+
+export function listOrganizationWorkItems(
+  signal?: AbortSignal,
+): Promise<OrganizationWorkItemList> {
+  return requestJson('/v1/organization/work-items', isWorkItemList, { signal });
+}
+
+export function listOrganizationDelegations(
+  signal?: AbortSignal,
+): Promise<OrganizationDelegationList> {
+  return requestJson('/v1/organization/delegations', isDelegationList, { signal });
+}
+
+export function getOrganizationAttention(
+  attentionId: string,
+  signal?: AbortSignal,
+): Promise<OrganizationAttentionView> {
+  return requestJson(
+    `/v1/organization/attention/${encodeURIComponent(attentionId)}`,
+    isAttentionView,
+    { signal },
+  );
+}
+
+export function listOrganizationAttentionFrom(
   session: OrganizationSessionView,
 ): OrganizationAttentionList {
   return Object.freeze({
@@ -312,11 +391,11 @@ export function listOrganizationAttention(
   });
 }
 
-export function listOrganizationReports(session: OrganizationSessionView): OrganizationReportList {
+export function listOrganizationReportsFrom(session: OrganizationSessionView): OrganizationReportList {
   return Object.freeze({ version: ORGANIZATION_CONTRACT_VERSION, reports: session.reports });
 }
 
-export function listOrganizationDelegations(
+export function listOrganizationDelegationsFrom(
   session: OrganizationSessionView,
 ): OrganizationDelegationList {
   return Object.freeze({ version: ORGANIZATION_CONTRACT_VERSION, delegations: session.delegations });

@@ -91,6 +91,11 @@
       "id": "boss-mode-connected-console",
       "summary": "The organization console submits natural-language primary intents through the published 1.1.0 intent route and waits for Runtime-published project, Agent revision, and WorkItem state; it never computes organization authority locally.",
       "evidence": "src/features/organization/useOrganizationConsole.ts"
+    },
+    {
+      "id": "organization-console-usability",
+      "summary": "The console presents an event-cursor primary timeline, project/thread inspector, Attention details, report/work-item/delegation views, auto-refresh, last-sync state, and bounded detail reads over published organization routes.",
+      "evidence": "src/features/organization/OrganizationConsolePanel.tsx"
     }
   ],
   "validationEvidence": [

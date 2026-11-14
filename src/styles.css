@@ -341,8 +341,27 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 .organization-fact { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; padding: 8px 0; border-top: 1px solid #eceae3; font-size: 11px; }
 .organization-fact span { color: var(--teal); font-weight: 600; }
 .organization-fact code { overflow-wrap: anywhere; color: var(--muted); font-size: 10px; }
+.organization-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+.organization-toggle input { width: 14px; height: 14px; accent-color: var(--teal); }
+.organization-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.organization-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; margin-top: 18px; }
+.organization-card-timeline, .organization-card-projects { grid-row: span 2; }
+.organization-timeline { display: grid; gap: 0; margin: 0; padding: 0; max-height: 420px; overflow: auto; list-style: none; }
+.organization-timeline li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid #eceae3; }
+.organization-timeline-sequence { color: var(--teal); font: 11px var(--mono); }
+.organization-timeline-copy { display: grid; gap: 3px; min-width: 0; }
+.organization-timeline-copy strong { font-size: 11px; }
+.organization-timeline-copy code { overflow-wrap: anywhere; color: var(--muted); font: 9px var(--mono); }
+.organization-timeline-copy small, .organization-fact small { color: var(--muted); font-size: 9px; overflow-wrap: anywhere; }
+.organization-project-list { display: grid; gap: 6px; }
+.organization-project-row { display: grid; gap: 4px; width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #fff; text-align: left; cursor: pointer; }
+.organization-project-row.is-selected { border-color: #b4d1c5; background: #f1f7f2; }
+.organization-project-row code { overflow-wrap: anywhere; color: var(--muted); font: 10px var(--mono); }
+.organization-threads { margin-top: 16px; padding-top: 12px; border-top: 1px solid #eceae3; }
+.organization-threads h4 { margin: 0 0 10px; font-size: 12px; }
 @media (max-width: 760px) {
-  .organization-summary, .organization-grid { grid-template-columns: 1fr; }
+  .organization-summary, .organization-grid, .organization-layout { grid-template-columns: 1fr; }
+  .organization-card-timeline, .organization-card-projects { grid-row: auto; }
 }
 
 /* Final local-first 1.0.0 control, capability, and write-only handle surfaces. */

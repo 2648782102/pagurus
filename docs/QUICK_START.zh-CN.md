@@ -6,7 +6,7 @@
 
 寄居蟹 Pagurus 是海螺 Conchbase 的可选本机控制客户端。用户通过它管理 Agent profile 与不可变版本、全局运行时配置、持久工作、能力元数据与只写 SecretHandle。海螺才是执行权威；CLI、IDE 和第三方界面也可以使用同一套版本化 Runtime API。
 
-当前控制台还连接 Boss Mode `1.1.0` 组织主会话：用户在一个入口提交自然语言意图，Pagurus 读取 Runtime 发布的项目、动态员工、Delegation、报告、Attention 与事件，并只通过 published version 回答或撤回 Attention。
+当前控制台还连接 Boss Mode `1.1.0` 组织主会话：用户在一个入口提交自然语言意图，Pagurus 读取 Runtime 发布的项目、动态员工、Delegation、报告、Attention 与事件；提供主会话时间线、项目线程检查器、自动刷新与事件游标增量读取，并只通过 published version 回答或撤回 Attention。
 
 Pagurus 不拥有 Runtime 状态，不读取私有 SQLite 数据库，不定义第二套 Agent/task/work schema，也不把配置记录转换为安装、授权或工具执行。
 
