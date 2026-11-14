@@ -124,7 +124,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
             {agents.length === 0 && <option value="">暂无可用 Agent</option>}
             {agents.map((agent) => (
               <option key={agent.id} value={agent.id}>
-                {agent.name} · {agent.modelId}{isBossAgent(agent) ? ' · 组织编排' : ''}{agent.isDefault ? ' · 默认' : ''}
+                {agent.name} · {agent.modelId}{agent.isDefault ? ' · 默认' : ''}
               </option>
             ))}
           </select>
