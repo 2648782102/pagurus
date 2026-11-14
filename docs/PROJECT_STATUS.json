@@ -165,6 +165,11 @@
       "id": "boss-conversation-hardening-console",
       "summary": "Pagurus ADR 0028 renders natural Boss conversation, Runtime-validated organization actions, real streaming progress, and explicit web/local-file/device capability boundaries without local authority.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
+    },
+    {
+      "id": "agent-chat-model-selection-console",
+      "summary": "Pagurus ADR 0028 and Conchbase ADR 0051 add a model selector sourced from the Runtime model catalog to Agent Chat setup and send the selected model override at conversation creation.",
+      "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
     }
   ],
   "validationEvidence": [

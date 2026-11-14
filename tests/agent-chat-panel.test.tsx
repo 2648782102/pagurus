@@ -40,6 +40,15 @@ describe('Agent Chat panel', () => {
           providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
         }] }));
       }
+      if (path === '/v1/model-catalog') {
+        return Promise.resolve(json({ models: [{
+          providerId: 'magpie', modelId: 'fixture/chat-model',
+          reference: 'magpie:fixture/chat-model', displayName: 'Fixture Chat Model', capabilities: ['chat'],
+        }, {
+          providerId: 'magpie', modelId: 'fixture/alt-model',
+          reference: 'magpie:fixture/alt-model', displayName: 'Alternate Chat Model', capabilities: ['chat'],
+        }] }));
+      }
       if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') {
         const body = JSON.parse(String(init.body ?? '{}')) as { agentId?: string };
         if (body.agentId === 'boss-agent') {
@@ -98,6 +107,22 @@ describe('Agent Chat panel', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(screen.getByText('你好，我是 Agent。')).toBeTruthy());
     expect(screen.getByText('你好')).toBeTruthy();
+  });
+
+  it('lists Magpie models during setup and sends the selected model override', async () => {
+    render(<AgentChatPanel runtime={runtime} />);
+    const modelSelect = await screen.findByLabelText('对话模型');
+    expect(screen.getByRole('option', { name: /Alternate Chat Model/ })).toBeTruthy();
+    fireEvent.change(modelSelect, { target: { value: 'magpie:fixture/alt-model' } });
+    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    await waitFor(() => {
+      const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+        (entry) => String(entry[0]) === '/v1/agent-chat/conversations',
+      );
+      expect(JSON.parse(String((call?.[1] as RequestInit | undefined)?.body))).toMatchObject({
+        modelOverride: { providerId: 'magpie', modelId: 'fixture/alt-model' },
+      });
+    });
   });
 
   it('renders thinking, organizing, waiting attention, and unavailable states', async () => {

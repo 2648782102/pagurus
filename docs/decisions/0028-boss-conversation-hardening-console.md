@@ -14,6 +14,7 @@ Conchbase ADR 0050 separates pure Boss conversation from organization execution 
 2. Boss copy states three facts plainly: the Boss is a normal conversation partner; organization actions are validated by Runtime when needed; web search, local files, and device query are not currently connected.
 3. `organizing` is labeled “正在执行组织动作…” because it now appears only after Runtime has accepted an organization action. Model waiting uses `thinking` or `streaming`.
 4. `streaming` progress is rendered from Runtime-published `progress`; Pagurus never invents partial text or progress.
+5. Following Conchbase ADR 0051, the Agent Chat setup screen reads `/v1/model-catalog`, offers a model selector, and sends an optional `modelOverride` when creating a conversation. The client does not store provider credentials or invent a model catalog.
 
 ## Options
 

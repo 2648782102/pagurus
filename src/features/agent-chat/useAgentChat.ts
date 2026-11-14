@@ -5,10 +5,12 @@ import {
   isBossAgent,
   isPendingAgentChatState,
   listAgentChatAgents,
+  listAgentChatModels,
   postAgentChatMessage,
   supportsAgentChat,
   type AgentChatAgent,
   type AgentChatConversation,
+  type AgentChatModel,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 
@@ -20,6 +22,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const supported = supportsAgentChat(runtime);
   const [agents, setAgents] = useState<readonly AgentChatAgent[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState('');
+  const [models, setModels] = useState<readonly AgentChatModel[]>([]);
+  const [selectedModelReference, setSelectedModelReference] = useState('');
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -32,9 +36,14 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const loadAgents = useCallback(async () => {
     if (!supported) return;
     try {
-      const list = await listAgentChatAgents();
+      const [list, catalog] = await Promise.all([
+        listAgentChatAgents(),
+        listAgentChatModels().catch(() => [] as readonly AgentChatModel[]),
+      ]);
       const available = list.filter((agent) => !agent.archived);
       setAgents(available);
+      setModels(catalog);
+      setSelectedModelReference((current) => current || catalog[0]?.reference || '');
       setSelectedAgentId((current) => current || available.find((agent) => isBossAgent(agent))?.id
         || available.find((agent) => agent.isDefault)?.id
         || available[0]?.id || '');
@@ -77,7 +86,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     setBusy(true);
     setError(null);
     try {
-      const created = await createAgentChatConversation({ agentId: selectedAgentId });
+      const selectedModel = models.find((model) => model.reference === selectedModelReference);
+      const created = await createAgentChatConversation({
+        agentId: selectedAgentId,
+        ...(selectedModel
+          ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
+          : {}),
+      });
       setConversation(created);
       setDraft('');
       setDetailsOpen(false);
@@ -86,7 +101,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     } finally {
       setBusy(false);
     }
-  }, [busy, selectedAgentId, supported]);
+  }, [busy, models, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
     setConversation(null);
@@ -125,6 +140,9 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   return {
     supported,
     agents,
+    models,
+    selectedModelReference,
+    setSelectedModelReference,
     selectedAgentId,
     setSelectedAgentId,
     conversation,

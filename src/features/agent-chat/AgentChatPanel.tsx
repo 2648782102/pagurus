@@ -36,7 +36,17 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
                 </option>
               ))}
             </select>
-            <p className="agent-chat-setup-note">模型、供应商、凭证与路由在 Magpie 中由用户配置。</p>
+            <label htmlFor="agent-chat-model">对话模型</label>
+            <select id="agent-chat-model" value={chat.selectedModelReference}
+              onChange={(event) => chat.setSelectedModelReference(event.target.value)} disabled={chat.busy}>
+              {chat.models.length === 0 && <option value="">暂无可用模型</option>}
+              {chat.models.map((model) => (
+                <option key={model.reference} value={model.reference}>
+                  {model.displayName} · {model.providerId} / {model.modelId}
+                </option>
+              ))}
+            </select>
+            <p className="agent-chat-setup-note">模型列表来自 Magpie；供应商、凭证与路由仍在 Magpie 中由用户配置。</p>
             <button className="button-primary" type="button" onClick={chat.startConversation}
               disabled={chat.busy || chat.selectedAgentId.length === 0}>
               {chat.busy ? '正在开启…' : '开始对话'}

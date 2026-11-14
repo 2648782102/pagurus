@@ -49,6 +49,13 @@ export interface AgentChatAgent {
   readonly archived: boolean;
 }
 
+export interface AgentChatModel {
+  readonly providerId: string;
+  readonly modelId: string;
+  readonly reference: string;
+  readonly displayName: string;
+}
+
 export interface AgentChatMessage {
   readonly id: string;
   readonly sequence: number;
@@ -112,6 +119,14 @@ function isAgent(value: unknown): value is AgentChatAgent {
     && typeof value.archived === 'boolean';
 }
 
+function isModel(value: unknown): value is AgentChatModel {
+  return isRecord(value)
+    && typeof value.providerId === 'string'
+    && typeof value.modelId === 'string'
+    && typeof value.reference === 'string'
+    && typeof value.displayName === 'string';
+}
+
 const MESSAGE_STATES: readonly string[] = [
   'published', 'pending', 'succeeded', 'failed', 'cancelled',
   'thinking', 'streaming', 'organizing', 'waiting_attention', 'replied', 'unavailable',
@@ -171,8 +186,19 @@ export async function listAgentChatAgents(signal?: AbortSignal): Promise<readonl
     Number(isBossAgent(right)) - Number(isBossAgent(left))));
 }
 
+export async function listAgentChatModels(signal?: AbortSignal): Promise<readonly AgentChatModel[]> {
+  const value: unknown = await fetchJson<unknown>('/v1/model-catalog', undefined, signal);
+  if (!isRecord(value) || !Array.isArray(value.models) || !value.models.every(isModel)) {
+    throw new Error('Runtime returned an invalid Agent Chat model catalog.');
+  }
+  return Object.freeze([...value.models]);
+}
+
 export async function createAgentChatConversation(
-  input: { agentId?: string } = {},
+  input: {
+    readonly agentId?: string;
+    readonly modelOverride?: { readonly providerId: string; readonly modelId: string };
+  } = {},
   signal?: AbortSignal,
 ): Promise<AgentChatConversation> {
   const value: unknown = await fetchJson<unknown>('/v1/agent-chat/conversations', {
