@@ -76,7 +76,9 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               {chat.hasPending && (
                 <p className="agent-chat-subtitle" role="status">
                   {chat.streamConnected
-                    ? '实时连接'
+                    ? chat.streamStalled
+                      ? '实时流暂无更新，已恢复轮询'
+                      : '实时连接'
                     : chat.streamAttempt > 0
                       ? `实时流重连中（第 ${chat.streamAttempt} 次），当前轮询同步`
                       : '轮询同步'}

@@ -38,6 +38,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [streamConnected, setStreamConnected] = useState(false);
+  const [streamStalled, setStreamStalled] = useState(false);
+  const lastFrameAtRef = useRef(0);
   const [streamAttempt, setStreamAttempt] = useState(0);
   const pollRef = useRef<number | null>(null);
   const streamRef = useRef<AgentChatStream | null>(null);
@@ -92,7 +94,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   useEffect(() => {
     const pending = conversation?.messages.some((message) =>
       message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
-    if (!pending || streamConnected) {
+    if (!pending || (streamConnected && !streamStalled)) {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
       return;
@@ -102,7 +104,20 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
     };
-  }, [conversation, refreshConversation, streamConnected]);
+  }, [conversation, refreshConversation, streamConnected, streamStalled]);
+
+  useEffect(() => {
+    const pending = conversation?.messages.some((message) =>
+      message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
+    if (!streamConnected || !pending) {
+      setStreamStalled(false);
+      return;
+    }
+    const timer = window.setInterval(() => {
+      if (Date.now() - lastFrameAtRef.current > 8_000) setStreamStalled(true);
+    }, 2_000);
+    return () => window.clearInterval(timer);
+  }, [streamConnected, conversation]);
 
   useEffect(() => {
     const onVisible = () => {
@@ -129,6 +144,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       onFrame: (frame) => {
         if (closed) return;
         setStreamConnected(true);
+        setStreamStalled(false);
+        lastFrameAtRef.current = Date.now();
         setStreamAttempt(0);
         if (frame.kind === 'snapshot' && frame.conversation) {
           const snapshot = frame.conversation;
@@ -253,6 +270,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     activeAgent,
     hasPending,
     streamConnected,
+    streamStalled,
     streamAttempt,
     loadAgents,
     refreshConversation,
