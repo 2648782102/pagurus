@@ -19,6 +19,12 @@
       "pathCount": 18,
       "frozen": true,
       "clientAdr": "0017-organization-console-public-contract-boundary.md"
+    },
+    "execution": {
+      "version": "1.2.0",
+      "pathCount": 8,
+      "frozen": true,
+      "clientAdr": "0020-controlled-execution-console-v1.md"
     }
   },
   "aiEntry": {
@@ -96,6 +102,11 @@
       "id": "organization-console-usability",
       "summary": "The console presents an event-cursor primary timeline, project/thread inspector, Attention details, report/work-item/delegation views, auto-refresh, last-sync state, and bounded detail reads over published organization routes.",
       "evidence": "src/features/organization/OrganizationConsolePanel.tsx"
+    },
+    {
+      "id": "controlled-execution-console-v1",
+      "summary": "Pagurus ADR 0020 connects a typed controlled-execution workspace to Conchbase additive 1.2.0 paths with explicit grants, approvals, revocation, digest-only fake execution results, and audit events.",
+      "evidence": "src/features/execution/ExecutionConsolePanel.tsx"
     }
   ],
   "validationEvidence": [
@@ -142,14 +153,20 @@
       "summary": "Conchbase's opt-in dual-repository fake-provider live loopback fixture imports the Pagurus typed organization client and covers multiple projects, concurrent workers, one attention answer, and archive/resume.",
       "evidence": "https://github.com/2648782102/conchbase/blob/main/tests/organization-e2e.test.ts",
       "executableFixture": true
+    },
+    {
+      "id": "controlled-execution-console-fixture",
+      "summary": "Executable fixtures cover 1.2.0 typed client reads/writes, stale-version semantics, workspace gating, state vocabulary, and a published-state-only controlled execution panel.",
+      "evidence": "tests/execution-api.test.ts",
+      "executableFixture": true
     }
   ],
   "blockedDirections": [
     {
-      "id": "controlled-execution-console",
-      "summary": "Capability grants, approvals, execution controls, and lifecycle UI are accepted as the next paired direction by ADR 0019 but require Runtime contracts, implementation ADRs, and deterministic fixtures.",
+      "id": "real-execution-console",
+      "summary": "Real MCP/Skill/plugin lifecycle, host tool execution, external writes, and production executor UI remain blocked; ADR 0020 covers only the Conchbase fake-executor v1 slice.",
       "requiresAcceptedAdr": true,
-      "directionAdr": "docs/decisions/0019-controlled-execution-console-direction.md"
+      "directionAdr": "docs/decisions/0020-controlled-execution-console-v1.md"
     },
     {
       "id": "tool-approval-ui",

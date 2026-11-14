@@ -359,8 +359,15 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 .organization-project-row code { overflow-wrap: anywhere; color: var(--muted); font: 10px var(--mono); }
 .organization-threads { margin-top: 16px; padding-top: 12px; border-top: 1px solid #eceae3; }
 .organization-threads h4 { margin: 0 0 10px; font-size: 12px; }
+.execution-panel { border-color: #d2c29a; }
+.execution-notice { margin-top: 20px; padding: 13px 15px; border: 1px solid #e3d9bd; border-left: 3px solid #b59a57; border-radius: 4px 10px 10px 4px; background: #fbf7ea; color: #645b47; font-size: 11px; line-height: 1.7; }
+.execution-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.execution-field { display: block; margin-top: 12px; color: #4d5a53; font-size: 11px; font-weight: 600; }
+.execution-panel input { width: 100%; min-height: 36px; margin: 6px 0 10px; padding: 7px 9px; border: 1px solid #d7d9d0; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; }
+.execution-panel .organization-fact { flex-wrap: wrap; }
+.execution-panel .organization-fact small { flex-basis: 100%; }
 @media (max-width: 760px) {
-  .organization-summary, .organization-grid, .organization-layout { grid-template-columns: 1fr; }
+  .organization-summary, .organization-grid, .organization-layout, .execution-grid { grid-template-columns: 1fr; }
   .organization-card-timeline, .organization-card-projects { grid-row: auto; }
 }
 

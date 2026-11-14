@@ -71,6 +71,7 @@ describe('workspace navigation', () => {
     expect(resolveWorkspace('#capabilities').id).toBe('capabilities');
     expect(resolveWorkspace('#secrets-title').id).toBe('secrets');
     expect(resolveWorkspace('#configuration-title').id).toBe('settings');
+    expect(resolveWorkspace('#execution-console').id).toBe('execution');
     expect(resolveWorkspace('#unknown').id).toBe('overview');
   });
 
@@ -125,6 +126,8 @@ describe('workspace navigation', () => {
 
     for (const name of [
       '总览：连接状态与快速入口',
+      '组织主会话：主意图、Attention 与项目审计',
+      '受控执行：授权、审批、撤销与审计',
       'Agent 配置：身份、版本与默认模型',
       '任务运行：运行一次任务与任务历史',
       '持久工作：工作项、恢复与交付证据',

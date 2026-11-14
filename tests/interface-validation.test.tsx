@@ -68,7 +68,7 @@ describe('executable interface validation', () => {
 
     const navigation = screen.getByRole('navigation', { name: '工作区' });
     const links = within(navigation).getAllByRole('link');
-    expect(links.length).toBe(8);
+    expect(links.length).toBe(9);
     for (const link of links) {
       link.focus();
       expect(document.activeElement).toBe(link);

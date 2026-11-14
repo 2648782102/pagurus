@@ -30,6 +30,12 @@ interface ProjectStatus {
       readonly frozen: boolean;
       readonly clientAdr?: string;
     };
+  readonly execution?: {
+    readonly version: string;
+    readonly pathCount: number;
+    readonly frozen: boolean;
+    readonly clientAdr?: string;
+  };
   };
   readonly aiEntry: {
     readonly requiredOrder: readonly string[];
@@ -254,6 +260,12 @@ function assertProjectStatus(source: string, label: string): void {
     frozen: true,
     clientAdr: '0017-organization-console-public-contract-boundary.md',
   });
+  expect(status.runtimeContract.execution).toEqual({
+    version: '1.2.0',
+    pathCount: 8,
+    frozen: true,
+    clientAdr: '0020-controlled-execution-console-v1.md',
+  });
   expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
     'AGENTS.md',
     'docs/AI_HANDOFF.md',
@@ -265,6 +277,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'organization-typed-client')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'organization-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-mode-connected-console')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'controlled-execution-console-v1')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -276,6 +289,9 @@ function assertProjectStatus(source: string, label: string): void {
   )).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'organization-client-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'controlled-execution-console-fixture' && record.executableFixture === true,
   )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
@@ -409,6 +425,7 @@ describe('AI-first entry documents', () => {
       '0017-organization-console-public-contract-boundary.md',
       '0018-boss-mode-console-product-loop.md',
       '0019-controlled-execution-console-direction.md',
+      '0020-controlled-execution-console-v1.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -491,6 +508,9 @@ describe('AI-first entry documents', () => {
     const eighteenth = read(`${recordsDir}/0018-boss-mode-console-product-loop.md`);
     expect(eighteenth).toMatch(/^Status: \*\*accepted paired client contract for the completed Boss-mode product loop\*\*$/m);
     expect(eighteenth).toMatch(/does not compute organization sequence/);
+    const twentieth = read(`${recordsDir}/0020-controlled-execution-console-v1.md`);
+    expect(twentieth).toMatch(/^Status: \*\*accepted paired client contract for Conchbase controlled execution v1\*\*$/m);
+    expect(twentieth).toMatch(/executionContract: "1\.2\.0"/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -706,6 +726,12 @@ describe('client boundaries', () => {
           frozen: true,
           clientAdr: '0017-organization-console-public-contract-boundary.md',
         },
+        execution: {
+          version: '1.2.0',
+          pathCount: 8,
+          frozen: true,
+          clientAdr: '0020-controlled-execution-console-v1.md',
+        },
       },
       aiEntry: {
         requiredOrder: [
@@ -721,6 +747,8 @@ describe('client boundaries', () => {
         { id: 'organization-typed-client' },
         { id: 'organization-console' },
         { id: 'boss-mode-connected-console' },
+        { id: 'organization-console-usability' },
+        { id: 'controlled-execution-console-v1' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
@@ -728,6 +756,8 @@ describe('client boundaries', () => {
         { id: 'automated-accessibility-fixture', executableFixture: true },
         { id: 'published-contract-fixture', executableFixture: true },
         { id: 'organization-client-fixture', executableFixture: true },
+        { id: 'boss-mode-product-loop-fixture', executableFixture: true },
+        { id: 'controlled-execution-console-fixture', executableFixture: true },
       ],
       blockedDirections: [
         { id: 'tool-approval-ui', requiresAcceptedAdr: true },

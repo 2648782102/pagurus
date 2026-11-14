@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { CapabilityPanel } from '../features/capabilities/CapabilityPanel.js';
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
+import { ExecutionConsolePanel } from '../features/execution/ExecutionConsolePanel.js';
 import { OrganizationConsolePanel } from '../features/organization/OrganizationConsolePanel.js';
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
 import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
@@ -36,6 +37,8 @@ export function App() {
     switch (id) {
       case 'organization':
         return <OrganizationConsolePanel runtime={runtimeStatus.runtime} />;
+      case 'execution':
+        return <ExecutionConsolePanel runtime={runtimeStatus.runtime} />;
       case 'agents':
         return <AgentWorkspace onAgentsChanged={handleAgentsChanged} />;
       case 'tasks':

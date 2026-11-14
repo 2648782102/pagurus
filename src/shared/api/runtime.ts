@@ -15,6 +15,8 @@ export interface RuntimeInfo {
   capabilities: string[];
   organizationContract?: '1.1.0';
   organizationPaths?: number;
+  executionContract?: '1.2.0';
+  executionPaths?: number;
 }
 
 export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
@@ -41,7 +43,9 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && Array.isArray(value.capabilities)
     && value.capabilities.every((capability) => typeof capability === 'string')
     && (value.organizationContract === undefined || value.organizationContract === '1.1.0')
-    && (value.organizationPaths === undefined || Number.isInteger(value.organizationPaths));
+    && (value.organizationPaths === undefined || Number.isInteger(value.organizationPaths))
+    && (value.executionContract === undefined || value.executionContract === '1.2.0')
+    && (value.executionPaths === undefined || Number.isInteger(value.executionPaths));
 }
 
 async function getJson<T>(

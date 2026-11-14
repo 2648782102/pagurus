@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export type WorkspaceId =
   | 'overview'
   | 'organization'
+  | 'execution'
   | 'agents'
   | 'tasks'
   | 'work'
@@ -28,7 +29,7 @@ export const WORKSPACES: readonly WorkspaceDefinition[] = [
     label: '总览',
     section: '本机控制台',
     title: '控制台总览',
-    description: '一处看清 Runtime 连接、七个已开放工作区，以及配置与执行的边界。',
+    description: '一处看清 Runtime 连接、全部已开放工作区，以及配置与执行的边界。',
     icon: '⌂',
     href: '#overview',
     hint: '连接状态与快速入口',
@@ -44,6 +45,17 @@ export const WORKSPACES: readonly WorkspaceDefinition[] = [
     href: '#organization-console',
     hint: '主意图、Attention 与项目审计',
     aliases: ['organization', 'organization-console', 'organization-title'],
+  },
+  {
+    id: 'execution',
+    label: '受控执行',
+    section: '执行审计',
+    title: '受控执行工作台',
+    description: '通过显式授权、审批、撤销和摘要审计管理 1.2.0 假执行器；能力记录本身不代表授权或执行。',
+    icon: '✓',
+    href: '#execution-console',
+    hint: '授权、审批、撤销与审计',
+    aliases: ['execution', 'execution-console', 'execution-title'],
   },
   {
     id: 'agents',

@@ -118,7 +118,7 @@ describe('published contract validation', () => {
     if (!existsSync(openApiPath)) return;
     const spec = readFileSync(openApiPath, 'utf8');
     const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
-    expect(paths.length).toBe(65);
+    expect(paths.length).toBe(73);
     expect(spec).toMatch(/^  version: 1\.0\.0$/m);
 
     const published = parsePublishedOperations(spec);
@@ -134,7 +134,7 @@ describe('published contract validation', () => {
     if (!existsSync(openApiPath)) return;
     const spec = readFileSync(openApiPath, 'utf8');
     const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
-    expect(paths.length).toBe(65);
+    expect(paths.length).toBe(73);
     expect(spec).toMatch(/organizationContract:/);
     expect(spec).toMatch(/organizationPaths:\s*\n\s*const: 18/);
 
