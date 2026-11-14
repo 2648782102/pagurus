@@ -405,6 +405,7 @@ describe('AI-first entry documents', () => {
       '0015-organization-console-direction.md',
       '0016-organization-console-delivery-boundary.md',
       '0017-organization-console-public-contract-boundary.md',
+      '0018-boss-mode-console-product-loop.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -484,6 +485,9 @@ describe('AI-first entry documents', () => {
     expect(seventeenth).toMatch(/typed-client/);
     expect(seventeenth).toMatch(/No second Runtime schema/);
     expect(seventeenth).toMatch(/1\.1\.0/);
+    const eighteenth = read(`${recordsDir}/0018-boss-mode-console-product-loop.md`);
+    expect(eighteenth).toMatch(/^Status: \*\*accepted paired client contract for the completed Boss-mode product loop\*\*$/m);
+    expect(eighteenth).toMatch(/does not compute organization sequence/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {

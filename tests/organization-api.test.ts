@@ -108,11 +108,10 @@ describe('organization typed client', () => {
     await expect(submitOrganizationIntent({
       text: 'Plan project beta',
       idempotencyKey: 'fixture',
-      expectedSequence: 2,
     })).resolves.toMatchObject({ state: 'accepted', intentId: 'int_alpha' });
 
     const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
-    expect(body).toEqual({ intent: { text: 'Plan project beta', idempotencyKey: 'fixture', expectedSequence: 2 } });
+    expect(body).toEqual({ intent: { text: 'Plan project beta', idempotencyKey: 'fixture' } });
 
     await expect(decideOrganizationAttention('attention_alpha', 'answer', 2, 'sha256_decision')).resolves.toMatchObject({
       version: '1.1.0',

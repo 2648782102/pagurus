@@ -104,11 +104,6 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
       const result = await submitOrganizationIntent({
         text,
         idempotencyKey: `pagurus-${globalThis.crypto.randomUUID()}`,
-        expectedSequence: state.session.bossSession.projectIds.length === 0
-          ? state.events?.events.at(-1)?.sequence ?? 0
-          : state.session.projects.length + state.session.delegations.length
-            + state.session.workers.length + state.session.reports.length
-            + state.session.attentionRequests.length + 1,
       });
       setState((current) => ({
         ...current,

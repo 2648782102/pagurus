@@ -171,7 +171,6 @@ export interface OrganizationEventPage extends OrganizationVersioned {
 export interface OrganizationIntentInput {
   readonly text: string;
   readonly idempotencyKey: string;
-  readonly expectedSequence: number;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -73,6 +73,11 @@
       "evidence": "docs/decisions/0017-organization-console-public-contract-boundary.md"
     },
     {
+      "id": "boss-mode-contract-direction",
+      "summary": "Pagurus ADR 0018 accepts the full Boss-mode console loop: bounded text intents, asynchronous published state, no local expected sequence or authority computation, and dual-repository fake-provider validation.",
+      "evidence": "docs/decisions/0018-boss-mode-console-product-loop.md"
+    },
+    {
       "id": "organization-typed-client",
       "summary": "The client publishes explicit 1.1.0 organization types, gates on version discovery, submits bounded intents, decides Attention with expected versions, and reads only published facts.",
       "evidence": "src/shared/api/organization.ts"
@@ -125,6 +130,12 @@
       "id": "organization-client-fixture",
       "summary": "Executable fixtures align the additive 65-path OpenAPI, typed organization client contracts, 202 intent/attention writes, and a published-state-only console panel.",
       "evidence": "tests/organization-api.test.ts",
+      "executableFixture": true
+    },
+    {
+      "id": "boss-mode-product-loop-fixture",
+      "summary": "Conchbase's opt-in dual-repository fake-provider live loopback fixture imports the Pagurus typed organization client and covers multiple projects, concurrent workers, one attention answer, and archive/resume.",
+      "evidence": "https://github.com/2648782102/conchbase/blob/main/tests/organization-e2e.test.ts",
       "executableFixture": true
     }
   ],
