@@ -86,23 +86,35 @@ describe('Agent Chat panel', () => {
     vi.unstubAllGlobals();
   });
 
-  it('creates a configured Agent conversation and sends a message', async () => {
+  it('starts a conversation and sends messages with Enter', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    expect(await screen.findByRole('heading', { name: 'Agent 对话' })).toBeTruthy();
-    expect(await screen.findByRole('option', { name: /老板 Agent · 组织编排/ })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('选择 Agent'), { target: { value: 'agt_alpha' } });
+    expect(await screen.findByRole('heading', { name: '和哪个 Agent 聊？' })).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
-    const input = await screen.findByLabelText('给 Agent 发消息');
+    const input = await screen.findByLabelText('输入消息');
+    expect(screen.queryByLabelText('Agent')).toBeNull();
     fireEvent.change(input, { target: { value: '你好' } });
-    fireEvent.submit(screen.getByRole('button', { name: '发送' }).closest('form')!);
+    fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(screen.getByText('你好，我是 Agent。')).toBeTruthy());
+    expect(screen.getByText('你好')).toBeTruthy();
+  });
+
+  it('keeps Shift Enter as a newline and hides technical details by default', async () => {
+    render(<AgentChatPanel runtime={runtime} />);
+    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    const input = await screen.findByLabelText('输入消息');
+    fireEvent.change(input, { target: { value: '第一行' } });
+    fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
+    expect((input as HTMLTextAreaElement).value).toBe('第一行');
+    expect(screen.queryByText('Agent revision')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '会话信息' }));
+    expect(await screen.findByText('Agent revision')).toBeTruthy();
   });
 
   it('labels the Runtime-owned Boss Agent as organization orchestration', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    expect(await screen.findByRole('option', { name: /老板 Agent · 组织编排/ })).toBeTruthy();
+    expect(await screen.findByRole('option', { name: /老板 Agent/ })).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
-    expect(await screen.findByText(/Runtime 拥有的组织编排入口/)).toBeTruthy();
+    expect(await screen.findByText(/老板 Agent：提交意图后/)).toBeTruthy();
   });
 
   it('shows a bounded unsupported Runtime state', async () => {
