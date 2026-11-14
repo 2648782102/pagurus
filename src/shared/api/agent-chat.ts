@@ -9,6 +9,14 @@ export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/conversations/{conversationId}/messages',
 ] as const);
 
+export const BOSS_AGENT_ID = 'boss-agent';
+
+export function isBossAgent(agent: Pick<AgentChatAgent, 'id' | 'providerId' | 'modelId'>): boolean {
+  return agent.id === BOSS_AGENT_ID
+    && agent.providerId === 'runtime'
+    && agent.modelId === '组织编排';
+}
+
 export type AgentChatMessageAuthor = 'user' | 'assistant' | 'runtime';
 export type AgentChatMessageState = 'published' | 'pending' | 'succeeded' | 'failed' | 'cancelled';
 
@@ -113,7 +121,8 @@ export function supportsAgentChat(runtime: RuntimeInfo | null): boolean {
 export async function listAgentChatAgents(signal?: AbortSignal): Promise<readonly AgentChatAgent[]> {
   const value: unknown = await fetchJson<unknown>('/v1/agent-chat/agents', undefined, signal);
   if (!isAgentList(value)) throw new Error('Runtime returned an invalid Agent Chat agent list.');
-  return Object.freeze(value.agents);
+  return Object.freeze([...value.agents].sort((left, right) =>
+    Number(isBossAgent(right)) - Number(isBossAgent(left))));
 }
 
 export async function createAgentChatConversation(

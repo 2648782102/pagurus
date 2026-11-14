@@ -3,6 +3,7 @@ import {
   AGENT_CHAT_PUBLIC_PATHS,
   createAgentChatConversation,
   getAgentChatConversation,
+  isBossAgent,
   listAgentChatAgents,
   postAgentChatMessage,
   supportsAgentChat,
@@ -44,10 +45,16 @@ describe('agent chat typed client', () => {
     fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.5.0', agents: [{
-          id: 'agt_alpha', name: 'Chat Agent', currentRevisionId: 'agr_alpha',
-          providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
-        }] }));
+        return Promise.resolve(json({ version: '1.5.0', agents: [
+          {
+            id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
+            providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
+          },
+          {
+            id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
+            providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
+          },
+        ] }));
       }
       if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') return Promise.resolve(json(conversation, 201));
       if (path === `/v1/agent-chat/conversations/${conversation.id}` && init?.method === undefined) {
@@ -82,8 +89,14 @@ describe('agent chat typed client', () => {
     expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(4);
   });
 
+  it('prefers the Runtime-owned Boss Agent', async () => {
+    const agents = await listAgentChatAgents();
+    expect(agents[0]?.id).toBe('boss-agent');
+    expect(isBossAgent(agents[0]!)).toBe(true);
+  });
+
   it('creates, reads, and writes Agent Chat conversations', async () => {
-    await expect(listAgentChatAgents()).resolves.toHaveLength(1);
+    await expect(listAgentChatAgents()).resolves.toHaveLength(2);
     await expect(createAgentChatConversation({ agentId: 'agt_alpha' })).resolves.toMatchObject({ id: conversation.id });
     await expect(getAgentChatConversation(conversation.id)).resolves.toMatchObject({ agentId: 'agt_alpha' });
     await expect(postAgentChatMessage(conversation.id, { text: '你好', idempotencyKey: 'key' }))

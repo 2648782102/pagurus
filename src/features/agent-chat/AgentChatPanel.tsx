@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createAgentChatConversation,
   getAgentChatConversation,
+  isBossAgent,
   listAgentChatAgents,
   postAgentChatMessage,
   supportsAgentChat,
@@ -33,7 +34,8 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
     try {
       const list = await listAgentChatAgents();
       setAgents(list.filter((agent) => !agent.archived));
-      setSelectedAgentId((current) => current || list.find((agent) => agent.isDefault && !agent.archived)?.id
+      setSelectedAgentId((current) => current || list.find((agent) => isBossAgent(agent))?.id
+        || list.find((agent) => agent.isDefault && !agent.archived)?.id
         || list.find((agent) => !agent.archived)?.id || '');
     } catch (cause) {
       setError(errorText(cause));
@@ -122,7 +124,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
             {agents.length === 0 && <option value="">暂无可用 Agent</option>}
             {agents.map((agent) => (
               <option key={agent.id} value={agent.id}>
-                {agent.name} · {agent.modelId}{agent.isDefault ? ' · 默认' : ''}
+                {agent.name} · {agent.modelId}{isBossAgent(agent) ? ' · 组织编排' : ''}{agent.isDefault ? ' · 默认' : ''}
               </option>
             ))}
           </select>
@@ -133,6 +135,11 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
         </div>
 
         {conversation && <>
+          {conversation.agentId === 'boss-agent' && (
+            <div className="work-notice" role="status">
+              <p>老板 Agent 是 Runtime 拥有的组织编排入口：提交意图后由 Conchbase 校验、创建项目/员工、返回结构化汇报与 Attention；它不是普通用户可编辑 Agent profile。</p>
+            </div>
+          )}
           <dl className="history-detail-grid agent-chat-pins">
             <div><dt>Agent revision</dt><dd><code>{conversation.agentRevisionId}</code></dd></div>
             <div><dt>Model</dt><dd><code>{conversation.providerId}:{conversation.modelId}</code></dd></div>

@@ -31,11 +31,26 @@ describe('Agent Chat panel', () => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
         return Promise.resolve(json({ version: '1.5.0', agents: [{
-          id: 'agt_alpha', name: 'Chat Agent', currentRevisionId: 'agr_alpha',
+          id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
+          providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
+        }, {
+          id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
           providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
         }] }));
       }
-      if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') return Promise.resolve(json(conversation, 201));
+      if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') {
+        const body = JSON.parse(String(init.body ?? '{}')) as { agentId?: string };
+        if (body.agentId === 'boss-agent') {
+          return Promise.resolve(json({
+            ...conversation,
+            agentId: 'boss-agent',
+            agentRevisionId: 'boss-runtime-v1',
+            providerId: 'runtime',
+            modelId: '组织编排',
+          }, 201));
+        }
+        return Promise.resolve(json(conversation, 201));
+      }
       if (path === `/v1/agent-chat/conversations/${conversation.id}`) {
         return Promise.resolve(json({
           ...conversation,
@@ -74,11 +89,20 @@ describe('Agent Chat panel', () => {
   it('creates a configured Agent conversation and sends a message', async () => {
     render(<AgentChatPanel runtime={runtime} />);
     expect(await screen.findByRole('heading', { name: 'Agent 对话' })).toBeTruthy();
+    expect(await screen.findByRole('option', { name: /老板 Agent · 组织编排/ })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('选择 Agent'), { target: { value: 'agt_alpha' } });
     fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
     const input = await screen.findByLabelText('给 Agent 发消息');
     fireEvent.change(input, { target: { value: '你好' } });
     fireEvent.submit(screen.getByRole('button', { name: '发送' }).closest('form')!);
     await waitFor(() => expect(screen.getByText('你好，我是 Agent。')).toBeTruthy());
+  });
+
+  it('labels the Runtime-owned Boss Agent as organization orchestration', async () => {
+    render(<AgentChatPanel runtime={runtime} />);
+    expect(await screen.findByRole('option', { name: /老板 Agent · 组织编排/ })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    expect(await screen.findByText(/Runtime 拥有的组织编排入口/)).toBeTruthy();
   });
 
   it('shows a bounded unsupported Runtime state', async () => {

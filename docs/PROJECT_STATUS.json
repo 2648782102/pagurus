@@ -140,6 +140,11 @@
       "id": "agent-chat-console",
       "summary": "Pagurus ADR 0023 adds a separate Agent Chat workspace that lists configured Agents, creates a pinned conversation, sends messages through Conchbase 1.5.0, and polls real model replies.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
+    },
+    {
+      "id": "boss-agent-chat-console",
+      "summary": "Pagurus ADR 0024 prefers and labels Conchbase's Runtime-owned 老板 Agent inside Agent Chat as an organization orchestration entry, without local authority computation.",
+      "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
     }
   ],
   "validationEvidence": [
@@ -208,6 +213,12 @@
     {
       "id": "agent-chat-console-fixture",
       "summary": "Executable fixtures cover 1.5.0 typed Agent Chat client, discovery gating, Agent selection, conversation creation, message submit, polling, terminal states, and unsupported Runtime fallback.",
+      "evidence": "tests/agent-chat-api.test.ts",
+      "executableFixture": true
+    },
+    {
+      "id": "boss-agent-chat-console-fixture",
+      "summary": "Executable fixtures cover Boss Agent identification, picker preference, organization-mode label, and unchanged direct Agent Chat behavior.",
       "evidence": "tests/agent-chat-api.test.ts",
       "executableFixture": true
     }
