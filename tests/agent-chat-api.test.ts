@@ -94,7 +94,7 @@ describe('agent chat typed client', () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('gates on 1.7.0 discovery and publishes the exact six paths', () => {
+  it('gates on 1.8.0 discovery and publishes the exact six paths', () => {
     expect(supportsAgentChat(runtime)).toBe(true);
     expect(supportsAgentChat({ ...runtime, agentChatPaths: 3 })).toBe(false);
     expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(6);
