@@ -56,4 +56,12 @@ describe('agent chat snapshot merge', () => {
     const merged = mergeConversation(newer, staleConversation);
     expect(merged.messages[0]?.body).toBe('最终回复');
   });
+
+  it('keeps the conversation id stable when merging an older snapshot', () => {
+    const current = conversation([message('m1', 1, '2026-11-15T00:00:05.000Z', '最新')]);
+    const older = conversation([message('m1', 1, '2026-11-15T00:00:01.000Z', '旧')]);
+    const merged = mergeConversation(current, older);
+    expect(merged.id).toBe(current.id);
+    expect(merged.messages[0]?.body).toBe('最新');
+  });
 });

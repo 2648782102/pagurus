@@ -149,7 +149,10 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
         setStreamAttempt(0);
         if (frame.kind === 'snapshot' && frame.conversation) {
           const snapshot = frame.conversation;
-          setConversation((previous) => previous ? mergeConversation(previous, snapshot) : snapshot);
+          setConversation((previous) => {
+            if (previous && previous.id !== snapshot.id) return previous;
+            return previous ? mergeConversation(previous, snapshot) : snapshot;
+          });
           return;
         }
         if (frame.kind !== 'message' || !frame.message) return;
