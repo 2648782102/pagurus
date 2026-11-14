@@ -4,6 +4,8 @@ import type { AgentChatMessage, AgentChatMessageState } from '../../shared/api/a
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
   readonly agentName: string;
+  readonly busy: boolean;
+  readonly onDecision: (assistantMessageId: string, decision: 'approved' | 'rejected') => void;
 }
 
 const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
@@ -15,13 +17,15 @@ const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
   thinking: '正在思考…',
   streaming: '正在回复…',
   organizing: '正在执行组织动作…',
+  waiting_approval: '等待你批准工具调用',
   waiting_attention: '等待你的确认',
   replied: '',
   unavailable: '模型服务暂不可用',
 };
 
 function isWorking(state: AgentChatMessageState): boolean {
-  return state === 'thinking' || state === 'streaming' || state === 'organizing' || state === 'pending';
+  return state === 'thinking' || state === 'streaming' || state === 'organizing'
+    || state === 'pending' || state === 'waiting_approval';
 }
 
 function messageBody(message: AgentChatMessage): string {
@@ -29,6 +33,7 @@ function messageBody(message: AgentChatMessage): string {
   if (message.state === 'thinking') return '';
   if (message.state === 'streaming') return '正在生成回复…';
   if (message.state === 'organizing') return 'Runtime 正在校验并执行你确认的组织动作。';
+  if (message.state === 'waiting_approval') return 'Agent 想执行一个写入工具，需要你的批准。';
   if (message.state === 'waiting_attention') return '这个任务需要你补充信息。';
   if (message.state === 'failed') return '这条回复失败。';
   if (message.state === 'unavailable') return '模型目录或供应商暂不可用，请检查 Magpie 配置。';
@@ -36,7 +41,7 @@ function messageBody(message: AgentChatMessage): string {
   return '';
 }
 
-export function AgentChatThread({ messages, agentName }: AgentChatThreadProps) {
+export function AgentChatThread({ messages, agentName, busy, onDecision }: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
 
@@ -85,6 +90,24 @@ export function AgentChatThread({ messages, agentName }: AgentChatThreadProps) {
           {message.progress !== null && message.progress > 0 && message.progress < 100 && (
             <div className="agent-chat-progress" aria-label={`回复进度 ${message.progress}%`}>
               <span style={{ width: `${message.progress}%` }} />
+            </div>
+          )}
+          {message.activity.length > 0 && (
+            <ul className="agent-chat-activity" aria-label="Agent 执行活动">
+              {message.activity.map((entry) => (
+                <li key={entry.id} className={`agent-chat-activity-${entry.state}`}>
+                  <span className="agent-chat-activity-label">{entry.label}</span>
+                  {entry.detail && <code>{entry.detail}</code>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {message.state === 'waiting_approval' && message.taskId !== null && (
+            <div className="agent-chat-approval-actions">
+              <button className="button-primary" type="button" disabled={busy}
+                onClick={() => onDecision(message.id, 'approved')}>批准并继续</button>
+              <button className="button-secondary" type="button" disabled={busy}
+                onClick={() => onDecision(message.id, 'rejected')}>拒绝</button>
             </div>
           )}
           {message.error && <small>{message.error}</small>}

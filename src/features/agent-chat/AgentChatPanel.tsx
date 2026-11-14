@@ -17,7 +17,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
         <>
           <div className="section-heading"><h2 id="agent-chat-title">Agent 对话</h2></div>
           <div className="work-notice" role="status">
-            <p>当前 Runtime 未发布 <code>agentChatContract: 1.6.0</code>，Agent 对话保持关闭。</p>
+            <p>当前 Runtime 未发布 <code>agentChatContract: 1.7.0</code>，Agent 对话保持关闭。</p>
           </div>
         </>
       ) : !chat.conversation ? (
@@ -93,7 +93,12 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
           )}
           {chat.error && <div className="work-error" role="alert"><p>{chat.error}</p></div>}
 
-          <AgentChatThread messages={chat.conversation.messages} agentName={activeName} />
+          <AgentChatThread
+            messages={chat.conversation.messages}
+            agentName={activeName}
+            busy={chat.busy}
+            onDecision={chat.decideApproval}
+          />
           <AgentChatComposer
             draft={chat.draft}
             busy={chat.busy}

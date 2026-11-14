@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createAgentChatConversation,
+  decideAgentChatApproval,
   getAgentChatConversation,
   isBossAgent,
   isPendingAgentChatState,
@@ -147,6 +148,24 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     }
   }, [busy, draft]);
 
+  const decideApproval = useCallback(async (
+    assistantMessageId: string,
+    decision: 'approved' | 'rejected',
+  ) => {
+    const current = conversationRef.current;
+    if (!current || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await decideAgentChatApproval(current.id, { assistantMessageId, decision });
+      setConversation(await getAgentChatConversation(current.id));
+    } catch (cause) {
+      setError(errorText(cause));
+    } finally {
+      setBusy(false);
+    }
+  }, [busy]);
+
   const activeAgent = useMemo(
     () => agents.find((agent) => agent.id === (conversation?.agentId ?? selectedAgentId)),
     [agents, conversation?.agentId, selectedAgentId],
@@ -176,6 +195,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     startConversation,
     resetConversation,
     sendMessage,
+    decideApproval,
     reasoningEffort,
     setReasoningEffort,
     recent,

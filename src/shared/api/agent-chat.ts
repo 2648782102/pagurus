@@ -1,12 +1,13 @@
 import { fetchJson, type RuntimeInfo } from './runtime.js';
 
-export const AGENT_CHAT_CONTRACT_VERSION = '1.6.0';
+export const AGENT_CHAT_CONTRACT_VERSION = '1.7.0';
 
 export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/agents',
   '/v1/agent-chat/conversations',
   '/v1/agent-chat/conversations/{conversationId}',
   '/v1/agent-chat/conversations/{conversationId}/messages',
+  '/v1/agent-chat/conversations/{conversationId}/approval',
 ] as const);
 
 export const BOSS_AGENT_ID = 'boss-agent';
@@ -27,6 +28,7 @@ export type AgentChatMessageState =
   | 'thinking'
   | 'streaming'
   | 'organizing'
+  | 'waiting_approval'
   | 'waiting_attention'
   | 'replied'
   | 'unavailable';
@@ -68,6 +70,18 @@ export interface AgentChatMessage {
   readonly progress: number | null;
   readonly updatedAt: string;
   readonly replyToId: string | null;
+  readonly activity: readonly AgentChatActivity[];
+}
+
+export type AgentChatActivityKind = 'turn' | 'tool' | 'approval' | 'output';
+export type AgentChatActivityState = 'running' | 'succeeded' | 'failed' | 'waiting_approval';
+
+export interface AgentChatActivity {
+  readonly id: string;
+  readonly kind: AgentChatActivityKind;
+  readonly label: string;
+  readonly state: AgentChatActivityState;
+  readonly detail: string | null;
 }
 
 export function isTerminalAgentChatState(state: AgentChatMessageState): boolean {
@@ -118,6 +132,12 @@ export interface AgentChatMessageResult {
   readonly assistantMessage: AgentChatMessage;
 }
 
+export interface AgentChatApprovalResult {
+  readonly version: typeof AGENT_CHAT_CONTRACT_VERSION;
+  readonly conversationId: string;
+  readonly assistantMessage: AgentChatMessage;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -147,7 +167,7 @@ function isModel(value: unknown): value is AgentChatModel {
 
 const MESSAGE_STATES: readonly string[] = [
   'published', 'pending', 'succeeded', 'failed', 'cancelled',
-  'thinking', 'streaming', 'organizing', 'waiting_attention', 'replied', 'unavailable',
+  'thinking', 'streaming', 'organizing', 'waiting_approval', 'waiting_attention', 'replied', 'unavailable',
 ];
 const MESSAGE_AUTHORS: readonly string[] = ['user', 'assistant', 'runtime'];
 const MESSAGE_PHASES: readonly string[] = [
@@ -167,7 +187,20 @@ function isMessage(value: unknown): value is AgentChatMessage {
     && (value.progress === null || (Number.isInteger(value.progress)
       && (value.progress as number) >= 0 && (value.progress as number) <= 100))
     && typeof value.updatedAt === 'string'
-    && (value.replyToId === null || typeof value.replyToId === 'string');
+    && (value.replyToId === null || typeof value.replyToId === 'string')
+    && Array.isArray(value.activity) && value.activity.every(isActivity);
+}
+
+const ACTIVITY_KINDS: readonly string[] = ['turn', 'tool', 'approval', 'output'];
+const ACTIVITY_STATES: readonly string[] = ['running', 'succeeded', 'failed', 'waiting_approval'];
+
+function isActivity(value: unknown): value is AgentChatActivity {
+  return isRecord(value)
+    && typeof value.id === 'string'
+    && typeof value.label === 'string'
+    && typeof value.kind === 'string' && ACTIVITY_KINDS.includes(value.kind)
+    && typeof value.state === 'string' && ACTIVITY_STATES.includes(value.state)
+    && (value.detail === null || typeof value.detail === 'string');
 }
 
 function isConversation(value: unknown): value is AgentChatConversation {
@@ -190,6 +223,12 @@ function isMessageResult(value: unknown): value is AgentChatMessageResult {
   return isVersioned(value)
     && typeof value.conversationId === 'string'
     && isMessage(value.userMessage)
+    && isMessage(value.assistantMessage);
+}
+
+function isApprovalResult(value: unknown): value is AgentChatApprovalResult {
+  return isVersioned(value)
+    && typeof value.conversationId === 'string'
     && isMessage(value.assistantMessage);
 }
 
@@ -282,5 +321,23 @@ export async function postAgentChatMessage(
     signal,
   );
   if (!isMessageResult(value)) throw new Error('Runtime returned an invalid Agent Chat message result.');
+  return value;
+}
+
+export async function decideAgentChatApproval(
+  conversationId: string,
+  input: { readonly assistantMessageId: string; readonly decision: 'approved' | 'rejected' },
+  signal?: AbortSignal,
+): Promise<AgentChatApprovalResult> {
+  const value: unknown = await fetchJson<unknown>(
+    `/v1/agent-chat/conversations/${encodeURIComponent(conversationId)}/approval`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+    signal,
+  );
+  if (!isApprovalResult(value)) throw new Error('Runtime returned an invalid Agent Chat approval result.');
   return value;
 }
