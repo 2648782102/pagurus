@@ -14,7 +14,7 @@ const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
   cancelled: '已取消',
   thinking: '正在思考…',
   streaming: '正在回复…',
-  organizing: '正在组织工作…',
+  organizing: '正在执行组织动作…',
   waiting_attention: '等待你的确认',
   replied: '',
   unavailable: '模型服务暂不可用',
@@ -28,7 +28,7 @@ function messageBody(message: AgentChatMessage): string {
   if (message.body.length > 0) return message.body;
   if (message.state === 'thinking') return '';
   if (message.state === 'streaming') return '正在生成回复…';
-  if (message.state === 'organizing') return '正在校验意图、安排项目与员工，并汇总结果。';
+  if (message.state === 'organizing') return 'Runtime 正在校验并执行你确认的组织动作。';
   if (message.state === 'waiting_attention') return '这个任务需要你补充信息。';
   if (message.state === 'failed') return '这条回复失败。';
   if (message.state === 'unavailable') return '模型目录或供应商暂不可用，请检查 Magpie 配置。';

@@ -160,6 +160,11 @@
       "id": "boss-conversation-console",
       "summary": "Pagurus ADR 0027 records that natural Boss conversation replies remain Runtime-published messages in the existing Agent Chat flow, with no client authority or new API contract.",
       "evidence": "docs/decisions/0027-boss-conversation-console.md"
+    },
+    {
+      "id": "boss-conversation-hardening-console",
+      "summary": "Pagurus ADR 0028 renders natural Boss conversation, Runtime-validated organization actions, real streaming progress, and explicit web/local-file/device capability boundaries without local authority.",
+      "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
     }
   ],
   "validationEvidence": [

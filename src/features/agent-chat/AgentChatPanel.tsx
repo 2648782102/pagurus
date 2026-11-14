@@ -67,7 +67,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
             </dl>
           )}
           {chat.conversation.agentId === 'boss-agent' && (
-            <p className="agent-chat-mode-note">老板 Agent：提交意图后由 Runtime 校验、创建项目/员工，并返回结构化汇报与 Attention。</p>
+            <p className="agent-chat-mode-note">老板 Agent：直接对话；需要时由 Runtime 校验组织动作。当前未接入网页搜索、本机文件或设备查询。</p>
           )}
           {chat.error && <div className="work-error" role="alert"><p>{chat.error}</p></div>}
 

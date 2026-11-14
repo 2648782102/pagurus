@@ -321,6 +321,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'codex-style-agent-chat-flow')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'agent-chat-conversation-states-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-conversation-console')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'boss-conversation-hardening-console')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -494,6 +495,7 @@ describe('AI-first entry documents', () => {
       '0025-codex-style-agent-chat-flow.md',
       '0026-agent-chat-conversation-states-console.md',
       '0027-boss-conversation-console.md',
+      '0028-boss-conversation-hardening-console.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -600,6 +602,9 @@ describe('AI-first entry documents', () => {
     const twentySeventh = read(`${recordsDir}/0027-boss-conversation-console.md`);
     expect(twentySeventh).toMatch(/^Status: \*\*accepted paired client documentation boundary; no client or Runtime API contract changes\*\*$/m);
     expect(twentySeventh).toMatch(/Runtime-published/);
+    const twentyEighth = read(`${recordsDir}/0028-boss-conversation-hardening-console.md`);
+    expect(twentyEighth).toMatch(/^Status: \*\*accepted paired client documentation boundary; no client or Runtime API contract changes\*\*$/m);
+    expect(twentyEighth).toMatch(/streaming/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -871,6 +876,7 @@ describe('client boundaries', () => {
         { id: 'codex-style-agent-chat-flow' },
         { id: 'agent-chat-conversation-states-console' },
         { id: 'boss-conversation-console' },
+        { id: 'boss-conversation-hardening-console' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [

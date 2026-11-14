@@ -110,7 +110,7 @@ describe('Agent Chat panel', () => {
     ];
     render(<AgentChatThread messages={messages} agentName="老板 Agent" />);
     expect(screen.getByText('正在思考…')).toBeTruthy();
-    expect(screen.getByText('正在组织工作…')).toBeTruthy();
+    expect(screen.getByText('正在执行组织动作…')).toBeTruthy();
     expect(screen.getByText('等待你的确认')).toBeTruthy();
     expect(screen.getByText('模型服务暂不可用')).toBeTruthy();
     expect(screen.getByText('正在汇总')).toBeTruthy();
@@ -132,7 +132,8 @@ describe('Agent Chat panel', () => {
     render(<AgentChatPanel runtime={runtime} />);
     expect(await screen.findByRole('option', { name: /老板 Agent/ })).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
-    expect(await screen.findByText(/老板 Agent：提交意图后/)).toBeTruthy();
+    expect(await screen.findByText(/老板 Agent：直接对话/)).toBeTruthy();
+    expect(await screen.findByText(/未接入网页搜索/)).toBeTruthy();
   });
 
   it('shows a bounded unsupported Runtime state', async () => {
