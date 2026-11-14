@@ -46,4 +46,14 @@ describe('agent chat snapshot merge', () => {
     expect(merged.messages.map((entry) => entry.id)).toEqual(['m1', 'm2']);
     expect(merged.messages[0]?.body).toBe('较新的回复');
   });
+
+  it('does not let a stale frame overwrite a newer message body', () => {
+    const newer = conversation([
+      message('m1', 1, '2026-11-15T00:00:05.000Z', '最终回复'),
+    ]);
+    const stale = { ...message('m1', 1, '2026-11-15T00:00:03.000Z', '旧的流式片段') };
+    const staleConversation = conversation([stale]);
+    const merged = mergeConversation(newer, staleConversation);
+    expect(merged.messages[0]?.body).toBe('最终回复');
+  });
 });

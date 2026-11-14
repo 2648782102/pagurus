@@ -131,9 +131,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
         setConversation((previous) => {
           if (!previous || previous.id !== current.id) return previous;
           const index = previous.messages.findIndex((entry) => entry.id === incoming.id);
+          if (index >= 0) {
+            const existing = previous.messages[index]!;
+            if (Date.parse(incoming.updatedAt) < Date.parse(existing.updatedAt)) return previous;
+          }
           const messages = index >= 0
             ? previous.messages.map((entry) => entry.id === incoming.id ? incoming : entry)
-            : [...previous.messages, incoming];
+            : [...previous.messages, incoming].sort((left, right) => left.sequence - right.sequence);
           return { ...previous, messages };
         });
       },
