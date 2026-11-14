@@ -21,6 +21,8 @@ export interface RuntimeInfo {
   executionRunPaths?: number;
   conversationContract?: '1.4.0';
   conversationPaths?: number;
+  agentChatContract?: '1.5.0';
+  agentChatPaths?: number;
 }
 
 export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
@@ -53,7 +55,9 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.executionRunContract === undefined || value.executionRunContract === '1.3.0')
     && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths))
     && (value.conversationContract === undefined || value.conversationContract === '1.4.0')
-    && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths));
+    && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths))
+    && (value.agentChatContract === undefined || value.agentChatContract === '1.5.0')
+    && (value.agentChatPaths === undefined || Number.isInteger(value.agentChatPaths));
 }
 
 export async function fetchJson<T>(

@@ -395,6 +395,30 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
   .conversation-message { max-width: 100%; }
 }
 
+.agent-chat-panel { border-color: #b9c9d5; }
+.agent-chat-setup { display: grid; grid-template-columns: minmax(180px, 1fr) auto; align-items: end; gap: 10px; margin-top: 18px; }
+.agent-chat-setup label { grid-column: 1 / -1; color: #4d5a53; font-size: 11px; font-weight: 600; }
+.agent-chat-setup select, .agent-chat-composer textarea { width: 100%; min-height: 40px; padding: 10px 12px; border: 1px solid #cfd9d1; border-radius: 8px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; }
+.agent-chat-pins { margin: 16px 0; }
+.agent-chat-thread { display: grid; gap: 10px; max-height: 520px; overflow: auto; padding: 4px; }
+.agent-chat-message { display: grid; gap: 8px; max-width: min(760px, 92%); padding: 12px 14px; border: 1px solid #dce6dd; border-radius: 12px; background: #fff; }
+.agent-chat-message-user { justify-self: end; border-color: #b9c9d5; background: #eef4f8; }
+.agent-chat-message-assistant { justify-self: start; }
+.agent-chat-message header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.agent-chat-message header strong { font-size: 11px; }
+.agent-chat-message header span { color: var(--teal); font-size: 10px; font-weight: 600; }
+.agent-chat-message header code { color: var(--muted); font: 9px var(--mono); }
+.agent-chat-message p { margin: 0; color: var(--ink); font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agent-chat-message small { color: #9b4b37; font-size: 10px; overflow-wrap: anywhere; }
+.agent-chat-composer { display: grid; gap: 9px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #dce6dd; }
+.agent-chat-composer label { color: #4d5a53; font-size: 11px; font-weight: 600; }
+.agent-chat-composer textarea { min-height: 82px; line-height: 1.6; resize: vertical; }
+.agent-chat-composer-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 760px) {
+  .agent-chat-setup { grid-template-columns: 1fr; }
+  .agent-chat-message { max-width: 100%; }
+}
+
 /* Final local-first 1.0.0 control, capability, and write-only handle surfaces. */
 .work-detail .task-actions,
 .revision-list li .task-actions { margin-top: 10px; }

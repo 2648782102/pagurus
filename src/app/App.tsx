@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
+import { AgentChatPanel } from '../features/agent-chat/AgentChatPanel.js';
 import { CapabilityPanel } from '../features/capabilities/CapabilityPanel.js';
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
 import { ExecutionConsolePanel } from '../features/execution/ExecutionConsolePanel.js';
@@ -37,6 +38,8 @@ export function App() {
     switch (id) {
       case 'organization':
         return <OrganizationConsolePanel runtime={runtimeStatus.runtime} />;
+      case 'agentChat':
+        return <AgentChatPanel runtime={runtimeStatus.runtime} />;
       case 'execution':
         return <ExecutionConsolePanel runtime={runtimeStatus.runtime} />;
       case 'agents':

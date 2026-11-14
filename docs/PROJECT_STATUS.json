@@ -4,7 +4,7 @@
   "pairedRepository": "conchbase",
   "project": "Pagurus / 寄居蟹",
   "release": "1.0.0",
-  "statusUpdatedAt": "2026-11-13",
+  "statusUpdatedAt": "2026-11-14",
   "objectiveMode": "target-mode",
   "developmentBoundaryAdr": "0011-ai-handoff-readiness-development-boundary.md",
   "runtimeContract": {
@@ -37,6 +37,12 @@
       "pathCount": 2,
       "frozen": true,
       "clientAdr": "0022-primary-conversation-console.md"
+    },
+    "agentChat": {
+      "version": "1.5.0",
+      "pathCount": 4,
+      "frozen": true,
+      "clientAdr": "0023-agent-chat-console.md"
     }
   },
   "aiEntry": {
@@ -129,6 +135,11 @@
       "id": "primary-conversation-console",
       "summary": "Pagurus ADR 0022 connects a typed 1.4.0 primary-conversation panel over Conchbase's two additive read paths with published user, Boss, worker, report, Attention, and system-status messages.",
       "evidence": "src/features/organization/PrimaryConversationPanel.tsx"
+    },
+    {
+      "id": "agent-chat-console",
+      "summary": "Pagurus ADR 0023 adds a separate Agent Chat workspace that lists configured Agents, creates a pinned conversation, sends messages through Conchbase 1.5.0, and polls real model replies.",
+      "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
     }
   ],
   "validationEvidence": [
@@ -192,6 +203,12 @@
       "id": "primary-conversation-console-fixture",
       "summary": "Executable fixtures cover 1.4.0 typed conversation client, discovery gating, cursor pages, published message kinds, complete composer rendering, and unsupported Runtime fallback.",
       "evidence": "tests/conversation-api.test.ts",
+      "executableFixture": true
+    },
+    {
+      "id": "agent-chat-console-fixture",
+      "summary": "Executable fixtures cover 1.5.0 typed Agent Chat client, discovery gating, Agent selection, conversation creation, message submit, polling, terminal states, and unsupported Runtime fallback.",
+      "evidence": "tests/agent-chat-api.test.ts",
       "executableFixture": true
     }
   ],

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export type WorkspaceId =
   | 'overview'
   | 'organization'
+  | 'agentChat'
   | 'execution'
   | 'agents'
   | 'tasks'
@@ -45,6 +46,17 @@ export const WORKSPACES: readonly WorkspaceDefinition[] = [
     href: '#organization-console',
     hint: '主意图、Attention 与项目审计',
     aliases: ['organization', 'organization-console', 'organization-title'],
+  },
+  {
+    id: 'agentChat',
+    label: 'Agent 对话',
+    section: '直接对话',
+    title: 'Agent 对话工作区',
+    description: '选择一个配置好的 Agent 并进行普通聊天；模型与供应商配置由用户在 Magpie 中完成，Runtime 只负责协议接入与执行。',
+    icon: '✦',
+    href: '#agent-chat',
+    hint: '配置 Agent 一问一答',
+    aliases: ['agent-chat', 'agent-chat-title', 'chat'],
   },
   {
     id: 'execution',
