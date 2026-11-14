@@ -9,9 +9,12 @@ const STATE_LABELS: Readonly<Record<string, string>> = {
   pending: '待审批',
   approved: '已批准',
   rejected: '已拒绝',
-  running: '假执行中',
-  succeeded: '假执行成功',
-  failed: '假执行失败',
+  running: '执行中',
+  succeeded: '执行成功',
+  failed: '执行失败',
+  queued: '待启动',
+  interrupted: '已中断',
+  cancelled: '已取消',
 };
 
 function stateLabel(state: string): string {
@@ -25,7 +28,7 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
     <section className="work-panel execution-panel" id="execution-console" aria-labelledby="execution-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">CONTROLLED EXECUTION · 1.2.0</p>
+          <p className="eyebrow">CONTROLLED EXECUTION · 1.2.0 / ISOLATED RUNS · 1.3.0</p>
           <h2 id="execution-title">受控执行状态</h2>
         </div>
         <button className="button-secondary" type="button" onClick={consoleState.load}
@@ -42,7 +45,7 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
 
       {consoleState.supported && <>
         <div className="execution-notice" role="note">
-          本工作区只连接确定性 fake executor：不安装 MCP、不加载 Skill/plugin、不执行宿主工具、不写外部系统、不读取明文密钥。能力记录与显式授权、审批、执行结果是不同状态。
+          `1.2.0` 是确定性 fake executor；`1.3.0` 是 Runtime 拥有的隔离子进程，只接受封闭的 hash / echo_length / fixed_matrix 操作。两者都不安装 MCP、不加载 Skill/plugin、不执行任意宿主命令、不写外部系统、不读取明文密钥。能力记录与显式授权、审批、执行结果是不同状态。
         </div>
 
         <div className="execution-grid">
@@ -98,7 +101,44 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
                     onClick={() => consoleState.rejectRequest(request)}>拒绝</button>
                 </>}
                 {request.resultDigest && <small>result {request.resultDigest}</small>}
+                {consoleState.runsSupported && request.state === 'succeeded' && (
+                  <button className="button-secondary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.createRun(request)}>创建隔离 run</button>
+                )}
               </div>
+            ))}
+          </article>
+
+          <article className="organization-card" aria-labelledby="execution-run-title">
+            <h3 id="execution-run-title">隔离执行 Runs</h3>
+            {!consoleState.runsSupported && <p className="task-hint">当前 Runtime 未发布 executionRunContract: 1.3.0。</p>}
+            {consoleState.runsSupported && consoleState.runs.length === 0 && <p className="task-hint">尚未发布隔离执行 run。</p>}
+            {[...consoleState.runs].reverse().map((run) => (
+              <div className="organization-fact" key={run.id}>
+                <strong>{stateLabel(run.state)}</strong><code>{run.id}</code>
+                <small>v{run.expectedVersion} · attempt {run.attempt} · {run.operation} · exit {run.exitCode ?? '—'}</small>
+                {run.resultDigest && <small>result {run.resultDigest}</small>}
+                {run.errorDigest && <small>error {run.errorDigest}</small>}
+                {run.state === 'queued' && <>
+                  <button className="button-primary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.startRun(run)}>启动隔离子进程</button>
+                  <button className="button-secondary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.cancelRun(run)}>取消</button>
+                </>}
+                {(run.state === 'interrupted' || run.state === 'failed') && (
+                  <button className="button-secondary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.recoverRun(run)}>恢复</button>
+                )}
+              </div>
+            ))}
+          </article>
+
+          <article className="organization-card" aria-labelledby="execution-run-event-title">
+            <h3 id="execution-run-event-title">Run 审计事件</h3>
+            {[...consoleState.runEvents].slice(-12).reverse().map((event) => (
+              <p className="organization-fact" key={event.id}>
+                <span>#{event.sequence}</span><code>{event.type}</code>
+              </p>
             ))}
           </article>
 

@@ -36,6 +36,12 @@ interface ProjectStatus {
     readonly frozen: boolean;
     readonly clientAdr?: string;
   };
+  readonly executionRun?: {
+    readonly version: string;
+    readonly pathCount: number;
+    readonly frozen: boolean;
+    readonly clientAdr?: string;
+  };
   };
   readonly aiEntry: {
     readonly requiredOrder: readonly string[];
@@ -266,6 +272,12 @@ function assertProjectStatus(source: string, label: string): void {
     frozen: true,
     clientAdr: '0020-controlled-execution-console-v1.md',
   });
+  expect(status.runtimeContract.executionRun).toEqual({
+    version: '1.3.0',
+    pathCount: 8,
+    frozen: true,
+    clientAdr: '0021-isolated-execution-console-v2.md',
+  });
   expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
     'AGENTS.md',
     'docs/AI_HANDOFF.md',
@@ -278,6 +290,7 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'organization-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-mode-connected-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'controlled-execution-console-v1')).toBe(true);
+  expect(status.implemented.some((record) => record.id === 'isolated-execution-console-v2')).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'final-proxy-walkthrough' && !record.executableFixture,
   )).toBe(true);
@@ -292,6 +305,9 @@ function assertProjectStatus(source: string, label: string): void {
   )).toBe(true);
   expect(status.validationEvidence.some(
     (record) => record.id === 'controlled-execution-console-fixture' && record.executableFixture === true,
+  )).toBe(true);
+  expect(status.validationEvidence.some(
+    (record) => record.id === 'isolated-execution-console-fixture' && record.executableFixture === true,
   )).toBe(true);
   expect(status.blockedDirections.length).toBeGreaterThanOrEqual(5);
   for (const direction of status.blockedDirections) {
@@ -426,6 +442,7 @@ describe('AI-first entry documents', () => {
       '0018-boss-mode-console-product-loop.md',
       '0019-controlled-execution-console-direction.md',
       '0020-controlled-execution-console-v1.md',
+      '0021-isolated-execution-console-v2.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -511,6 +528,9 @@ describe('AI-first entry documents', () => {
     const twentieth = read(`${recordsDir}/0020-controlled-execution-console-v1.md`);
     expect(twentieth).toMatch(/^Status: \*\*accepted paired client contract for Conchbase controlled execution v1\*\*$/m);
     expect(twentieth).toMatch(/executionContract: "1\.2\.0"/);
+    const twentyFirst = read(`${recordsDir}/0021-isolated-execution-console-v2.md`);
+    expect(twentyFirst).toMatch(/^Status: \*\*accepted paired client contract for Conchbase isolated execution v2\*\*$/m);
+    expect(twentyFirst).toMatch(/executionRunContract: "1\.3\.0"/);
   });
 
   it('keeps a machine-readable target-mode status and Chinese objective brief', () => {
@@ -679,8 +699,12 @@ describe('client boundaries', () => {
     expect(panelSource).not.toMatch(/可视化组合编辑器|Agent 层级|三层/i);
     for (const file of listSourceFiles('src')) {
       expect(read(file), `${file} must not call Conchbase tool ledger routes`).not.toMatch(/\/v1\/tool-requests/);
-      const canonicalTopology = /Router|Worker\b|three-layer|layered|hierarchy/i;
-      if (file.includes('organization') || file.includes('Organization')) {
+      const canonicalTopology = /Router|\bWorker\b|three-layer|layered|hierarchy/i;
+      if (file.includes('execution-runs') || file.includes('execution/') || file.includes('execution')) {
+        expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
+          /Router|three-layer|layered|hierarchy/i,
+        );
+      } else if (file.includes('organization') || file.includes('Organization')) {
         expect(read(file), `${file} must not hardcode a canonical topology`).not.toMatch(
           /Router|three-layer|layered|hierarchy/i,
         );
@@ -732,6 +756,12 @@ describe('client boundaries', () => {
           frozen: true,
           clientAdr: '0020-controlled-execution-console-v1.md',
         },
+        executionRun: {
+          version: '1.3.0',
+          pathCount: 8,
+          frozen: true,
+          clientAdr: '0021-isolated-execution-console-v2.md',
+        },
       },
       aiEntry: {
         requiredOrder: [
@@ -749,6 +779,7 @@ describe('client boundaries', () => {
         { id: 'boss-mode-connected-console' },
         { id: 'organization-console-usability' },
         { id: 'controlled-execution-console-v1' },
+        { id: 'isolated-execution-console-v2' },
         { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
@@ -758,6 +789,8 @@ describe('client boundaries', () => {
         { id: 'organization-client-fixture', executableFixture: true },
         { id: 'boss-mode-product-loop-fixture', executableFixture: true },
         { id: 'controlled-execution-console-fixture', executableFixture: true },
+        { id: 'isolated-execution-console-fixture', executableFixture: true },
+        { id: 'isolated-execution-console-fixture', executableFixture: true },
       ],
       blockedDirections: [
         { id: 'tool-approval-ui', requiresAcceptedAdr: true },

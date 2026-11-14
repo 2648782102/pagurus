@@ -19,6 +19,8 @@ const runtime = {
   organizationPaths: 18,
   executionContract: '1.2.0',
   executionPaths: 8,
+  executionRunContract: '1.3.0',
+  executionRunPaths: 8,
 };
 
 const capability = {
@@ -39,6 +41,16 @@ describe('Controlled execution console', () => {
       if (path.startsWith('/v1/execution/events')) {
         return Promise.resolve(json({ version: '1.2.0', events: [], nextCursor: null, hasMore: false }));
       }
+      if (path === '/v1/execution/adapters') {
+        return Promise.resolve(json({ version: '1.3.0', adapters: [{
+          version: '1.3.0', id: 'adapter_isolated_local_v2', kind: 'isolated-local-worker',
+          operations: ['hash', 'echo_length', 'fixed_matrix'], maxInputBytes: 4096, maxRuntimeMs: 2000,
+          network: 'forbidden', filesystem: 'no-user-paths', createdAt: '2026-11-14T00:00:00.000Z',
+        }] }));
+      }
+      if (path === '/v1/execution/runs') {
+        return Promise.resolve(json({ version: '1.3.0', runs: [] }));
+      }
       return Promise.resolve(json({}));
     }));
     Element.prototype.scrollIntoView = vi.fn();
@@ -56,6 +68,8 @@ describe('Controlled execution console', () => {
     expect(screen.getByRole('heading', { name: '能力记录' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '显式授权' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '请求与结果' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '隔离执行 Runs' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Run 审计事件' })).toBeTruthy();
     expect(screen.getByText(/不安装 MCP/)).toBeTruthy();
     expect(screen.getByRole('button', { name: '创建显式授权' })).toBeTruthy();
   });

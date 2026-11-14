@@ -25,6 +25,12 @@
       "pathCount": 8,
       "frozen": true,
       "clientAdr": "0020-controlled-execution-console-v1.md"
+    },
+    "executionRun": {
+      "version": "1.3.0",
+      "pathCount": 8,
+      "frozen": true,
+      "clientAdr": "0021-isolated-execution-console-v2.md"
     }
   },
   "aiEntry": {
@@ -107,6 +113,11 @@
       "id": "controlled-execution-console-v1",
       "summary": "Pagurus ADR 0020 connects a typed controlled-execution workspace to Conchbase additive 1.2.0 paths with explicit grants, approvals, revocation, digest-only fake execution results, and audit events.",
       "evidence": "src/features/execution/ExecutionConsolePanel.tsx"
+    },
+    {
+      "id": "isolated-execution-console-v2",
+      "summary": "Pagurus ADR 0021 extends the controlled execution workspace with typed 1.3.0 isolated run state, explicit start/cancel/recover, run events, and queued/running/succeeded/failed/cancelled/interrupted vocabulary.",
+      "evidence": "src/shared/api/execution-runs.ts"
     }
   ],
   "validationEvidence": [
@@ -159,12 +170,18 @@
       "summary": "Executable fixtures cover 1.2.0 typed client reads/writes, stale-version semantics, workspace gating, state vocabulary, and a published-state-only controlled execution panel.",
       "evidence": "tests/execution-api.test.ts",
       "executableFixture": true
+    },
+    {
+      "id": "isolated-execution-console-fixture",
+      "summary": "Executable fixtures cover 1.3.0 run typed client, discovery gating, run transitions, run events, and a published-state-only isolated run panel.",
+      "evidence": "tests/execution-run-api.test.ts",
+      "executableFixture": true
     }
   ],
   "blockedDirections": [
     {
       "id": "real-execution-console",
-      "summary": "Real MCP/Skill/plugin lifecycle, host tool execution, external writes, and production executor UI remain blocked; ADR 0020 covers only the Conchbase fake-executor v1 slice.",
+      "summary": "Real MCP/Skill/plugin lifecycle, arbitrary host tool execution, external writes, and production executor UI remain blocked; ADR 0021 covers only isolated local deterministic operations with no external write.",
       "requiresAcceptedAdr": true,
       "directionAdr": "docs/decisions/0020-controlled-execution-console-v1.md"
     },

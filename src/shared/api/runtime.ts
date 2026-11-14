@@ -17,6 +17,8 @@ export interface RuntimeInfo {
   organizationPaths?: number;
   executionContract?: '1.2.0';
   executionPaths?: number;
+  executionRunContract?: '1.3.0';
+  executionRunPaths?: number;
 }
 
 export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
@@ -45,7 +47,9 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.organizationContract === undefined || value.organizationContract === '1.1.0')
     && (value.organizationPaths === undefined || Number.isInteger(value.organizationPaths))
     && (value.executionContract === undefined || value.executionContract === '1.2.0')
-    && (value.executionPaths === undefined || Number.isInteger(value.executionPaths));
+    && (value.executionPaths === undefined || Number.isInteger(value.executionPaths))
+    && (value.executionRunContract === undefined || value.executionRunContract === '1.3.0')
+    && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths));
 }
 
 async function getJson<T>(
