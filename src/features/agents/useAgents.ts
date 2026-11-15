@@ -14,6 +14,7 @@ import {
   type Agent,
   type AgentProfile,
   type AgentRecord,
+  type CapabilityGrant,
   type ProviderModel,
 } from '../../shared/api/agents.js';
 
@@ -29,6 +30,8 @@ export interface AgentEditorState {
   name: string;
   instructions: string;
   modelReference: string;
+  toolNames: string;
+  skillNames: string;
   error: string | null;
   message: string | null;
 }
@@ -43,9 +46,43 @@ const initialState: AgentEditorState = {
   name: '',
   instructions: '',
   modelReference: '',
+  toolNames: '',
+  skillNames: '',
   error: null,
   message: null,
 };
+
+const CAPABILITY_NAME = /^[a-z0-9][a-z0-9_.-]{0,119}$/;
+const MAX_CAPABILITY_GRANTS = 64;
+
+function grantsToDraft(grants: readonly CapabilityGrant[] | undefined): { toolNames: string; skillNames: string } {
+  const namesOf = (kind: CapabilityGrant['kind']) => (grants ?? [])
+    .filter((grant) => grant.kind === kind)
+    .map((grant) => grant.name)
+    .join('\n');
+  return { toolNames: namesOf('tool'), skillNames: namesOf('skill') };
+}
+
+export function parseGrantDraft(toolNames: string, skillNames: string): CapabilityGrant[] {
+  const parse = (kind: CapabilityGrant['kind'], draft: string): CapabilityGrant[] => {
+    const seen = new Set<string>();
+    const grants: CapabilityGrant[] = [];
+    for (const raw of draft.split(/[\s,]+/)) {
+      const name = raw.trim();
+      if (name.length === 0) continue;
+      if (!CAPABILITY_NAME.test(name)) throw new Error(`能力名「${name}」不符合 Runtime 命名规则。`);
+      if (seen.has(name)) throw new Error(`能力「${name}」重复出现。`);
+      seen.add(name);
+      grants.push({ kind, name });
+    }
+    return grants;
+  };
+  const grants = [...parse('tool', toolNames), ...parse('skill', skillNames)];
+  if (grants.length > MAX_CAPABILITY_GRANTS) {
+    throw new Error(`一个 Agent 最多可授权 ${MAX_CAPABILITY_GRANTS} 项能力。`);
+  }
+  return grants;
+}
 
 function selectedModelReference(models: readonly ProviderModel[], revision: Agent['current'] | undefined): string {
   if (!revision) return models[0]?.reference ?? '';
@@ -88,6 +125,7 @@ export function useAgents(onChanged?: () => void) {
         name: selectedModel?.name ?? '',
         instructions: selectedModel?.instructions ?? '',
         modelReference: selectedModelReference(models, selectedModel),
+        ...grantsToDraft(selectedModel?.grantedCapabilities),
         error: null,
       }));
     } catch (cause) {
@@ -131,11 +169,21 @@ export function useAgents(onChanged?: () => void) {
       instructions: state.instructions,
       providerId: model.providerId,
       modelId: model.modelId,
+      grantedCapabilities: parseGrantDraft(state.toolNames, state.skillNames),
     };
   };
 
   const save = useCallback(() => {
-    const next = profile();
+    let next: AgentProfile | null;
+    try {
+      next = profile();
+    } catch (cause) {
+      setState((current) => ({
+        ...current,
+        error: cause instanceof Error ? cause.message : '能力授权格式无效。',
+      }));
+      return;
+    }
     if (!next) {
       setState((current) => ({ ...current, error: '请填写 Agent 名称并选择可用模型。' }));
       return;
@@ -179,6 +227,8 @@ export function useAgents(onChanged?: () => void) {
     name: '',
     instructions: '',
     modelReference: current.models[0]?.reference ?? '',
+    toolNames: '',
+    skillNames: '',
     message: null,
     error: null,
   })), []);
@@ -194,6 +244,8 @@ export function useAgents(onChanged?: () => void) {
     setName: (name: string) => setState((current) => ({ ...current, name })),
     setInstructions: (instructions: string) => setState((current) => ({ ...current, instructions })),
     setModelReference: (modelReference: string) => setState((current) => ({ ...current, modelReference })),
+    setToolNames: (toolNames: string) => setState((current) => ({ ...current, toolNames })),
+    setSkillNames: (skillNames: string) => setState((current) => ({ ...current, skillNames })),
     refresh,
     select,
     startNew,

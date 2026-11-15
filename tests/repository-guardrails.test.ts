@@ -498,6 +498,7 @@ describe('AI-first entry documents', () => {
       '0028-boss-conversation-hardening-console.md',
       '0029-agent-chat-tool-approval-console.md',
       '0030-agent-chat-live-stream-console.md',
+      '0031-agent-capability-grant-editor.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

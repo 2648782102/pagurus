@@ -45,8 +45,46 @@ describe('AgentWorkspace', () => {
     const createCall = fetchMock.mock.calls.find(([path, init]) => path === '/v1/agents' && init?.method === 'POST');
     expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({
       name: 'Research', instructions: 'Be precise', providerId: 'magpie', modelId: 'fixture/model',
+      grantedCapabilities: [],
     });
     await waitFor(() => expect(onAgentsChanged).toHaveBeenCalledTimes(1));
+  });
+
+  it('sends the explicit capability grants and shows the fail-closed empty state', async () => {
+    fetchMock
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }))
+      .mockResolvedValueOnce(json({ agent: AGENT }, 201))
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }));
+    render(<AgentWorkspace />);
+    await screen.findByLabelText('名称');
+    expect(screen.getByText(/未授权任何能力/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
+    fireEvent.change(screen.getByLabelText(/工具/), { target: { value: 'workspace_read\nworkspace_list' } });
+    fireEvent.change(screen.getByLabelText(/Skill/), { target: { value: 'release-notes' } });
+    fireEvent.click(screen.getByRole('button', { name: '创建 Agent' }));
+
+    await waitFor(() => expect(fetchMock.mock.calls.some(([path, init]) => path === '/v1/agents' && init?.method === 'POST')).toBe(true));
+    const createCall = fetchMock.mock.calls.find(([path, init]) => path === '/v1/agents' && init?.method === 'POST');
+    expect(JSON.parse(String(createCall?.[1]?.body)).grantedCapabilities).toEqual([
+      { kind: 'tool', name: 'workspace_read' },
+      { kind: 'tool', name: 'workspace_list' },
+      { kind: 'skill', name: 'release-notes' },
+    ]);
+  });
+
+  it('rejects an invalid capability name before calling the Runtime', async () => {
+    fetchMock
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
+    render(<AgentWorkspace />);
+    await screen.findByLabelText('名称');
+    fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
+    fireEvent.change(screen.getByLabelText(/工具/), { target: { value: 'WorkspaceRead' } });
+    fireEvent.click(screen.getByRole('button', { name: '创建 Agent' }));
+    expect(await screen.findByText(/不符合 Runtime 命名规则/)).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([path, init]) => path === '/v1/agents' && init?.method === 'POST')).toBe(false);
   });
 
   it('shows an explicit unsupported state without calling Agent routes on older runtimes', async () => {

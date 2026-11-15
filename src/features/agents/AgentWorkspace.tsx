@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAgents } from './useAgents.js';
-import type { AgentRevision } from '../../shared/api/agents.js';
+import type { AgentRevision, CapabilityGrant } from '../../shared/api/agents.js';
 
 function providerName(providerId: string): string {
   return providerId;
@@ -124,6 +124,41 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
             </select>
             {currentReference && <p className="task-hint">provider-neutral reference：<code>{currentReference.reference}</code></p>}
 
+            <fieldset className="agent-capabilities">
+              <legend>能力授权</legend>
+              <p className="task-hint">
+                Runtime 只允许这里列出的能力。留空表示这个 Agent 不能调用任何工具或 Skill；
+                能力名必须与 Runtime 已注册的一致，未注册的条目不会生效。
+              </p>
+              <label htmlFor="agent-tools">工具（每行一个，例如 <code>workspace_read</code>）</label>
+              <textarea
+                id="agent-tools"
+                value={agents.toolNames}
+                onChange={(event) => agents.setToolNames(event.target.value)}
+                rows={3}
+                spellCheck={false}
+                placeholder={'workspace_list\nworkspace_read'}
+                disabled={busy || selected?.archived}
+              />
+              <label htmlFor="agent-skills">Skill（每行一个 Skill 目录名）</label>
+              <textarea
+                id="agent-skills"
+                value={agents.skillNames}
+                onChange={(event) => agents.setSkillNames(event.target.value)}
+                rows={2}
+                spellCheck={false}
+                placeholder="release-notes"
+                disabled={busy || selected?.archived}
+              />
+              {(!selected || (selected.current.grantedCapabilities?.length ?? 0) === 0)
+                && agents.toolNames.trim().length === 0
+                && agents.skillNames.trim().length === 0 && (
+                <p className="task-hint" role="status">
+                  当前版本未授权任何能力，该 Agent 无法调用工具或 Skill。
+                </p>
+              )}
+            </fieldset>
+
             <div className="agent-actions">
               <button className="button-primary" type="submit" disabled={busy || !agents.models.length || selected?.archived}>
                 {agents.phase === 'saving' ? '保存中…' : selected ? '保存新版本' : '创建 Agent'}
@@ -218,11 +253,22 @@ function RevisionComparison({
           <CompareField label="名称" left={left.name} right={right.name} />
           <CompareField label="Instructions" left={left.instructions} right={right.instructions} multiline />
           <CompareField label="默认模型" left={`${left.providerId} / ${left.modelId}`} right={`${right.providerId} / ${right.modelId}`} />
+          <CompareField
+            label="能力授权"
+            left={formatGrants(left.grantedCapabilities)}
+            right={formatGrants(right.grantedCapabilities)}
+            multiline
+          />
           <CompareField label="版本 id" left={left.id} right={right.id} mono />
         </div>}
       </>}
     </div>
   );
+}
+
+function formatGrants(grants: readonly CapabilityGrant[] | undefined): string {
+  if (!grants || grants.length === 0) return '未授权任何能力';
+  return grants.map((grant) => `${grant.kind}:${grant.name}`).join('\n');
 }
 
 function CompareField({

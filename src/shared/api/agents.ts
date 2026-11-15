@@ -11,10 +11,18 @@ export interface ProviderModel extends ModelReference {
   capabilities: string[];
 }
 
+export type CapabilityGrantKind = 'tool' | 'skill';
+
+export interface CapabilityGrant {
+  kind: CapabilityGrantKind;
+  name: string;
+}
+
 export interface AgentRevision extends ModelReference {
   id: string;
   name: string;
   instructions: string;
+  grantedCapabilities: CapabilityGrant[];
   createdAt: string;
 }
 
@@ -33,6 +41,7 @@ export interface Agent extends AgentRecord {
 export interface AgentProfile extends ModelReference {
   name: string;
   instructions: string;
+  grantedCapabilities?: CapabilityGrant[];
 }
 
 export interface AgentTaskBinding {
@@ -58,7 +67,18 @@ function isAgentRevision(value: unknown): value is AgentRevision {
     && typeof value.id === 'string'
     && typeof value.name === 'string'
     && typeof value.instructions === 'string'
+    && (value.grantedCapabilities === undefined || isCapabilityGrants(value.grantedCapabilities))
     && typeof value.createdAt === 'string';
+}
+
+export function isCapabilityGrant(value: unknown): value is CapabilityGrant {
+  return isRecord(value)
+    && (value.kind === 'tool' || value.kind === 'skill')
+    && typeof value.name === 'string';
+}
+
+export function isCapabilityGrants(value: unknown): value is CapabilityGrant[] {
+  return Array.isArray(value) && value.every(isCapabilityGrant);
 }
 
 function isAgentRecord(value: unknown): value is AgentRecord {
