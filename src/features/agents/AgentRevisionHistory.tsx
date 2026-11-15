@@ -1,11 +1,9 @@
-import type { useAgents } from './useAgents.js';
+import type { Agent } from '../../shared/api/agents.js';
 import { Button, Section } from '../../shared/ui/primitives.js';
 import { RevisionComparison } from './RevisionComparison.js';
 
-type AgentsController = ReturnType<typeof useAgents>;
-
 export function AgentRevisionHistory({
-  agents,
+  selected,
   busy,
   compareLeftId,
   compareRightId,
@@ -13,8 +11,9 @@ export function AgentRevisionHistory({
   defaultCompareRightId,
   onLeftChange,
   onRightChange,
+  onRollback,
 }: {
-  readonly agents: AgentsController;
+  readonly selected: Agent | null;
   readonly busy: boolean;
   readonly compareLeftId: string;
   readonly compareRightId: string;
@@ -22,8 +21,8 @@ export function AgentRevisionHistory({
   readonly defaultCompareRightId: string;
   readonly onLeftChange: (id: string) => void;
   readonly onRightChange: (id: string) => void;
+  readonly onRollback: (revisionId: string) => void;
 }) {
-  const selected = agents.selected;
   if (!selected) return null;
 
   return (
@@ -43,7 +42,7 @@ export function AgentRevisionHistory({
                   size="sm"
                   type="button"
                   disabled={busy || selected.archived}
-                  onClick={() => agents.rollback(revision.id)}
+                  onClick={() => onRollback(revision.id)}
                 >恢复此版本</Button>}
             </li>
           ))}

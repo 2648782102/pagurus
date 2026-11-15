@@ -1,5 +1,4 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
-import { decideOrganizationAttention } from '../../shared/api/organization.js';
 import { Button, Section } from '../../shared/ui/primitives.js';
 import { PrimaryConversationPanel } from './PrimaryConversationPanel.js';
 import { useOrganizationConsole } from './useOrganizationConsole.js';
@@ -59,10 +58,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
           busy={consoleState.busy}
           onIntentTextChange={consoleState.setIntentText}
           onSubmitIntent={async () => { await consoleState.submitIntent(); }}
-          onDecideAttention={async (attentionId, expectedVersion, kind) => {
-            await decideOrganizationAttention(attentionId, kind, expectedVersion);
-            await consoleState.load();
-          }}
+          onDecideAttention={consoleState.decidePublishedAttention}
         />
 
         <div className="organization-rail" aria-label="组织状态摘要">

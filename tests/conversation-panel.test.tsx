@@ -92,9 +92,28 @@ describe('primary conversation panel', () => {
     expect(await screen.findByText('Start project atlas and hire worker planner.')).toBeTruthy();
     await waitFor(() => expect(screen.getByText('老板 Agent 需要你确认一个开放问题。')).toBeTruthy());
     expect(screen.getByRole('button', { name: '回答' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '撤回' })).toBeTruthy();
     expect(screen.getByLabelText('给老板 Agent 发消息')).toBeTruthy();
     fireEvent.submit(screen.getByRole('button', { name: '发送' }).closest('form')!);
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+  });
+
+  it('routes answer and withdraw through the controller callback', async () => {
+    const decide = vi.fn().mockResolvedValue(undefined);
+    render(
+      <PrimaryConversationPanel
+        runtime={runtime}
+        intentText=""
+        busy={false}
+        onIntentTextChange={vi.fn()}
+        onSubmitIntent={vi.fn()}
+        onDecideAttention={decide}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: '回答' }));
+    fireEvent.click(screen.getByRole('button', { name: '撤回' }));
+    await waitFor(() => expect(decide).toHaveBeenNthCalledWith(1, message.attentionId, 7, 'answer'));
+    expect(decide).toHaveBeenNthCalledWith(2, message.attentionId, 7, 'withdraw');
   });
 
   it('keeps the old organization console readable when 1.4.0 is absent', async () => {

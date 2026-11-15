@@ -20,6 +20,7 @@ import {
   type OrganizationWorkItemRecord,
 } from '../../shared/api/organization.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 
 export type OrganizationConsolePhase =
   | 'checking'
@@ -161,15 +162,11 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
     return () => controller.abort();
   }, [load]);
 
-  useEffect(() => {
-    if (!supported || !state.autoRefresh || state.busy || state.phase === 'error') return;
-    const timer = setInterval(() => {
-      const controller = new AbortController();
-      void load(controller.signal, 'incremental');
-      return () => controller.abort();
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [load, state.autoRefresh, state.busy, state.phase, supported]);
+  useVisiblePolling(
+    (signal) => load(signal, 'incremental'),
+    4000,
+    supported && state.autoRefresh && !state.busy && state.phase !== 'error',
+  );
 
   const setIntentText = useCallback((intentText: string) => {
     setState((value) => ({ ...value, intentText, error: null, message: null }));
@@ -204,13 +201,14 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
     }
   }, [load, supported]);
 
-  const decideAttention = useCallback(async (
+  const decidePublishedAttention = useCallback(async (
+    attentionId: string,
+    expectedVersion: number,
     kind: 'answer' | 'withdraw',
-    record: OrganizationAttentionRecord,
   ) => {
     setState((value) => ({ ...value, busy: true, error: null, message: null }));
     try {
-      await decideOrganizationAttention(record.id, kind, record.expectedVersion);
+      await decideOrganizationAttention(attentionId, kind, expectedVersion);
       setState((value) => ({
         ...value,
         busy: false,
@@ -221,6 +219,13 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
       setState((value) => ({ ...value, busy: false, error: errorText(cause) }));
     }
   }, [load]);
+
+  const decideAttention = useCallback((
+    kind: 'answer' | 'withdraw',
+    record: OrganizationAttentionRecord,
+  ) => {
+    void decidePublishedAttention(record.id, record.expectedVersion, kind);
+  }, [decidePublishedAttention]);
 
   const selectedAttention = state.session
     ? organizationAttentionDetail(state.session, state.selectedAttentionId)
@@ -255,8 +260,9 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
     selectProject: (projectId: string) => void selectProject(projectId),
     setAutoRefresh,
     submitIntent: () => void submitIntent(),
-    answerAttention: (record: OrganizationAttentionRecord) => void decideAttention('answer', record),
-    withdrawAttention: (record: OrganizationAttentionRecord) => void decideAttention('withdraw', record),
+    answerAttention: (record: OrganizationAttentionRecord) => decideAttention('answer', record),
+    withdrawAttention: (record: OrganizationAttentionRecord) => decideAttention('withdraw', record),
+    decidePublishedAttention,
     load: () => void load(undefined, 'full'),
   };
 }

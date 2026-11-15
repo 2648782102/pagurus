@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   completeWorkItem,
   decideDeliveryReceipt,
@@ -60,6 +60,8 @@ type ActionCapability = 'asynchronous-work-control' | 'local-source-policy' | 'd
 
 export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
   const [state, setState] = useState<AttentionWorkbenchState>(initialState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const load = useCallback(async (signal?: AbortSignal) => {
     if (!runtime) {
@@ -78,8 +80,9 @@ export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
         listWorkEvents(signal),
       ]);
       if (signal?.aborted) return;
-      const selectedWorkItemId = items.workItems.some((item) => item.id === state.selectedWorkItemId)
-        ? state.selectedWorkItemId
+      const currentSelection = stateRef.current.selectedWorkItemId;
+      const selectedWorkItemId = items.workItems.some((item) => item.id === currentSelection)
+        ? currentSelection
         : items.workItems[0]?.id ?? '';
       const detail = selectedWorkItemId
         ? await getWorkItem(selectedWorkItemId, signal)
@@ -105,7 +108,7 @@ export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
         error: cause instanceof Error ? cause.message : '持久工作读取失败',
       }));
     }
-  }, [runtime, state.selectedWorkItemId]);
+  }, [runtime]);
 
   useEffect(() => {
     const controller = new AbortController();

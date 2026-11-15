@@ -28,8 +28,10 @@ unrelated concerns were coupled through markup rather than interfaces.
    barrel file.
 3. **Container / component separation.** A workspace is a container: it chooses
    state and composes components. Editors, pickers, histories, cards, and
-   comparisons are components that receive typed props. Transport state stays in
-   the feature hook that owns it.
+   comparisons are components that receive typed props. They must not accept
+   `ReturnType<typeof use...>` as a shortcut: a leaf component should list the
+   fields and actions it actually renders so a controller change cannot widen
+   the component contract. Transport state stays in the feature hook that owns it.
 4. **Live transport is its own module.** `useAgentChatStream` owns SSE, the
    pending-message poll, stalled detection, visibility refresh, and frame merging.
    `useAgentChat` composes it with catalog, selection, send, and approval actions.
@@ -41,6 +43,17 @@ unrelated concerns were coupled through markup rather than interfaces.
 6. **No new framework or state dependency.** The split uses React and the existing
    typed clients. A component library or data-fetching framework remains a
    separate decision.
+7. **One presentation vocabulary per contract.** Repeated UI labels for the same
+   published enum live in one shared presentation module rather than in each
+   panel. This is not a global label dictionary: domain-specific execution and
+   organization terms stay with their feature.
+8. **Polling is cancellable and visibility-aware.** Incremental refresh uses one
+   shared timer boundary: it aborts the previous in-flight request, aborts on
+   unmount, and skips hidden tabs. A feature keeps its own loading and merge
+   semantics.
+9. **One write path per surface.** A panel calls its controller for mutations;
+   it does not import a transport client to perform a second write. This keeps
+   busy, error, capability gating, and refresh behavior consistent.
 
 ## Options
 

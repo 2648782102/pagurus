@@ -23,7 +23,25 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
           </div>
         </>
       ) : !chat.conversation ? (
-        <AgentPanelLanding chat={chat} />
+        <AgentPanelLanding
+          view={{
+            agents: chat.agents,
+            selectedAgentId: chat.selectedAgentId,
+            models: chat.models,
+            selectedModelReference: chat.selectedModelReference,
+            reasoningEffort: chat.reasoningEffort,
+            recent: chat.recent,
+            busy: chat.busy,
+            error: chat.error,
+          }}
+          actions={{
+            selectAgent: chat.selectAgent,
+            setSelectedModelReference: chat.setSelectedModelReference,
+            setReasoningEffort: chat.setReasoningEffort,
+            startConversation: chat.startConversation,
+            resumeConversation: chat.resumeConversation,
+          }}
+        />
       ) : (
         <div className="agent-chat-shell">
           <header className="agent-chat-header">

@@ -1,29 +1,7 @@
 import { useTaskHistory, type TaskHistoryFilter } from './useTaskHistory.js';
 import type { Task } from '../../shared/api/tasks.js';
 import { Button, EmptyState, Field, Notice, Section, Select, Tag } from '../../shared/ui/primitives.js';
-
-const STATE_LABELS: Record<string, string> = {
-  queued: '排队中',
-  running: '模型运行中',
-  cancelling: '正在取消',
-  succeeded: '已完成',
-  failed: '失败',
-  cancelled: '已取消',
-  interrupted: '进程中断',
-  waiting_approval: '等待审批',
-};
-
-const STATE_FILTERS: readonly { value: TaskHistoryFilter; label: string }[] = [
-  { value: 'all', label: '全部状态' },
-  { value: 'queued', label: '排队中' },
-  { value: 'running', label: '模型运行中' },
-  { value: 'cancelling', label: '正在取消' },
-  { value: 'succeeded', label: '已完成' },
-  { value: 'failed', label: '失败' },
-  { value: 'cancelled', label: '已取消' },
-  { value: 'interrupted', label: '进程中断' },
-  { value: 'waiting_approval', label: '等待审批' },
-];
+import { TASK_STATE_FILTERS, TASK_STATE_LABELS } from '../../shared/ui/task-status.js';
 
 function taskTitle(task: Task): string {
   return task.prompt.length > 72 ? `${task.prompt.slice(0, 72)}…` : task.prompt;
@@ -60,7 +38,8 @@ export function TaskHistoryPanel() {
             value={history.stateFilter}
             onChange={(event) => history.setStateFilter(event.target.value as TaskHistoryFilter)}
           >
-            {STATE_FILTERS.map((filter) => <option key={filter.value} value={filter.value}>{filter.label}</option>)}
+            <option value="all">全部状态</option>
+            {TASK_STATE_FILTERS.map((filter) => <option key={filter.value} value={filter.value}>{filter.label}</option>)}
           </Select>
           </Field>
           <Field label="Agent" htmlFor="history-agent-filter">
@@ -90,7 +69,7 @@ export function TaskHistoryPanel() {
               >
                 <span className="history-row-title">{taskTitle(task)}</span>
                 <span className="history-row-meta">
-                  <span>{STATE_LABELS[task.state] ?? task.state}</span>
+                  <span>{TASK_STATE_LABELS[task.state]}</span>
                   <code>{task.id}</code>
                 </span>
               </button>
@@ -113,7 +92,7 @@ function TaskHistoryDetail({ task }: { task: Task }) {
           <h3 id="selected-task-title">任务详情</h3>
         </div>
         <Tag tone={task.state === 'failed' ? 'danger' : task.state === 'succeeded' ? 'success' : 'neutral'}>
-          {STATE_LABELS[task.state] ?? task.state}
+          {TASK_STATE_LABELS[task.state]}
         </Tag>
       </div>
       <dl className="history-detail-grid">

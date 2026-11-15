@@ -88,7 +88,7 @@ export function SecretHandlePanel({ runtime }: { runtime: RuntimeInfo | null }) 
 
       {secrets.phase === 'ready' && <>
         {secrets.handles.length === 0 && <EmptyState title="暂无句柄。" />}
-        <div className="revision-list">
+        <ul className="revision-list">
           {secrets.handles.map((handle) => (
             <li key={handle.id}>
               <div>
@@ -109,7 +109,7 @@ export function SecretHandlePanel({ runtime }: { runtime: RuntimeInfo | null }) 
               </div>
             </li>
           ))}
-        </div>
+        </ul>
 
         <div className="work-section">
           <h4>固定适配器使用</h4>

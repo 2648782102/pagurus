@@ -38,14 +38,14 @@ export function CapabilityPanel({ runtime }: { runtime: RuntimeInfo | null }) {
       {capabilities.message && <p className="task-hint" role="status">{capabilities.message}</p>}
       {capabilities.phase === 'ready' && <>
         {capabilities.capabilities.length === 0 && <EmptyState title="暂无能力记录。" />}
-        <div className="revision-list">
+        <ul className="revision-list">
           {capabilities.capabilities.map((record) => (
             <li key={record.id}>
               <div><strong>{record.kind} · {record.name}</strong><small>{record.descriptor}</small></div>
               <Tag tone={record.status === 'enabled' ? 'success' : 'neutral'}>{record.status}</Tag>
             </li>
           ))}
-        </div>
+        </ul>
       </>}
       {capabilities.phase !== 'checking' && capabilities.phase !== 'unsupported' && <form className="agent-editor" onSubmit={submit}>
         <Field label="类型" htmlFor="capability-kind">

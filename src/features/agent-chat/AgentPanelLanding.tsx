@@ -1,16 +1,44 @@
-import type { useAgentChat } from './useAgentChat.js';
-import { EmptyState, Field, Section, Select, Tag } from '../../shared/ui/primitives.js';
+import type {
+  AgentChatAgent,
+  AgentChatConversationSummary,
+  AgentChatModel,
+  AgentChatReasoningEffort,
+} from '../../shared/api/agent-chat.js';
+import { Button, EmptyState, Field, Section, Select, Tag } from '../../shared/ui/primitives.js';
 
-type Chat = ReturnType<typeof useAgentChat>;
+export interface AgentLandingView {
+  readonly agents: readonly AgentChatAgent[];
+  readonly selectedAgentId: string;
+  readonly models: readonly AgentChatModel[];
+  readonly selectedModelReference: string;
+  readonly reasoningEffort: AgentChatReasoningEffort;
+  readonly recent: readonly AgentChatConversationSummary[];
+  readonly busy: boolean;
+  readonly error: string | null;
+}
+
+export interface AgentLandingActions {
+  readonly selectAgent: (agentId: string) => void;
+  readonly setSelectedModelReference: (reference: string) => void;
+  readonly setReasoningEffort: (effort: AgentChatReasoningEffort) => void;
+  readonly startConversation: () => void;
+  readonly resumeConversation: (conversationId: string) => Promise<void>;
+}
 
 /**
  * The Agent Chat entry surface. Landing here means "choose who to talk to",
  * not "resume whatever I said last". History is presented per Agent so the two
  * decisions — who, and continue-or-new — are made in one place.
  */
-export function AgentPanelLanding({ chat }: { chat: Chat }) {
-  const selectedAgent = chat.agents.find((agent) => agent.id === chat.selectedAgentId);
-  const history = chat.recent.filter((entry) => entry.agentId === chat.selectedAgentId);
+export function AgentPanelLanding({
+  view,
+  actions,
+}: {
+  readonly view: AgentLandingView;
+  readonly actions: AgentLandingActions;
+}) {
+  const selectedAgent = view.agents.find((agent) => agent.id === view.selectedAgentId);
+  const history = view.recent.filter((entry) => entry.agentId === view.selectedAgentId);
 
   return (
     <div className="agent-landing">
@@ -24,7 +52,7 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
         </div>
       </header>
 
-      {chat.agents.length === 0 ? (
+      {view.agents.length === 0 ? (
         <div className="work-notice" role="status">
           <p>还没有可用的 Agent。请先在 Agent 页面创建并配置一个。</p>
         </div>
@@ -33,20 +61,20 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
           <section className="agent-picker" aria-labelledby="agent-picker-title">
             <div className="agent-picker-heading">
               <h3 id="agent-picker-title">可用 Agent</h3>
-              <Tag>{chat.agents.length} 个</Tag>
+              <Tag>{view.agents.length} 个</Tag>
             </div>
             <ul className="agent-picker-list">
-              {chat.agents.map((agent) => {
-                const active = agent.id === chat.selectedAgentId;
-                const count = chat.recent.filter((entry) => entry.agentId === agent.id).length;
+              {view.agents.map((agent) => {
+                const active = agent.id === view.selectedAgentId;
+                const count = view.recent.filter((entry) => entry.agentId === agent.id).length;
                 return (
                   <li key={agent.id}>
                     <button
                       type="button"
                       className={`agent-picker-item${active ? ' is-active' : ''}`}
-                      onClick={() => chat.selectAgent(agent.id)}
+                      onClick={() => actions.selectAgent(agent.id)}
                       aria-pressed={active}
-                      disabled={chat.busy}
+                      disabled={view.busy}
                     >
                       <span className="agent-picker-name">
                         {agent.name}
@@ -78,12 +106,12 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
               <Field label="对话模型" htmlFor="agent-chat-model">
               <Select
                 id="agent-chat-model"
-                value={chat.selectedModelReference}
-                onChange={(event) => chat.setSelectedModelReference(event.target.value)}
-                disabled={chat.busy}
+                value={view.selectedModelReference}
+                onChange={(event) => actions.setSelectedModelReference(event.target.value)}
+                disabled={view.busy}
               >
-                {chat.models.length === 0 && <option value="">暂无可用模型</option>}
-                {chat.models.map((model) => (
+                {view.models.length === 0 && <option value="">暂无可用模型</option>}
+                {view.models.map((model) => (
                   <option key={model.reference} value={model.reference}>
                     {model.displayName} · {model.providerId}
                   </option>
@@ -93,9 +121,9 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
               <Field label="思考强度" htmlFor="agent-chat-reasoning">
               <Select
                 id="agent-chat-reasoning"
-                value={chat.reasoningEffort}
-                onChange={(event) => chat.setReasoningEffort(event.target.value as 'low' | 'medium' | 'high')}
-                disabled={chat.busy}
+                value={view.reasoningEffort}
+                onChange={(event) => actions.setReasoningEffort(event.target.value as AgentChatReasoningEffort)}
+                disabled={view.busy}
               >
                 <option value="low">低 · 更快</option>
                 <option value="medium">中 · 平衡</option>
@@ -105,14 +133,13 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
               <p className="agent-chat-setup-note">
                 模型列表来自 Magpie；供应商、凭证与路由仍在 Magpie 中配置。
               </p>
-              <button
-                className="button-primary"
-                type="button"
-                onClick={chat.startConversation}
-                disabled={chat.busy || chat.selectedAgentId.length === 0}
+              <Button
+                variant="primary"
+                onClick={actions.startConversation}
+                disabled={view.busy || view.selectedAgentId.length === 0}
               >
-                {chat.busy ? '正在开启…' : '开启新对话'}
-              </button>
+                {view.busy ? '正在开启…' : '开启新对话'}
+              </Button>
             </div>
           </section>
         </div>
@@ -122,7 +149,7 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
         className="agent-history"
         id="agent-history-title"
         title="继续最近的对话"
-        description={selectedAgent ? `${selectedAgent.name} · ${history.length} 个历史会话` : `${chat.recent.length} 个历史会话`}
+        description={selectedAgent ? `${selectedAgent.name} · ${history.length} 个历史会话` : `${view.recent.length} 个历史会话`}
       >
         {history.length === 0 ? (
           <EmptyState title="这个 Agent 还没有历史会话" description="开启新对话后，它会出现在这里。" />
@@ -136,21 +163,20 @@ export function AgentPanelLanding({ chat }: { chat: Chat }) {
                     {formatTime(entry.createdAt)} · {entry.messageCount} 条消息 · 思考强度 {entry.reasoningEffort}
                   </small>
                 </div>
-                <button
-                  className="button-secondary"
-                  type="button"
-                  onClick={() => void chat.resumeConversation(entry.id)}
-                  disabled={chat.busy}
+                <Button
+                  size="sm"
+                  onClick={() => void actions.resumeConversation(entry.id)}
+                  disabled={view.busy}
                 >
                   继续对话
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
         )}
       </Section>
 
-      {chat.error && <div className="work-error" role="alert"><p>{chat.error}</p></div>}
+      {view.error && <div className="work-error" role="alert"><p>{view.error}</p></div>}
     </div>
   );
 }

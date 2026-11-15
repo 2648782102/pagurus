@@ -1,23 +1,51 @@
-import type { useAgents } from './useAgents.js';
-import type { Agent } from '../../shared/api/agents.js';
+import type { Agent, ProviderModel } from '../../shared/api/agents.js';
 import { Button, Field, Notice, Select, Tag, Textarea, TextInput } from '../../shared/ui/primitives.js';
 
-type AgentsController = ReturnType<typeof useAgents>;
-
 export function AgentEditor({
-  agents,
   selected,
+  models,
+  name,
+  instructions,
+  modelReference,
+  toolNames,
+  skillNames,
+  saving,
   busy,
   currentReference,
+  onNameChange,
+  onInstructionsChange,
+  onModelReferenceChange,
+  onToolNamesChange,
+  onSkillNamesChange,
+  onSave,
+  onMakeDefault,
+  onClearDefault,
+  onDuplicate,
+  onArchive,
 }: {
-  readonly agents: AgentsController;
   readonly selected: Agent | null;
+  readonly models: readonly ProviderModel[];
+  readonly name: string;
+  readonly instructions: string;
+  readonly modelReference: string;
+  readonly toolNames: string;
+  readonly skillNames: string;
+  readonly saving: boolean;
   readonly busy: boolean;
   readonly currentReference: { readonly reference: string } | undefined;
-  readonly selectedAgentId?: string;
+  readonly onNameChange: (name: string) => void;
+  readonly onInstructionsChange: (instructions: string) => void;
+  readonly onModelReferenceChange: (reference: string) => void;
+  readonly onToolNamesChange: (names: string) => void;
+  readonly onSkillNamesChange: (names: string) => void;
+  readonly onSave: () => void;
+  readonly onMakeDefault: () => void;
+  readonly onClearDefault: () => void;
+  readonly onDuplicate: () => void;
+  readonly onArchive: () => void;
 }) {
   return (
-    <form className="agent-editor" onSubmit={(event) => { event.preventDefault(); agents.save(); }}>
+    <form className="agent-editor" onSubmit={(event) => { event.preventDefault(); onSave(); }}>
       <div className="agent-editor-heading">
         {selected && <code>{selected.id}</code>}
         {selected && <Tag tone={selected.archived ? 'danger' : 'success'}>
@@ -27,8 +55,8 @@ export function AgentEditor({
       <Field label="名称" htmlFor="agent-name">
         <TextInput
           id="agent-name"
-          value={agents.name}
-          onChange={(event) => agents.setName(event.target.value)}
+          value={name}
+          onChange={(event) => onNameChange(event.target.value)}
           maxLength={120}
           required
           disabled={busy || selected?.archived}
@@ -37,8 +65,8 @@ export function AgentEditor({
       <Field label="Instructions" htmlFor="agent-instructions">
         <Textarea
           id="agent-instructions"
-          value={agents.instructions}
-          onChange={(event) => agents.setInstructions(event.target.value)}
+          value={instructions}
+          onChange={(event) => onInstructionsChange(event.target.value)}
           maxLength={20000}
           rows={6}
           placeholder="定义这个 Agent 的工作目标、语气和边界。这里的指令不会授予工具或权限。"
@@ -48,12 +76,12 @@ export function AgentEditor({
       <Field label="默认模型" htmlFor="agent-model">
         <Select
           id="agent-model"
-          value={agents.modelReference}
-          onChange={(event) => agents.setModelReference(event.target.value)}
-          disabled={busy || selected?.archived || agents.models.length === 0}
+          value={modelReference}
+          onChange={(event) => onModelReferenceChange(event.target.value)}
+          disabled={busy || selected?.archived || models.length === 0}
           required
         >
-          {agents.models.map((model) => (
+          {models.map((model) => (
             <option key={model.reference} value={model.reference}>
               {model.displayName} · {model.providerId} / {model.modelId}
             </option>
@@ -71,8 +99,8 @@ export function AgentEditor({
         <Field label={<>工具（每行一个，例如 <code>workspace_read</code>）</>} htmlFor="agent-tools">
           <Textarea
             id="agent-tools"
-            value={agents.toolNames}
-            onChange={(event) => agents.setToolNames(event.target.value)}
+            value={toolNames}
+            onChange={(event) => onToolNamesChange(event.target.value)}
             rows={3}
             spellCheck={false}
             placeholder={'workspace_list\nworkspace_read'}
@@ -82,8 +110,8 @@ export function AgentEditor({
         <Field label="Skill（每行一个 Skill 目录名）" htmlFor="agent-skills">
           <Textarea
             id="agent-skills"
-            value={agents.skillNames}
-            onChange={(event) => agents.setSkillNames(event.target.value)}
+            value={skillNames}
+            onChange={(event) => onSkillNamesChange(event.target.value)}
             rows={2}
             spellCheck={false}
             placeholder="release-notes"
@@ -91,8 +119,8 @@ export function AgentEditor({
           />
         </Field>
         {(!selected || (selected.current.grantedCapabilities?.length ?? 0) === 0)
-          && agents.toolNames.trim().length === 0
-          && agents.skillNames.trim().length === 0 && (
+          && toolNames.trim().length === 0
+          && skillNames.trim().length === 0 && (
           <Notice role="status">
             当前版本未授权任何能力，该 Agent 无法调用工具或 Skill。
           </Notice>
@@ -100,14 +128,14 @@ export function AgentEditor({
       </fieldset>
 
       <div className="agent-actions">
-        <Button variant="primary" type="submit" disabled={busy || !agents.models.length || selected?.archived}>
-          {agents.phase === 'saving' ? '保存中…' : selected ? '保存新版本' : '创建 Agent'}
+        <Button variant="primary" type="submit" disabled={busy || !models.length || selected?.archived}>
+          {saving ? '保存中…' : selected ? '保存新版本' : '创建 Agent'}
         </Button>
         {selected && !selected.archived && <>
-          {!selected.isDefault && <Button type="button" onClick={agents.makeDefault} disabled={busy}>设为默认</Button>}
-          {selected.isDefault && <Button type="button" onClick={agents.clearDefault} disabled={busy}>取消默认</Button>}
-          <Button type="button" onClick={agents.duplicate} disabled={busy}>复制</Button>
-          <Button variant="danger" type="button" onClick={agents.archive} disabled={busy}>归档</Button>
+          {!selected.isDefault && <Button type="button" onClick={onMakeDefault} disabled={busy}>设为默认</Button>}
+          {selected.isDefault && <Button type="button" onClick={onClearDefault} disabled={busy}>取消默认</Button>}
+          <Button type="button" onClick={onDuplicate} disabled={busy}>复制</Button>
+          <Button variant="danger" type="button" onClick={onArchive} disabled={busy}>归档</Button>
         </>}
       </div>
     </form>

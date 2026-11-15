@@ -47,16 +47,38 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
 
       {agents.supported && (
         <>
-          <AgentPicker agents={agents} busy={busy} />
+          <AgentPicker
+            agents={agents.agents}
+            selectedAgentId={selected?.id}
+            busy={busy}
+            onSelect={agents.select}
+            onStartNew={agents.startNew}
+          />
           {agents.models.length === 0 && <Notice tone="warning">Runtime 当前没有可选择的模型。</Notice>}
           <AgentEditor
-            agents={agents}
             selected={selected}
+            models={agents.models}
+            name={agents.name}
+            instructions={agents.instructions}
+            modelReference={agents.modelReference}
+            toolNames={agents.toolNames}
+            skillNames={agents.skillNames}
+            saving={agents.phase === 'saving'}
             busy={busy}
             currentReference={currentReference}
+            onNameChange={agents.setName}
+            onInstructionsChange={agents.setInstructions}
+            onModelReferenceChange={agents.setModelReference}
+            onToolNamesChange={agents.setToolNames}
+            onSkillNamesChange={agents.setSkillNames}
+            onSave={agents.save}
+            onMakeDefault={agents.makeDefault}
+            onClearDefault={agents.clearDefault}
+            onDuplicate={agents.duplicate}
+            onArchive={agents.archive}
           />
           <AgentRevisionHistory
-            agents={agents}
+            selected={selected}
             busy={busy}
             compareLeftId={compareLeftId}
             compareRightId={compareRightId}
@@ -64,6 +86,7 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
             defaultCompareRightId={defaultCompareRightId}
             onLeftChange={setCompareLeftId}
             onRightChange={setCompareRightId}
+            onRollback={agents.rollback}
           />
           {agents.message && <p className="config-message" role="status">{agents.message}</p>}
           {agents.error && <Notice tone="danger" action={

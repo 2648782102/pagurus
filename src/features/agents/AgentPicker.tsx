@@ -1,28 +1,37 @@
-import type { useAgents } from './useAgents.js';
+import type { AgentRecord } from '../../shared/api/agents.js';
 import { Button, Field, Select } from '../../shared/ui/primitives.js';
 
-type AgentsController = ReturnType<typeof useAgents>;
-
-export function AgentPicker({ agents, busy }: { readonly agents: AgentsController; readonly busy: boolean }) {
-  const selected = agents.selected;
+export function AgentPicker({
+  agents,
+  selectedAgentId,
+  busy,
+  onSelect,
+  onStartNew,
+}: {
+  readonly agents: readonly AgentRecord[];
+  readonly selectedAgentId: string | undefined;
+  readonly busy: boolean;
+  readonly onSelect: (agentId: string) => void;
+  readonly onStartNew: () => void;
+}) {
   return (
     <div className="agent-toolbar">
       <Field label="选择 Agent" htmlFor="agent-select">
         <Select
           id="agent-select"
-          value={selected?.id ?? ''}
-          onChange={(event) => agents.select(event.target.value)}
-          disabled={busy || agents.agents.length === 0}
+          value={selectedAgentId ?? ''}
+          onChange={(event) => onSelect(event.target.value)}
+          disabled={busy || agents.length === 0}
         >
-          {agents.agents.length === 0 && <option value="">还没有 Agent</option>}
-          {agents.agents.map((agent) => (
+          {agents.length === 0 && <option value="">还没有 Agent</option>}
+          {agents.map((agent) => (
             <option key={agent.id} value={agent.id}>
               {agent.current.name}{agent.isDefault ? ' · 默认' : ''}{agent.archived ? ' · 已归档' : ''}
             </option>
           ))}
         </Select>
       </Field>
-      <Button type="button" onClick={agents.startNew} disabled={busy}>新建 Agent</Button>
+      <Button type="button" onClick={onStartNew} disabled={busy}>新建 Agent</Button>
     </div>
   );
 }

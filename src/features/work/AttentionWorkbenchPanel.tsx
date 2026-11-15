@@ -67,7 +67,16 @@ export function AttentionWorkbenchPanel({ runtime }: { runtime: RuntimeInfo | nu
             events={workbench.eventsForSelection}
             busy={busy}
             actionLabel={workbench.actionLabel}
-            workbench={workbench}
+            supportsControls={workbench.supportsControls}
+            supportsSourcePolicy={workbench.supportsSourcePolicy}
+            actions={{
+              start: workbench.start,
+              stop: workbench.stop,
+              complete: workbench.complete,
+              reconcile: workbench.reconcile,
+              decide: workbench.decide,
+              source: workbench.source,
+            }}
           />}
         </div>}
       </>}
@@ -77,7 +86,14 @@ export function AttentionWorkbenchPanel({ runtime }: { runtime: RuntimeInfo | nu
   );
 }
 
-type WorkbenchController = ReturnType<typeof useAttentionWorkbench>;
+interface WorkDetailActions {
+  readonly start: (workItemId: string, expectedState: WorkItemDetail['workItem']['state']) => void;
+  readonly stop: (workItemId: string, expectedState: WorkItemDetail['workItem']['state']) => void;
+  readonly complete: (workItemId: string, expectedState: WorkItemDetail['workItem']['state']) => void;
+  readonly reconcile: (assignmentId: string, outcome: 'succeeded' | 'failed') => void;
+  readonly decide: (receiptId: string, decision: 'accepted' | 'rejected') => void;
+  readonly source: (threadKey: string, policy: 'allow' | 'deny') => void;
+}
 
 function WorkDetail({
   detail,
@@ -85,19 +101,23 @@ function WorkDetail({
   events,
   busy,
   actionLabel,
-  workbench,
+  supportsControls,
+  supportsSourcePolicy,
+  actions,
 }: {
   detail: WorkItemDetail;
   receipts: readonly WorkDeliveryReceipt[];
   events: readonly WorkEvent[];
   busy: boolean;
   actionLabel: string | null;
-  workbench: WorkbenchController;
+  supportsControls: boolean;
+  supportsSourcePolicy: boolean;
+  actions: WorkDetailActions;
 }) {
   const workItemId = detail.workItem.id;
   const state = detail.workItem.state;
   const assignment = detail.assignments[0];
-  const controlsUnavailable = !workbench.supportsControls;
+  const controlsUnavailable = !supportsControls;
 
   return (
     <article className="work-detail" aria-labelledby="selected-work-title">
@@ -112,23 +132,23 @@ function WorkDetail({
       <div className="task-actions" aria-label="工作项控制">
         <Button variant="primary" type="button"
           disabled={busy || controlsUnavailable || !['open', 'paused'].includes(state)}
-          onClick={() => workbench.start(workItemId, state)}>
+          onClick={() => actions.start(workItemId, state)}>
           {actionLabel === 'start' ? '启动中…' : '启动 / 恢复'}
         </Button>
         <Button type="button"
           disabled={busy || controlsUnavailable || !['running', 'paused'].includes(state)}
-          onClick={() => workbench.stop(workItemId, state)}>
+          onClick={() => actions.stop(workItemId, state)}>
           {actionLabel === 'stop' ? '停止中…' : '停止'}
         </Button>
         <Button type="button"
           disabled={busy || controlsUnavailable || state !== 'running'}
-          onClick={() => workbench.complete(workItemId, state)}>
+          onClick={() => actions.complete(workItemId, state)}>
           {actionLabel === 'complete' ? '完成中…' : '标记完成'}
         </Button>
-        <Button type="button" disabled={busy || !workbench.supportsSourcePolicy}
-          onClick={() => workbench.source(detail.thread.threadKey, 'allow')}>允许本地事件</Button>
-        <Button type="button" disabled={busy || !workbench.supportsSourcePolicy}
-          onClick={() => workbench.source(detail.thread.threadKey, 'deny')}>拒绝本地事件</Button>
+        <Button type="button" disabled={busy || !supportsSourcePolicy}
+          onClick={() => actions.source(detail.thread.threadKey, 'allow')}>允许本地事件</Button>
+        <Button type="button" disabled={busy || !supportsSourcePolicy}
+          onClick={() => actions.source(detail.thread.threadKey, 'deny')}>拒绝本地事件</Button>
       </div>
 
       <dl className="history-detail-grid">
@@ -152,9 +172,9 @@ function WorkDetail({
         ))}
         {assignment?.state === 'interrupted' && <div className="task-actions">
           <Button type="button" disabled={busy || controlsUnavailable}
-            onClick={() => workbench.reconcile(assignment.id, 'succeeded')}>恢复为成功</Button>
+            onClick={() => actions.reconcile(assignment.id, 'succeeded')}>恢复为成功</Button>
           <Button type="button" disabled={busy || controlsUnavailable}
-            onClick={() => workbench.reconcile(assignment.id, 'failed')}>恢复为失败</Button>
+            onClick={() => actions.reconcile(assignment.id, 'failed')}>恢复为失败</Button>
         </div>}
       </div>
 
@@ -170,9 +190,9 @@ function WorkDetail({
             <span>{receipt.status}</span><code>{receipt.destinationDigest}</code><code>{receipt.payloadDigest}</code>
             {receipt.status === 'observed' && <>
               <Button size="sm" type="button" disabled={busy}
-                onClick={() => workbench.decide(receipt.id, 'accepted')}>接受</Button>
+                onClick={() => actions.decide(receipt.id, 'accepted')}>接受</Button>
               <Button size="sm" type="button" disabled={busy}
-                onClick={() => workbench.decide(receipt.id, 'rejected')}>拒绝</Button>
+                onClick={() => actions.decide(receipt.id, 'rejected')}>拒绝</Button>
             </>}
           </p>
         ))}

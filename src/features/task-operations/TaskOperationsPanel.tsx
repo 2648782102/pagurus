@@ -1,20 +1,6 @@
 import { useTaskOperations } from './useTaskOperations.js';
 import { Button, Field, Section, Select, Tag, Textarea } from '../../shared/ui/primitives.js';
-
-const STATE_LABELS: Record<string, string> = {
-  queued: '排队中',
-  running: '模型运行中',
-  cancelling: '正在取消',
-  succeeded: '已完成',
-  failed: '失败',
-  cancelled: '已取消',
-  interrupted: '进程中断',
-  waiting_approval: '等待审批',
-};
-
-function isActive(state: string | undefined): boolean {
-  return ['queued', 'running', 'cancelling'].includes(state ?? '');
-}
+import { TASK_STATE_LABELS, isActiveTaskState } from '../../shared/ui/task-status.js';
 
 export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshToken?: number }) {
   const operations = useTaskOperations(agentRefreshToken);
@@ -96,7 +82,7 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
           >
             {operations.phase === 'submitting' ? '提交中…' : '开始任务'}
           </Button>
-          {operations.task && isActive(operations.task.state) && (
+          {operations.task && isActiveTaskState(operations.task.state) && (
             <Button
               type="button"
               onClick={operations.cancel}
@@ -104,7 +90,7 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
               取消任务
             </Button>
           )}
-          {operations.task && !isActive(operations.task.state) && operations.phase !== 'submitting' && (
+          {operations.task && !isActiveTaskState(operations.task.state) && operations.phase !== 'submitting' && (
             <Button
               type="button"
               onClick={operations.retry}
@@ -128,7 +114,7 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
         {operations.task && (
           <div className="task-record">
             <div className="task-meta">
-              <span>状态：<Tag>{STATE_LABELS[operations.task.state] ?? operations.task.state}</Tag></span>
+              <span>状态：<Tag>{TASK_STATE_LABELS[operations.task.state]}</Tag></span>
               <span>Attempt {operations.task.attempt}</span>
               <code>{operations.task.id}</code>
             </div>
@@ -139,11 +125,11 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
               <div><dt>生效模型</dt><dd><code>{operations.task.providerId ?? '—'} / {operations.task.modelId ?? operations.task.model}</code></dd></div>
             </dl>}
             {(() => {
-              const finalOutput = !isActive(operations.task?.state)
+              const finalOutput = !isActiveTaskState(operations.task?.state)
                 ? operations.task?.output
                 : null;
               const visibleOutput = finalOutput
-                ?? (isActive(operations.task?.state) ? operations.task?.partialOutput : null);
+                ?? (isActiveTaskState(operations.task?.state) ? operations.task?.partialOutput : null);
               if (!visibleOutput) return null;
               return (
                 <div className="task-output-block">

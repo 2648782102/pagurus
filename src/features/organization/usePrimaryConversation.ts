@@ -7,6 +7,7 @@ import {
   type PrimaryConversationView,
 } from '../../shared/api/conversation.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 
 export interface PrimaryConversationState {
   readonly supported: boolean;
@@ -104,15 +105,7 @@ export function usePrimaryConversation(runtime: RuntimeInfo | null) {
     return () => controller.abort();
   }, [load]);
 
-  useEffect(() => {
-    if (!supported) return;
-    const timer = setInterval(() => {
-      const controller = new AbortController();
-      void load(controller.signal, 'incremental');
-      return () => controller.abort();
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [load, supported]);
+  useVisiblePolling((signal) => load(signal, 'incremental'), 4000, supported);
 
   const refresh = useCallback(() => load(undefined, 'incremental'), [load]);
   const openAttentionMessages = useMemo(

@@ -210,49 +210,67 @@ export function useExecutionConsole(runtime: RuntimeInfo | null) {
   }, [load]);
 
   const createRun = useCallback(async (request: ExecutionRequest) => {
-    const grant = state.grants.find((item) => item.id === request.grantId);
-    const adapter = state.adapters[0];
-    if (!grant || !adapter) throw new Error('Runtime 尚未发布授权或执行适配器。');
-    const result = await createExecutionRun({
-      requestId: request.id,
-      expectedRequestVersion: request.expectedVersion,
-      grantId: grant.id,
-      operation: request.operation,
-      argumentsDigest: request.argumentsDigest,
-      adapterId: adapter.id,
-      idempotencyKey: `pagurus-run-${globalThis.crypto.randomUUID()}`,
-    });
-    setState((value) => ({
-      ...value,
-      runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
-      message: `隔离执行 run 已创建（${result.run.id}）。`,
-    }));
-    await load();
+    setState((value) => ({ ...value, busy: true, error: null, message: null }));
+    try {
+      const grant = state.grants.find((item) => item.id === request.grantId);
+      const adapter = state.adapters[0];
+      if (!grant || !adapter) throw new Error('Runtime 尚未发布授权或执行适配器。');
+      const result = await createExecutionRun({
+        requestId: request.id,
+        expectedRequestVersion: request.expectedVersion,
+        grantId: grant.id,
+        operation: request.operation,
+        argumentsDigest: request.argumentsDigest,
+        adapterId: adapter.id,
+        idempotencyKey: `pagurus-run-${globalThis.crypto.randomUUID()}`,
+      });
+      setState((value) => ({
+        ...value,
+        busy: false,
+        runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
+        message: `隔离执行 run 已创建（${result.run.id}）。`,
+      }));
+      await load();
+    } catch (cause) {
+      setState((value) => ({ ...value, busy: false, error: errorText(cause) }));
+    }
   }, [load, state.adapters, state.grants]);
 
   const transitionRun = useCallback(async (
     run: ExecutionRun,
     action: 'start' | 'recover',
   ) => {
-    const result = action === 'start'
-      ? await startExecutionRun(run.id, run.expectedVersion)
-      : await recoverExecutionRun(run.id, run.expectedVersion);
-    setState((value) => ({
-      ...value,
-      runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
-      message: action === 'start' ? '隔离执行已启动。' : '隔离执行已恢复到可启动状态。',
-    }));
-    await load();
+    setState((value) => ({ ...value, busy: true, error: null, message: null }));
+    try {
+      const result = action === 'start'
+        ? await startExecutionRun(run.id, run.expectedVersion)
+        : await recoverExecutionRun(run.id, run.expectedVersion);
+      setState((value) => ({
+        ...value,
+        busy: false,
+        runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
+        message: action === 'start' ? '隔离执行已启动。' : '隔离执行已恢复到可启动状态。',
+      }));
+      await load();
+    } catch (cause) {
+      setState((value) => ({ ...value, busy: false, error: errorText(cause) }));
+    }
   }, [load]);
 
   const cancelRun = useCallback(async (run: ExecutionRun) => {
-    const result = await cancelExecutionRun(run.id, run.expectedVersion);
-    setState((value) => ({
-      ...value,
-      runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
-      message: '隔离执行 run 已取消。',
-    }));
-    await load();
+    setState((value) => ({ ...value, busy: true, error: null, message: null }));
+    try {
+      const result = await cancelExecutionRun(run.id, run.expectedVersion);
+      setState((value) => ({
+        ...value,
+        busy: false,
+        runs: [...value.runs.filter((item) => item.id !== result.run.id), result.run],
+        message: '隔离执行 run 已取消。',
+      }));
+      await load();
+    } catch (cause) {
+      setState((value) => ({ ...value, busy: false, error: errorText(cause) }));
+    }
   }, [load]);
 
   return {

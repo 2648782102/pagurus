@@ -183,7 +183,7 @@
     },
     {
       "id": "modular-frontend-architecture",
-      "summary": "Pagurus is split into app, feature, shared UI, and shared API layers with container/component separation, an isolated Agent Chat live-transport hook, and an enforced 500-line module ceiling plus import-direction checks.",
+      "summary": "Pagurus is split into app, feature, shared UI, and shared API layers with explicit component props, a single controller write path per surface, cancellable visibility-aware polling, shared UI vocabulary for the TaskState contract, and an enforced 500-line module ceiling plus import-direction checks.",
       "evidence": "tests/architecture.test.ts"
     }
   ],
