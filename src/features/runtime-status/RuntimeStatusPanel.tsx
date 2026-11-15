@@ -34,6 +34,9 @@ export function RuntimeStatusPanel({
       ? '限制模式（写操作与外部操作需审批）'
       : null;
 
+  const isUnrestricted = runtime?.executionMode === 'unrestricted';
+  const budget = runtime?.loopBudget;
+
   return (
     <section className={`runtime-panel status-${state}`} aria-labelledby="runtime-title">
       <div className="runtime-heading">
@@ -53,8 +56,16 @@ export function RuntimeStatusPanel({
         {executionModeLabel && (
           <div>
             <span className="detail-label">执行模式</span>
-            <code className={runtime?.executionMode === 'unrestricted' ? 'is-unrestricted' : undefined}>
+            <code className={isUnrestricted ? 'is-unrestricted' : undefined}>
               {executionModeLabel}
+            </code>
+          </div>
+        )}
+        {budget && (
+          <div>
+            <span className="detail-label">循环预算</span>
+            <code className="budget-value">
+              {budget.maxIterations} 轮 · 每轮 {budget.maxToolCallsPerTurn} 次工具 · {Math.round(budget.deadlineMs / 1000)} 秒
             </code>
           </div>
         )}
@@ -62,6 +73,16 @@ export function RuntimeStatusPanel({
 
       {errorMessage && (
         <p className="error-message" role="status">{errorMessage}</p>
+      )}
+
+      {isUnrestricted && (
+        <div className="mode-warning" role="status">
+          <strong>完全放开模式已启用</strong>
+          <p>
+            这个 Runtime 里，Agent 被授权的工具会直接执行，不会停下来等你确认。适用于一次性工作区、
+            沙箱机器或你完全信任的场景；在存放真实凭据和个人数据的机器上请改用限制模式。
+          </p>
+        </div>
       )}
 
       <div className="runtime-footer">

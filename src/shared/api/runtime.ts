@@ -14,6 +14,11 @@ export interface RuntimeInfo {
   state: 'ready';
   capabilities: string[];
   executionMode?: 'restricted' | 'unrestricted';
+  loopBudget?: {
+    maxIterations: number;
+    maxToolCallsPerTurn: number;
+    deadlineMs: number;
+  };
   organizationContract?: '1.1.0';
   organizationPaths?: number;
   executionContract?: '1.2.0';
@@ -49,6 +54,12 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && value.state === 'ready'
     && Array.isArray(value.capabilities)
     && value.capabilities.every((capability) => typeof capability === 'string')
+    && (
+      value.executionMode === undefined
+      || value.executionMode === 'restricted'
+      || value.executionMode === 'unrestricted'
+    )
+    && (value.loopBudget === undefined || isLoopBudget(value.loopBudget))
     && (value.organizationContract === undefined || value.organizationContract === '1.1.0')
     && (value.organizationPaths === undefined || Number.isInteger(value.organizationPaths))
     && (value.executionContract === undefined || value.executionContract === '1.2.0')
@@ -59,6 +70,13 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths))
     && (value.agentChatContract === undefined || value.agentChatContract === '1.8.0')
     && (value.agentChatPaths === undefined || Number.isInteger(value.agentChatPaths));
+}
+
+function isLoopBudget(value: unknown): boolean {
+  return isRecord(value)
+    && Number.isInteger(value.maxIterations)
+    && Number.isInteger(value.maxToolCallsPerTurn)
+    && Number.isInteger(value.deadlineMs);
 }
 
 export async function fetchJson<T>(

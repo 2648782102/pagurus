@@ -86,4 +86,51 @@ describe('RuntimeStatusPanel', () => {
     expect(screen.getByRole('status').textContent).toContain('升级寄居蟹');
     expect(screen.getByRole('button', { name: '重新连接' }).hasAttribute('disabled')).toBe(false);
   });
+
+  it('renders the restricted execution mode and the published loop budget', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input);
+      const payload = path.includes('health')
+        ? { status: 'ok', service: 'conchbase', apiVersion: 1 }
+        : {
+          name: 'Conchbase',
+          version: '1.0.0',
+          state: 'ready',
+          capabilities: ['execution-modes'],
+          executionMode: 'restricted',
+          loopBudget: { maxIterations: 6, maxToolCallsPerTurn: 4, deadlineMs: 120_000 },
+        };
+      return Promise.resolve(new Response(JSON.stringify(payload), { status: 200 }));
+    });
+
+    render(<Harness />);
+
+    expect(await screen.findByText('限制模式（写操作与外部操作需审批）')).toBeTruthy();
+    expect(screen.getByText('6 轮 · 每轮 4 次工具 · 120 秒')).toBeTruthy();
+    expect(screen.queryByText('完全放开模式已启用')).toBeNull();
+  });
+
+  it('warns that unrestricted mode executes tools without approval', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input);
+      const payload = path.includes('health')
+        ? { status: 'ok', service: 'conchbase', apiVersion: 1 }
+        : {
+          name: 'Conchbase',
+          version: '1.0.0',
+          state: 'ready',
+          capabilities: ['execution-modes'],
+          executionMode: 'unrestricted',
+          loopBudget: { maxIterations: 24, maxToolCallsPerTurn: 8, deadlineMs: 600_000 },
+        };
+      return Promise.resolve(new Response(JSON.stringify(payload), { status: 200 }));
+    });
+
+    render(<Harness />);
+
+    expect(await screen.findByText('完全放开（工具不经审批直接执行）')).toBeTruthy();
+    expect(screen.getByText('完全放开模式已启用')).toBeTruthy();
+    expect(screen.getByText(/不会停下来等你确认/)).toBeTruthy();
+    expect(screen.getByText('24 轮 · 每轮 8 次工具 · 600 秒')).toBeTruthy();
+  });
 });

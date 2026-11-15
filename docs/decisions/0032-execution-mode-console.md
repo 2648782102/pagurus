@@ -41,3 +41,5 @@ Consequences: the operator can see the standing trust assumption; authority stay
 ## Consequences
 
 An operator always knows which execution policy is in force. The console stays a read-only view of Runtime state, and the decision to run unrestricted remains an environment-level choice made outside any model's reach.
+
+> Update 2026-11-15: Conchbase ADR 0069 publishes `loopBudget` alongside `executionMode`. The runtime panel renders the effective iteration, per-turn tool-call, and deadline ceilings so an operator can confirm what the process is actually running rather than what the environment file claims. Unrestricted mode also gains an explicit standing warning, because it is a persistent trust assumption rather than a transient state.
