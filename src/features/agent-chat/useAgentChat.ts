@@ -13,6 +13,7 @@ import {
   supportsAgentChat,
   type AgentChatAgent,
   type AgentChatConversation,
+  type AgentChatConversationSummary,
   type AgentChatModel,
   type AgentChatReasoningEffort,
   type AgentChatStream,
@@ -31,7 +32,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const [models, setModels] = useState<readonly AgentChatModel[]>([]);
   const [selectedModelReference, setSelectedModelReference] = useState('');
   const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('medium');
-  const [recent, setRecent] = useState<readonly { id: string; agentId: string; lastMessagePreview: string }[]>([]);
+  const [recent, setRecent] = useState<readonly AgentChatConversationSummary[]>([]);
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -46,7 +47,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
 
-  const loadAgents = useCallback(async () => {
+  const loadAgents = useCallback(async (options: { restoreLatest?: boolean } = {}) => {
     if (!supported) return;
     try {
       const [list, catalog, history] = await Promise.all([
@@ -62,7 +63,9 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
         : undefined;
       setSelectedModelReference((current) => current || preferred?.reference || catalog[0]?.reference || '');
       setRecent(history?.conversations ?? []);
-      if (history?.conversations[0]) {
+      // The landing panel is the default entry point, so a conversation is only
+      // restored when the caller explicitly asks for it.
+      if (options.restoreLatest && history?.conversations[0]) {
         try {
           setConversation(await getAgentChatConversation(history.conversations[0].id));
         } catch {
@@ -210,6 +213,35 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     setDetailsOpen(false);
   }, []);
 
+  /**
+   * Opens an existing conversation from the history list. Selecting history is
+   * an explicit act, so this is the only place a previous conversation becomes
+   * active after the landing panel has rendered.
+   */
+  const resumeConversation = useCallback(async (conversationId: string) => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      setConversation(await getAgentChatConversation(conversationId));
+      setDraft('');
+      setDetailsOpen(false);
+    } catch (cause) {
+      setError(errorText(cause));
+    } finally {
+      setBusy(false);
+    }
+  }, [busy]);
+
+  /**
+   * Choosing an Agent on the landing panel scopes the history list to that
+   * Agent without starting a conversation.
+   */
+  const selectAgent = useCallback((agentId: string) => {
+    setSelectedAgentId(agentId);
+    setError(null);
+  }, []);
+
   const sendMessage = useCallback(async () => {
     const current = conversationRef.current;
     const text = draft.trim();
@@ -279,6 +311,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     refreshConversation,
     startConversation,
     resetConversation,
+    resumeConversation,
+    selectAgent,
     sendMessage,
     decideApproval,
     reasoningEffort,

@@ -2,6 +2,7 @@ import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { AgentChatComposer } from './AgentChatComposer.js';
 import { AgentChatThread } from './AgentChatThread.js';
 import { useAgentChat } from './useAgentChat.js';
+import { AgentPanelLanding } from './AgentPanelLanding.js';
 
 interface AgentChatPanelProps {
   readonly runtime: RuntimeInfo | null;
@@ -21,50 +22,7 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
           </div>
         </>
       ) : !chat.conversation ? (
-        <div className="agent-chat-setup-shell">
-          <p className="agent-chat-kicker">先配置，再开始对话</p>
-          <h2 id="agent-chat-title">和哪个 Agent 聊？</h2>
-          <p className="agent-chat-intro">选择一个配置好的 Agent。普通 Agent 会调用你配置好的模型；老板 Agent 会进入组织编排。</p>
-          <div className="agent-chat-setup-card">
-            <label htmlFor="agent-chat-agent">Agent</label>
-            <select id="agent-chat-agent" value={chat.selectedAgentId}
-              onChange={(event) => chat.setSelectedAgentId(event.target.value)} disabled={chat.busy}>
-              {chat.agents.length === 0 && <option value="">暂无可用 Agent</option>}
-              {chat.agents.map((agent) => (
-                <option key={agent.id} value={agent.id}>
-                  {agent.name}{agent.isDefault ? ' · 默认' : ''}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="agent-chat-model">对话模型</label>
-            <select id="agent-chat-model" value={chat.selectedModelReference}
-              onChange={(event) => chat.setSelectedModelReference(event.target.value)} disabled={chat.busy}>
-              {chat.models.length === 0 && <option value="">暂无可用模型</option>}
-              {chat.models.map((model) => (
-                <option key={model.reference} value={model.reference}>
-                  {model.displayName} · {model.providerId} / {model.modelId}
-                </option>
-              ))}
-            </select>
-            <p className="agent-chat-setup-note">模型列表来自 Magpie；供应商、凭证与路由仍在 Magpie 中由用户配置。</p>
-            <label htmlFor="agent-chat-reasoning">思考强度</label>
-            <select id="agent-chat-reasoning" value={chat.reasoningEffort}
-              onChange={(event) => chat.setReasoningEffort(event.target.value as 'low' | 'medium' | 'high')}
-              disabled={chat.busy}>
-              <option value="low">低 · 更快</option>
-              <option value="medium">中 · 平衡</option>
-              <option value="high">高 · 更深</option>
-            </select>
-            {chat.recent.length > 0 && (
-              <p className="agent-chat-setup-note">已恢复最近会话；重新开始会创建新会话。</p>
-            )}
-            <button className="button-primary" type="button" onClick={chat.startConversation}
-              disabled={chat.busy || chat.selectedAgentId.length === 0}>
-              {chat.busy ? '正在开启…' : '开始对话'}
-            </button>
-          </div>
-          {chat.error && <div className="work-error" role="alert"><p>{chat.error}</p></div>}
-        </div>
+        <AgentPanelLanding chat={chat} />
       ) : (
         <div className="agent-chat-shell">
           <header className="agent-chat-header">

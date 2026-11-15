@@ -403,6 +403,32 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 .agent-chat-panel { min-height: 620px; padding: 0; overflow: hidden; border-color: #b9c9d5; }
 .agent-chat-kicker { margin: 0 0 8px; color: var(--teal); font: 600 10px/1.4 var(--mono); letter-spacing: .08em; }
 .agent-chat-setup-shell { display: grid; align-content: center; justify-items: start; max-width: 620px; margin: 0 auto; padding: 72px 32px; }
+.agent-landing { display: grid; gap: 22px; max-width: 1040px; min-width: 0; margin: 0 auto; padding: 34px 28px 40px; }
+.agent-landing-heading h2 { margin: 4px 0 8px; font-size: 25px; letter-spacing: -.035em; }
+.agent-landing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 18px; align-items: start; min-width: 0; }
+.agent-picker, .agent-launcher, .agent-history { min-width: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcfa; }
+.agent-picker h3, .agent-launcher h3, .agent-history h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: .01em; }
+.agent-picker-list, .agent-history-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.agent-picker-item { display: grid; gap: 4px; width: 100%; padding: 11px 13px; border: 1px solid #e0e5dd; border-radius: 9px; color: var(--ink); background: #fff; text-align: left; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.agent-picker-item:hover:not(:disabled) { border-color: #bfd0c6; background: #f6faf7; }
+.agent-picker-item.is-active { border-color: var(--teal); background: #f1f8f4; box-shadow: inset 3px 0 0 var(--teal); }
+.agent-picker-item:disabled { cursor: wait; opacity: .7; }
+.agent-picker-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.agent-picker-flag { padding: 1px 6px; border-radius: 99px; color: #5c6b60; background: #e9efe9; font-size: 9px; font-weight: 500; }
+.agent-picker-meta { color: #858b84; font-size: 10px; }
+.agent-launcher-options { display: grid; gap: 8px; }
+.agent-launcher-options label { color: #4d5a53; font-size: 11px; font-weight: 600; }
+.agent-launcher-options select { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid #cfd9d1; border-radius: 8px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; }
+.agent-launcher-options .button-primary { justify-self: start; margin-top: 4px; }
+.agent-history-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.agent-history-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 13px; border: 1px solid #e8ece6; border-radius: 9px; background: #fff; }
+.agent-history-copy { display: grid; flex: 1 1 200px; gap: 3px; min-width: 0; }
+.agent-history-copy strong { display: -webkit-box; overflow: hidden; font-size: 12px; font-weight: 500; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.agent-history-copy small { color: #858b84; font-size: 10px; }
+@media (max-width: 760px) {
+  .agent-landing-grid { grid-template-columns: 1fr; }
+  .agent-landing { padding: 24px 16px 32px; }
+}
 .agent-chat-setup-shell h2 { margin-bottom: 10px; font-size: 26px; letter-spacing: -.035em; }
 .agent-chat-intro { max-width: 520px; margin-bottom: 28px; color: var(--muted); font-size: 13px; line-height: 1.8; }
 .agent-chat-setup-card { display: grid; gap: 10px; width: 100%; max-width: 440px; padding: 20px; border: 1px solid #d7e1dc; border-radius: 12px; background: #f8fbf9; }

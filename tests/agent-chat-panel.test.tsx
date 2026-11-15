@@ -103,10 +103,11 @@ describe('Agent Chat panel', () => {
 
   it('starts a conversation and sends messages with Enter', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    expect(await screen.findByRole('heading', { name: '和哪个 Agent 聊？' })).toBeTruthy();
-    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    expect(await screen.findByRole('heading', { name: '选择 Agent' })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
     const input = await screen.findByLabelText('输入消息');
-    expect(screen.queryByLabelText('Agent')).toBeNull();
+    // The landing panel is gone once a conversation is active.
+    expect(screen.queryByRole('heading', { name: '选择 Agent' })).toBeNull();
     fireEvent.change(input, { target: { value: '你好' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(screen.getByText('你好，我是 Agent。')).toBeTruthy());
@@ -118,7 +119,7 @@ describe('Agent Chat panel', () => {
     const modelSelect = await screen.findByLabelText('对话模型');
     expect(screen.getByRole('option', { name: /Alternate Chat Model/ })).toBeTruthy();
     fireEvent.change(modelSelect, { target: { value: 'magpie:fixture/alt-model' } });
-    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
     await waitFor(() => {
       const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
         (entry) => String(entry[0]) === '/v1/agent-chat/conversations',
@@ -188,7 +189,7 @@ describe('Agent Chat panel', () => {
 
   it('keeps Shift Enter as a newline and hides technical details by default', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
     const input = await screen.findByLabelText('输入消息');
     fireEvent.change(input, { target: { value: '第一行' } });
     fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
@@ -200,8 +201,10 @@ describe('Agent Chat panel', () => {
 
   it('labels the Runtime-owned Boss Agent as organization orchestration', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    expect(await screen.findByRole('option', { name: /老板 Agent/ })).toBeTruthy();
-    fireEvent.click(await screen.findByRole('button', { name: '开始对话' }));
+    const bossCard = await screen.findByRole('button', { name: /老板 Agent/ });
+    expect(bossCard).toBeTruthy();
+    fireEvent.click(bossCard);
+    fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
     expect(await screen.findByText(/老板 Agent：直接对话/)).toBeTruthy();
     expect(await screen.findByText(/未接入网页搜索/)).toBeTruthy();
   });

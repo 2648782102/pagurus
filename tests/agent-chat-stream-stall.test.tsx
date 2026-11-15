@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentChatPanel } from '../src/features/agent-chat/AgentChatPanel.js';
 import type { RuntimeInfo } from '../src/shared/api/runtime.js';
@@ -91,6 +91,8 @@ describe('Agent Chat stream stall recovery', () => {
 
   it('falls back to polling only after the stream stays silent well past the heartbeat', async () => {
     render(<AgentChatPanel runtime={runtime} />);
+    // The panel lands on the Agent picker; entering history is explicit.
+    fireEvent.click(await screen.findByRole('button', { name: '继续对话' }));
     await waitFor(() => expect(screen.getByText('你好')).toBeTruthy());
     await waitFor(() => expect(screen.getByText('已完成')).toBeTruthy(), { timeout: 20_000 });
     expect(screen.queryByText('正在思考…')).toBeNull();
@@ -98,6 +100,7 @@ describe('Agent Chat stream stall recovery', () => {
 
   it('does not label a slow model as stalled before the heartbeat window expires', async () => {
     render(<AgentChatPanel runtime={runtime} />);
+    fireEvent.click(await screen.findByRole('button', { name: '继续对话' }));
     await waitFor(() => expect(screen.getByText('你好')).toBeTruthy());
     await new Promise((resolve) => setTimeout(resolve, 9_000));
     expect(screen.queryByText(/已恢复轮询/)).toBeNull();
