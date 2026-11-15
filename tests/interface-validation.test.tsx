@@ -7,6 +7,7 @@ import { App } from '../src/app/App.js';
 
 const repositoryRoot = process.cwd();
 const styles = readFileSync(path.join(repositoryRoot, 'src/styles.css'), 'utf8');
+const tokens = readFileSync(path.join(repositoryRoot, 'src/styles/tokens.css'), 'utf8');
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -82,15 +83,27 @@ describe('executable interface validation', () => {
   });
 
   it('keeps visible focus, reduced-motion, and narrow/wide responsive CSS boundaries', () => {
-    expect(styles).toMatch(/a:focus-visible[^\n]*outline: 3px solid/);
+    expect(styles).toMatch(/a:focus-visible[\s\S]{0,200}outline: \d+px solid/);
     expect(styles).toMatch(/\[tabindex\]:focus-visible/);
     expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
     expect(styles).toMatch(/transition-duration: \.01ms/);
+    expect(styles).toMatch(/--rail-width: \d+px/);
+    expect(styles).toMatch(/grid-template-columns: var\(--rail-width\) minmax\(0, 1fr\)/);
     expect(styles).toMatch(/@media \(max-width: 760px\)/);
-    expect(styles).toMatch(/grid-template-columns: 72px minmax\(0, 1fr\)/);
-    expect(styles).toMatch(/@media \(max-width: 420px\)/);
-    expect(styles).toMatch(/\.workspace-page \{ padding: 0 14px 24px; \}/);
-    expect(styles).toMatch(/\.shell \{ min-height: 100vh; display: grid; grid-template-columns: 264px minmax\(0, 1fr\); \}/);
+    expect(styles).toMatch(/@media \(max-width: 520px\)/);
+    expect(styles).toMatch(/\.workspace-page \{\s*padding: 0 13px 24px;/);
+    expect(styles).toMatch(/\.console-main \{ min-width: 0; outline: none; background: var\(--canvas\); \}/);
     expect(path.isAbsolute(repositoryRoot)).toBe(true);
+  });
+
+  it('keeps the operations-desk theme distinct from the generic warm-card default', () => {
+    expect(tokens).toMatch(/--canvas: #e9edee;/);
+    expect(tokens).toMatch(/--navy: #17272c;/);
+    expect(tokens).toMatch(/--rust: #9f4522;/);
+    expect(tokens).toMatch(/--radius-lg: 0;/);
+    expect(tokens).toMatch(/--shadow-card: none;/);
+    expect(tokens).not.toMatch(/#f3f1e9|#fcfbf7/);
+    expect(styles).toMatch(/\.sidebar \{[^}]*background: var\(--navy\);/);
+    expect(styles).toMatch(/\.task-panel,\s*\.history-panel/);
   });
 });

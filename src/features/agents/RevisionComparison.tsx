@@ -22,7 +22,7 @@ export function RevisionComparison({
   return (
     <div className="revision-compare" aria-labelledby="revision-compare-title">
       <div className="section-heading">
-        <div><p className="eyebrow">REVISION COMPARE</p><h3 id="revision-compare-title">比较两个版本</h3></div>
+        <div><p className="eyebrow">版本对比</p><h3 id="revision-compare-title">比较两个版本</h3></div>
         <span className="muted-label">只读比较</span>
       </div>
       {revisions.length < 2 ? <p className="task-hint">至少保存两个版本后才能比较。</p> : <>

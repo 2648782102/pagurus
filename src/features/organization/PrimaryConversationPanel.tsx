@@ -38,7 +38,7 @@ export function PrimaryConversationPanel({
     <section className="conversation-panel" aria-labelledby="primary-conversation-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">PRIMARY CONVERSATION · 1.4.0</p>
+          <p className="eyebrow">主会话 · 1.4.0</p>
           <h3 id="primary-conversation-title">老板 Agent 主会话</h3>
         </div>
         <div className="history-heading-actions">

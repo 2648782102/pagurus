@@ -195,6 +195,11 @@
       "id": "modular-frontend-architecture",
       "summary": "Pagurus is split into app, feature, shared UI, and shared API layers with explicit component props, a single controller write path per surface, cancellable visibility-aware polling, shared UI vocabulary for the TaskState contract, and an enforced 500-line module ceiling plus import-direction checks.",
       "evidence": "tests/architecture.test.ts"
+    },
+    {
+      "id": "operations-desk-visual-theme",
+      "summary": "Pagurus uses a subject-specific operations-desk theme: an ink berth rail, cool ruled surfaces, square controls, monospace instrument data, sentence-case roles, and a restrained rust/steel/status palette in place of the generic cream-and-green card kit.",
+      "evidence": "docs/decisions/0037-operations-desk-visual-theme.md"
     }
   ],
   "validationEvidence": [
@@ -300,6 +305,12 @@
       "id": "architecture-boundary-fixture",
       "summary": "An executable fixture enforces the module-size ceiling and the app -> features -> shared dependency direction, and rejects value imports of transport clients from presentation modules.",
       "evidence": "tests/architecture.test.ts",
+      "executableFixture": true
+    },
+    {
+      "id": "operations-desk-visual-fixture",
+      "summary": "Executable interface fixtures verify the themed shell, primitives, workspace navigation and page-heading visibility with visible focus, reduced motion and responsive rail boundaries.",
+      "evidence": "tests/interface-validation.test.tsx",
       "executableFixture": true
     }
   ],

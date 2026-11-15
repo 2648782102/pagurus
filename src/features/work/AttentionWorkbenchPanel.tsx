@@ -129,7 +129,7 @@ function WorkDetail({
     <article className="work-detail" aria-labelledby="selected-work-title">
       <div className="history-detail-heading">
         <div>
-          <p className="eyebrow">SELECTED WORK · v{detail.version}</p>
+          <p className="eyebrow">已选工作 · v{detail.version}</p>
           <h3 id="selected-work-title">工作项详情</h3>
         </div>
         <Tag>{state}</Tag>

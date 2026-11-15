@@ -511,6 +511,7 @@ describe('AI-first entry documents', () => {
       '0034-shared-ui-primitives-and-hierarchy.md',
       '0035-conversation-close-out-report-display.md',
       '0036-frontend-modular-architecture.md',
+      '0037-operations-desk-visual-theme.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

@@ -43,7 +43,7 @@ export function RuntimeStatusPanel({
     <section className={`runtime-panel status-${state}`} aria-labelledby="runtime-title">
       <div className="runtime-heading">
         <div>
-          <p className="eyebrow">RUNTIME</p>
+          <p className="eyebrow">运行时</p>
           <h2 id="runtime-title">海螺 Conchbase</h2>
         </div>
         <Tag tone={state === 'connected' ? 'success' : state === 'checking' ? 'info' : state === 'incompatible' ? 'warning' : 'danger'}>

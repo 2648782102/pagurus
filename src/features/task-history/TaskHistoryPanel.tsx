@@ -94,7 +94,7 @@ function TaskHistoryDetail({ task }: { task: Task }) {
     <article className="history-detail" aria-labelledby="selected-task-title">
       <div className="history-detail-heading">
         <div>
-          <p className="eyebrow">SELECTED TASK</p>
+          <p className="eyebrow">已选任务</p>
           <h3 id="selected-task-title">任务详情</h3>
         </div>
         <Tag tone={task.state === 'failed' ? 'danger' : task.state === 'succeeded' ? 'success' : 'neutral'}>

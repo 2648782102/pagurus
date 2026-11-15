@@ -23,6 +23,7 @@ export function ConsoleSidebar({
               key={entry.id}
               href={entry.href}
               aria-label={`${entry.label}：${entry.hint}`}
+              title={`${entry.label} · ${entry.hint}`}
               aria-current={isActive ? 'page' : undefined}
             >
               <span className="nav-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>

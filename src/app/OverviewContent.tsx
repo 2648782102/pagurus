@@ -38,7 +38,7 @@ export function OverviewContent({
           />
         </div>
         <aside className="overview-launch" aria-labelledby="overview-deck-title">
-          <p className="eyebrow">从这里开始</p>
+          <p className="eyebrow">快速入口</p>
           <h2 id="overview-deck-title">选一个入口</h2>
           <p className="overview-launch-note">
             海螺负责执行与权限；这个控制台只读取已发布状态，并提交 Runtime 已接受的操作。

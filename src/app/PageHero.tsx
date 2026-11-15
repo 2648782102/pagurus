@@ -13,7 +13,7 @@ export function PageHero({
   return (
     <header className={`page-hero page-hero-${current.id}`}>
       <div className="page-hero-copy">
-        <p className="page-kicker">LOCAL CONTROL PLANE · v1.0</p>
+        <p className="page-kicker">本机运行时 · 控制台 v1.0</p>
         <h1 id="page-title">{current.title}</h1>
         <p className="page-description">{current.description}</p>
       </div>

@@ -44,7 +44,7 @@ export function AgentPanelLanding({
     <div className="agent-landing">
       <header className="agent-landing-heading">
         <div>
-          <p className="agent-chat-kicker">AGENT 面板</p>
+          <p className="agent-chat-kicker">选择身份</p>
           <h2 id="agent-chat-title">选择 Agent</h2>
           <p className="agent-chat-intro">
             左侧选择身份，右侧确认模型与思考强度；需要时再从历史会话继续。
