@@ -197,6 +197,8 @@ describe('Agent Chat panel', () => {
     expect(screen.queryByText('Agent revision')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: '会话信息' }));
     expect(await screen.findByText('Agent revision')).toBeTruthy();
+    expect(document.querySelector('.agent-chat-conversation')).toBeTruthy();
+    expect(document.querySelector('.agent-chat-shell')).toBeTruthy();
   });
 
   it('renders a published project close-out report as sections', () => {

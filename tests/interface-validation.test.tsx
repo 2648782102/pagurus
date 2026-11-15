@@ -96,6 +96,8 @@ describe('executable interface validation', () => {
     expect(styles).toMatch(/\.organization-panel/);
     expect(styles).toMatch(/\.secret-create-form \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
     expect(styles).not.toMatch(/\.page-description \{ display: none; \}/);
+    expect(styles).toMatch(/\.agent-chat-shell \{ display: flex; flex-direction: column;/);
+    expect(styles).toMatch(/\.agent-chat-conversation \{ display: grid; flex: 1 1 auto;/);
     expect(path.isAbsolute(repositoryRoot)).toBe(true);
   });
 

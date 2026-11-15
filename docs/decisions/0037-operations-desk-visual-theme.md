@@ -22,7 +22,7 @@ surfaces, compact data, and a small number of signals that mean something.
    fixed berth rail. The content canvas is cool, low-chroma paper. Status and
    actions are the only saturated colour.
 2. **Named palette.** `canvas #e9edee`, `paper #f7f8f7`, `ink #172124`,
-   `navy #17272c`, `steel #366b7a`, `rust #b4542f`. Rust is reserved for primary
+   `navy #17272c`, `steel #366b7a`, `rust #9f4522`. Rust is reserved for primary
    operator action and active selection; steel carries identity and links;
    signal green, amber and danger red are status-only and always have text.
 3. **Square surfaces and rules.** `--radius-*` collapses to 0–2px and
