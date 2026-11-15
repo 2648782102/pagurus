@@ -230,8 +230,13 @@ function assertApiBoundary(source: string, label: string): void {
 }
 
 function assertLoopbackProxy(source: string, label: string): void {
-  expect(source, `${label} must keep the loopback development proxy`)
-    .toContain("target: 'http://127.0.0.1:4318'");
+  // The proxy target is derived per checkout so a parallel worktree does not
+  // silently read the main checkout's Runtime, but it must stay loopback-only
+  // and must still default to the historical address.
+  expect(source, `${label} must keep a loopback development proxy target`)
+    .toMatch(/target:\s*runtimeUrl/);
+  expect(source, `${label} must default the runtime URL to loopback`)
+    .toContain("'http://127.0.0.1:4318'");
   expect(nonLoopbackAddress.test(source), `${label} must not configure a non-loopback runtime target`)
     .toBe(false);
 }
@@ -973,7 +978,7 @@ describe('client boundaries', () => {
       /must use the centralized version-2 request helper/,
     );
     expect(() => assertLoopbackProxy(syntheticNonLoopbackProxy, 'synthetic')).toThrowError(
-      /must keep the loopback development proxy/,
+      /must keep a loopback development proxy target/,
     );
     expect(() => assertDependencyBoundaries(manifest, { packages: {} }, 'synthetic')).toThrowError(
       /must not declare @modelcontextprotocol\/sdk as a development dependency/,
