@@ -45,4 +45,13 @@ describe('front-end architecture boundaries', () => {
       .filter((file) => /from\s+['"][^'"]*(?:src\/)?features\//.test(read(file)));
     expect(offenders, `shared modules must not import feature modules:\n${offenders.join('\n')}`).toEqual([]);
   });
+
+  it('keeps presenters from accepting an entire controller', () => {
+    const offenders = sourceFiles('src/app')
+      .concat(sourceFiles('src/features'))
+      .filter((file) => file.endsWith('.tsx'))
+      .filter((file) => /ReturnType<\s*typeof\s+use[A-Z]\w*>/.test(read(file)));
+    expect(offenders, `pass explicit view fields and actions instead of a controller:\n${offenders.join('\n')}`)
+      .toEqual([]);
+  });
 });

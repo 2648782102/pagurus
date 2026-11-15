@@ -79,7 +79,8 @@ change. Accepted.
   direction.
 - Existing workspace, Agent, organization, Agent Chat, and interface fixtures
   continue to pass unchanged.
-- `npm run check`, `npm test` (145), and `npm run build` pass.
+- `npm run check`, `npm test`, and `npm run build` pass. The test count is
+  intentionally not frozen in this ADR; current evidence lives in CI.
 
 ## Consequences
 

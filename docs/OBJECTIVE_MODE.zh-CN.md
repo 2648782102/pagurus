@@ -10,7 +10,7 @@
 
 完整运行时目标见海螺 [Organization Runtime 最终目标规格](https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md)。客户端方向由 [ADR 0015](decisions/0015-organization-console-direction.md) 接受，交付边界由 [ADR 0016](decisions/0016-organization-console-delivery-boundary.md) 接受，配对公开契约边界由 [ADR 0017](decisions/0017-organization-console-public-contract-boundary.md) 接受，完整老板模式主会话控制台边界由 [ADR 0018](decisions/0018-boss-mode-console-product-loop.md) 接受。它们现在已落成连接 `1.1.0` 已发布 Runtime 状态的 typed client 与组织控制台；完整组织运行时已经通过双仓 fake-provider 端到端夹具验证。
 
-[ADR 0013](decisions/0013-console-workspace-navigation.md) 把已实现界面组织为七个 hash 工作区；这是不改变公开契约的控制台壳层，不是新功能或新 API。未来组织的界面落点必须由后续配对 ADR 决定。
+[ADR 0013](decisions/0013-console-workspace-navigation.md) 最初把已实现界面组织为七个 hash 工作区，现在已扩展为十个：总览、组织主会话、Agent 对话、受控执行、Agent 配置、任务、持久工作、能力目录、只写句柄与运行时设置。这是不改变公开契约的控制台壳层，不是新功能或新 API。未来组织的界面落点必须由后续配对 ADR 决定。
 
 本轮「目标模式」不重开 `1.0.0`，也不把待定能力伪装成已实现功能。接手模型立即需要：
 
@@ -31,10 +31,10 @@
 
 ## 必须先立 ADR 才能做什么
 
-- 工具请求/审批 UI；台账决策本身不是执行许可。
+- 通用工具请求/审批台账 UI 与 provider observation 展示；台账决策本身不是执行许可。Agent 对话内的任务级审批已由 ADR 0029 单独接受并实现。
 - 可视化组合编辑器；不得把某个拓扑画成唯一支持形状。
 - 可执行 MCP/Skill/plugin 安装、启用、授权与生命周期。
-- SSE、实时历史、服务端任务分页、生产远程配对 UX、桌面打包与云部署。
+- 通用 Runtime 事件浏览器、实时任务历史、服务端任务分页、生产远程配对 UX、桌面打包与云部署。Agent 对话自己的 1.8.0 SSE 实时流已实现并保留轮询兜底。
 - 从未经单独接受的 schema 生成客户端类型。
 - OS keychain、稳定跨进程密钥与可重放静态加密值。
 - 超出已连接 `1.1.0` 发布状态界面的真实模型意图解析、动态 Agent revision 创建、archive/offboard/resume 控制以及完整组织调度。

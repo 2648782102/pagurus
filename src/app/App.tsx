@@ -33,7 +33,16 @@ export function App() {
 
           <div className="workspace-content" aria-live="off">
             {workspace.active === 'overview'
-              ? <OverviewContent runtimeStatus={runtimeStatus} workspaces={workspace.workspaces} />
+              ? <OverviewContent
+                runtimeStatus={{
+                  state: runtimeStatus.state,
+                  health: runtimeStatus.health,
+                  runtime: runtimeStatus.runtime,
+                  error: runtimeStatus.error,
+                  refresh: runtimeStatus.refresh,
+                }}
+                workspaces={workspace.workspaces}
+              />
               : <WorkspaceContent
                 id={workspace.active}
                 runtime={runtimeStatus.runtime}

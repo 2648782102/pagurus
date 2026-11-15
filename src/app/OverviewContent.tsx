@@ -1,16 +1,26 @@
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
-import type { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
+import type {
+  RuntimeConnectionError,
+  RuntimeConnectionState,
+} from '../features/runtime-status/useRuntimeStatus.js';
+import type { RuntimeHealth, RuntimeInfo } from '../shared/api/runtime.js';
 import { Section } from '../shared/ui/primitives.js';
 import { QUICK_STARTS, WORKSPACE_GROUPS } from './workspace-registry.js';
 import type { WorkspaceDefinition } from './useWorkspace.js';
 
-type RuntimeStatus = ReturnType<typeof useRuntimeStatus>;
+export interface RuntimeStatusView {
+  readonly state: RuntimeConnectionState;
+  readonly health: RuntimeHealth | null;
+  readonly runtime: RuntimeInfo | null;
+  readonly error: RuntimeConnectionError | null;
+  readonly refresh: (signal?: AbortSignal) => Promise<void>;
+}
 
 export function OverviewContent({
   runtimeStatus,
   workspaces,
 }: {
-  readonly runtimeStatus: RuntimeStatus;
+  readonly runtimeStatus: RuntimeStatusView;
   readonly workspaces: readonly WorkspaceDefinition[];
 }) {
   const byId = new Map(workspaces.map((entry) => [entry.id, entry]));
@@ -19,7 +29,13 @@ export function OverviewContent({
     <>
       <section className="overview-deck" aria-labelledby="overview-deck-title">
         <div className="overview-runtime">
-          <RuntimeStatusPanel {...runtimeStatus} />
+          <RuntimeStatusPanel
+            state={runtimeStatus.state}
+            health={runtimeStatus.health}
+            runtime={runtimeStatus.runtime}
+            error={runtimeStatus.error}
+            refresh={runtimeStatus.refresh}
+          />
         </div>
         <aside className="overview-launch" aria-labelledby="overview-deck-title">
           <p className="eyebrow">从这里开始</p>

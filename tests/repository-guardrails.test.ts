@@ -302,10 +302,10 @@ function assertProjectStatus(source: string, label: string): void {
     clientAdr: '0022-primary-conversation-console.md',
   });
   expect(status.runtimeContract.agentChat).toEqual({
-    version: '1.5.0',
-    pathCount: 4,
+    version: '1.8.0',
+    pathCount: 6,
     frozen: true,
-    clientAdr: '0023-agent-chat-console.md',
+    clientAdr: '0030-agent-chat-live-stream-console.md',
   });
   expect(status.aiEntry.requiredOrder, `${label} must record the canonical AI reading order`).toEqual([
     'AGENTS.md',
@@ -325,6 +325,8 @@ function assertProjectStatus(source: string, label: string): void {
   expect(status.implemented.some((record) => record.id === 'boss-agent-chat-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'codex-style-agent-chat-flow')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'agent-chat-conversation-states-console')).toBe(true);
+    expect(status.implemented.some((record) => record.id === 'agent-chat-tool-approval-console')).toBe(true);
+    expect(status.implemented.some((record) => record.id === 'agent-chat-live-stream-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-conversation-console')).toBe(true);
   expect(status.implemented.some((record) => record.id === 'boss-conversation-hardening-console')).toBe(true);
   expect(status.validationEvidence.some(
@@ -860,10 +862,10 @@ describe('client boundaries', () => {
           clientAdr: '0022-primary-conversation-console.md',
         },
         agentChat: {
-          version: '1.5.0',
-          pathCount: 4,
+          version: '1.8.0',
+          pathCount: 6,
           frozen: true,
-          clientAdr: '0023-agent-chat-console.md',
+          clientAdr: '0030-agent-chat-live-stream-console.md',
         },
       },
       aiEntry: {
@@ -888,9 +890,10 @@ describe('client boundaries', () => {
         { id: 'boss-agent-chat-console' },
         { id: 'codex-style-agent-chat-flow' },
         { id: 'agent-chat-conversation-states-console' },
+        { id: 'agent-chat-tool-approval-console' },
+        { id: 'agent-chat-live-stream-console' },
         { id: 'boss-conversation-console' },
         { id: 'boss-conversation-hardening-console' },
-        { id: 'tool-approval-ui' },
       ],
       validationEvidence: [
         { id: 'final-proxy-walkthrough', executableFixture: false },

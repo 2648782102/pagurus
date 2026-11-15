@@ -136,7 +136,10 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
         };
       });
     } catch (cause) {
-      if (signal?.aborted) return;
+      if (signal?.aborted) {
+        setState((value) => ({ ...value, refreshing: false }));
+        return;
+      }
       setState((value) => ({
         ...value,
         phase: mode === 'full' ? 'error' : value.phase,
@@ -150,7 +153,9 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
     setState((value) => ({ ...value, selectedProjectId, projectThreads: null }));
     try {
       const threads = await getOrganizationProjectThreads(selectedProjectId);
-      setState((value) => ({ ...value, projectThreads: threads }));
+      setState((value) => value.selectedProjectId === selectedProjectId
+        ? { ...value, projectThreads: threads }
+        : value);
     } catch (cause) {
       setState((value) => ({ ...value, error: errorText(cause) }));
     }

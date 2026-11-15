@@ -6,7 +6,13 @@ import { useRuntimeStatus } from '../src/features/runtime-status/useRuntimeStatu
 
 function Harness() {
   const status = useRuntimeStatus();
-  return <RuntimeStatusPanel {...status} />;
+  return <RuntimeStatusPanel
+    state={status.state}
+    health={status.health}
+    runtime={status.runtime}
+    error={status.error}
+    refresh={status.refresh}
+  />;
 }
 
 describe('RuntimeStatusPanel', () => {

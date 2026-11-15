@@ -16,15 +16,18 @@ Agent model selection uses Conchbase's provider-neutral provider/model contract 
 2. Inspect `git status` and the files in the affected feature before editing. Preserve unrelated user changes.
 3. Implement a complete UI slice with loading, connected, disconnected, error, and permission states where applicable. Keep runtime state authoritative in Conchbase.
 4. If a feature requires a new runtime operation, define and document it in Conchbase first; never invent a competing schema here. The task history slice uses the existing `GET /v1/tasks` response; the final workbench and platform panels use only published `1.0.0` routes.
-5. Do not call Conchbase's tool request/approval routes until a Pagurus ADR accepts the client contract. A runtime capability is not authorization to add an execution route.
+5. Do not call Conchbase's generic tool-request/approval ledger or provider-observation routes until a Pagurus ADR accepts that client contract. Agent Chat's task-scoped approval route is accepted separately by ADR 0029. A runtime capability is not authorization to add an execution route.
 6. Keep `tests/repository-guardrails.test.ts` passing. Update it only alongside an accepted ADR or a documented development-boundary change. Run `npm run check`, `npm test`, and `npm run build`. Do not claim behavior that is only planned.
 7. Report the files changed, commands run, results, and any unresolved decision.
 
 ## UI code boundaries
 
-- `src/app/` composes the application, owns the seven-workspace shell and hash resolver, and mounts only the active feature panels.
+- `src/app/` composes the application, owns the ten-workspace shell, overview registry, and hash resolver, and mounts only the active feature panels.
 - `src/features/<capability>/` owns feature presentation and feature-local state.
 - `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary.
+- `src/shared/ui/` contains dependency-free presentation primitives and shared display vocabulary. It must not call the Runtime API.
+- Leaf components receive narrow typed view fields and actions. Do not pass a whole `ReturnType<typeof use...>` controller into a presenter.
+- A feature panel performs mutations through its controller so busy, error, capability gating, and refresh remain one path.
 - `src/features/configuration/` owns the versioned configuration document editor and its feature-local state. It mirrors the Conchbase `0.5.0` v1/v2 document union, kept by `0.6.0`, including required base sections, the v2 topology-neutral composition section, the exclusion of `source: url`, and the `composition-execution` capability guard. It must not create a second schema, credential store, capability installer, graph identity calculator, visual composition builder, or composition template.
 - Add shared UI only after a real reuse exists. Do not create empty feature folders or generic state frameworks ahead of use.
 - Keep keyboard access, visible focus, reduced motion, responsive behavior, and meaningful loading/error states in each implemented slice.

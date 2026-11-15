@@ -30,19 +30,43 @@ describe('visible polling', () => {
     Reflect.deleteProperty(document, 'visibilityState');
   });
 
-  it('aborts the previous tick and the last in-flight request', () => {
+  it('does not start a second tick while the first request is still running', async () => {
+    const signals: AbortSignal[] = [];
+    let resolveFirst: (() => void) | undefined;
+    const { unmount } = render(<Poller onTick={(signal) => {
+      signals.push(signal);
+      if (signals.length === 1) {
+        return new Promise<void>((resolve) => { resolveFirst = resolve; });
+      }
+    }} />);
+
+    act(() => { vi.advanceTimersByTime(4000); });
+    act(() => { vi.advanceTimersByTime(4000); });
+    expect(signals).toHaveLength(1);
+
+    await act(async () => {
+      resolveFirst?.();
+      await Promise.resolve();
+    });
+    act(() => { vi.advanceTimersByTime(4000); });
+    expect(signals).toHaveLength(2);
+    expect(signals[0]?.aborted).toBe(false);
+
+    unmount();
+    expect(signals[1]?.aborted).toBe(true);
+  });
+
+  it('aborts the last in-flight request on unmount', () => {
     const signals: AbortSignal[] = [];
     const { unmount } = render(<Poller onTick={(signal) => signals.push(signal)} />);
 
     act(() => { vi.advanceTimersByTime(4000); });
-    act(() => { vi.advanceTimersByTime(4000); });
 
-    expect(signals).toHaveLength(2);
-    expect(signals[0]?.aborted).toBe(true);
-    expect(signals[1]?.aborted).toBe(false);
+    expect(signals).toHaveLength(1);
+    expect(signals[0]?.aborted).toBe(false);
 
     unmount();
-    expect(signals[1]?.aborted).toBe(true);
+    expect(signals[0]?.aborted).toBe(true);
   });
 
   it('skips hidden tabs and resumes when visible again', () => {

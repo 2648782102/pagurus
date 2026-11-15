@@ -39,10 +39,10 @@
       "clientAdr": "0022-primary-conversation-console.md"
     },
     "agentChat": {
-      "version": "1.5.0",
-      "pathCount": 4,
+      "version": "1.8.0",
+      "pathCount": 6,
       "frozen": true,
-      "clientAdr": "0023-agent-chat-console.md"
+      "clientAdr": "0030-agent-chat-live-stream-console.md"
     }
   },
   "aiEntry": {
@@ -138,7 +138,7 @@
     },
     {
       "id": "agent-chat-console",
-      "summary": "Pagurus ADR 0023 adds a separate Agent Chat workspace that lists configured Agents, creates a pinned conversation, sends messages through Conchbase 1.5.0, and polls real model replies.",
+      "summary": "Pagurus ADR 0023 adds a separate Agent Chat workspace that lists configured Agents, creates a pinned conversation, and sends messages through the published Agent Chat contract.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
     },
     {
@@ -170,6 +170,16 @@
       "id": "agent-chat-model-selection-console",
       "summary": "Pagurus ADR 0028 and Conchbase ADR 0051 add a model selector sourced from the Runtime model catalog to Agent Chat setup and send the selected model override at conversation creation.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
+    },
+    {
+      "id": "agent-chat-tool-approval-console",
+      "summary": "Pagurus ADR 0029 renders the Runtime-published tool activity projection and submits inline Agent Chat approval decisions. This is the in-conversation task approval surface, not the separate Conchbase tool-request ledger UI.",
+      "evidence": "src/features/agent-chat/AgentChatThread.tsx"
+    },
+    {
+      "id": "agent-chat-live-stream-console",
+      "summary": "Pagurus ADR 0030 consumes the resumable Agent Chat 1.8.0 SSE projection, merges frames against newer state, and keeps a cancellable polling fallback when the stream is unavailable or stalled.",
+      "evidence": "src/features/agent-chat/useAgentChatStream.ts"
     },
     {
       "id": "shared-ui-primitives",
@@ -252,7 +262,7 @@
     },
     {
       "id": "agent-chat-console-fixture",
-      "summary": "Executable fixtures cover 1.5.0 typed Agent Chat client, discovery gating, Agent selection, conversation creation, message submit, polling, terminal states, and unsupported Runtime fallback.",
+      "summary": "Executable fixtures cover the 1.8.0 typed Agent Chat client, discovery gating, Agent selection, conversation creation, message submit, terminal states, and unsupported Runtime fallback.",
       "evidence": "tests/agent-chat-api.test.ts",
       "executableFixture": true
     },
@@ -302,7 +312,7 @@
     },
     {
       "id": "tool-approval-ui",
-      "summary": "Tool request/approval presentation and decisions require a real Conchbase execution authorization contract and a paired Pagurus ADR.",
+      "summary": "A generic tool-request ledger and provider-observation UI remain blocked and require a published authorization contract plus a paired Pagurus ADR. Agent Chat's in-conversation task approval is implemented separately under ADR 0029.",
       "requiresAcceptedAdr": true,
       "requiresRuntimeContract": true
     },

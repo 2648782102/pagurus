@@ -29,16 +29,23 @@ export function useAgentChatStream(options: {
   const [streamAttempt, setStreamAttempt] = useState(0);
   const lastFrameAtRef = useRef(0);
   const pollRef = useRef<number | null>(null);
+  const refreshRef = useRef<AbortController | null>(null);
   const streamRef = useRef<AgentChatStream | null>(null);
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
 
-  const refreshConversation = useCallback(async () => {
+  const refreshConversation = useCallback(async (signal?: AbortSignal) => {
     const current = conversationRef.current;
     if (!current) return;
     try {
-      setConversation(await getAgentChatConversation(current.id));
+      const next = await getAgentChatConversation(current.id, signal);
+      if (signal?.aborted) return;
+      setConversation((previous) => {
+        if (!previous || previous.id !== next.id) return next;
+        return mergeConversation(previous, next);
+      });
     } catch (cause) {
+      if (signal?.aborted) return;
       onError(cause instanceof Error ? cause.message.slice(0, 240) : 'Agent 对话刷新失败');
     }
   }, [onError, setConversation]);
@@ -52,10 +59,17 @@ export function useAgentChatStream(options: {
       pollRef.current = null;
       return;
     }
-    pollRef.current = window.setInterval(() => { void refreshConversation(); }, 700);
+    pollRef.current = window.setInterval(() => {
+      refreshRef.current?.abort();
+      const controller = new AbortController();
+      refreshRef.current = controller;
+      void refreshConversation(controller.signal);
+    }, 700);
     return () => {
       if (pollRef.current !== null) window.clearInterval(pollRef.current);
       pollRef.current = null;
+      refreshRef.current?.abort();
+      refreshRef.current = null;
     };
   }, [pending, refreshConversation, streamConnected, streamStalled]);
 

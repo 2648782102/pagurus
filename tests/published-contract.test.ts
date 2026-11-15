@@ -86,6 +86,16 @@ const organizationClientOperations: readonly PublishedOperation[] = [
   { path: '/v1/organization/attention/{attentionId}/withdraw', method: 'POST' },
 ];
 
+const agentChatClientOperations: readonly PublishedOperation[] = [
+  { path: '/v1/agent-chat/agents', method: 'GET' },
+  { path: '/v1/agent-chat/conversations', method: 'POST' },
+  { path: '/v1/agent-chat/conversations', method: 'GET' },
+  { path: '/v1/agent-chat/conversations/{conversationId}', method: 'GET' },
+  { path: '/v1/agent-chat/conversations/{conversationId}/messages', method: 'POST' },
+  { path: '/v1/agent-chat/conversations/{conversationId}/approval', method: 'POST' },
+  { path: '/v1/agent-chat/conversations/{conversationId}/events', method: 'GET' },
+];
+
 function parsePublishedOperations(spec: string): Set<string> {
   const operations = new Set<string>();
   const pathPattern = /^ {2}(\/v1\/[^:]+):$/gm;
@@ -114,11 +124,22 @@ describe('published contract validation', () => {
     expect(publishedClientOperations.some(({ path }) => path.includes('/v1/tool-requests'))).toBe(false);
   });
 
-  it('aligns typed-client fixtures with the paired 47-path OpenAPI when the checkout is present', () => {
+  it('checks every published operation used by the Agent Chat client', () => {
+    if (!existsSync(openApiPath)) return;
+    const spec = readFileSync(openApiPath, 'utf8');
+    const published = parsePublishedOperations(spec);
+    for (const { path, method } of agentChatClientOperations) {
+      expect(published.has(`${method} ${path}`), `${method} ${path} must be published`).toBe(true);
+    }
+    expect(spec).toMatch(/agentChatContract:/);
+    expect(spec).toMatch(/agentChatPaths:\s*\n\s*const: 6/);
+  });
+
+  it('aligns typed-client fixtures with the paired OpenAPI when the checkout is present', () => {
     if (!existsSync(openApiPath)) return;
     const spec = readFileSync(openApiPath, 'utf8');
     const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
-    expect(paths.length).toBe(90);
+    expect(paths.length).toBeGreaterThanOrEqual(90);
     expect(spec).toMatch(/^  version: 1\.\d+\.\d+$/m);
 
     const published = parsePublishedOperations(spec);
@@ -134,7 +155,7 @@ describe('published contract validation', () => {
     if (!existsSync(openApiPath)) return;
     const spec = readFileSync(openApiPath, 'utf8');
     const paths = [...spec.matchAll(/^ {2}(\/v1\/[^:]+):$/gm)].map((match) => match[1]);
-    expect(paths.length).toBe(90);
+    expect(paths.length).toBeGreaterThanOrEqual(90);
     expect(spec).toMatch(/organizationContract:/);
     expect(spec).toMatch(/organizationPaths:\s*\n\s*const: 18/);
 

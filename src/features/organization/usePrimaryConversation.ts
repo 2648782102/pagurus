@@ -89,7 +89,10 @@ export function usePrimaryConversation(runtime: RuntimeInfo | null) {
         };
       });
     } catch (cause) {
-      if (signal?.aborted) return;
+      if (signal?.aborted) {
+        setState((value) => ({ ...value, loading: false, refreshing: false }));
+        return;
+      }
       setState((value) => ({
         ...value,
         loading: false,

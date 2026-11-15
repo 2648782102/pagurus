@@ -4,7 +4,7 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 
 ## Client boundary
 
-- The web console uses the versioned HTTP/JSON Runtime API. Task operations poll individual task state, while task history explicitly reads the existing complete `GET /v1/tasks` list. SSE remains a future transport after Conchbase accepts its event envelope and reconnect semantics.
+- The web console uses the versioned HTTP/JSON Runtime API. Task operations poll individual task state, while task history explicitly reads the existing complete `GET /v1/tasks` list. Agent Chat consumes its own resumable 1.8.0 SSE projection and keeps a cancellable polling fallback; a generic Runtime event browser remains future work.
 - Development uses a same-origin Vite proxy to the loopback runtime.
 - A production console should be served from the runtime origin or paired to an explicitly authorized local endpoint.
 - The runtime owns secrets, active configuration revisions, task state, and policy enforcement.
@@ -13,7 +13,7 @@ Pagurus is a user interface and client SDK for Conchbase. It does not run the ag
 
 ## Implemented screens
 
-`src/app/useWorkspace.ts` defines seven hash-based workspaces and resolves legacy feature anchors to their owning view. `src/app/App.tsx` owns the persistent sidebar, console status bar, page heading, and active-surface composition; only the active feature panels mount. The overview reports runtime connectivity and links every implemented workspace: Agent management, task operations, task history, durable-work control, runtime configuration, the capability directory, and write-only SecretHandles. All rows are live; capability records remain bounded configuration data rather than installers or grants. The shell changes presentation only: Conchbase remains authoritative and no Runtime API route or typed client changes; see [ADR 0013](decisions/0013-console-workspace-navigation.md).
+`src/app/useWorkspace.ts` defines ten hash-based workspaces and resolves legacy feature anchors to their owning view. `src/app/workspace-registry.ts` owns the overview's quick-entry and directory groups. `src/app/App.tsx` owns the persistent sidebar, console status bar, page heading, and active-surface composition; only the active feature panels mount. The overview reports runtime connectivity and links every implemented workspace: organization, Agent Chat, controlled execution, Agent management, task operations, task history, durable-work control, runtime configuration, the capability directory, and write-only SecretHandles. All rows are live; capability records remain bounded configuration data rather than installers or grants. The shell changes presentation only: Conchbase remains authoritative and no Runtime API route or typed client changes; see [ADR 0013](decisions/0013-console-workspace-navigation.md).
 
 The status client calls `GET /v1/health` and `GET /v1/runtime` to show API/runtime versions, capabilities, and connection state; tool ledger and provider observation capabilities are read-only context. When `agents` and `provider-neutral-model-catalog` are advertised, the Agent workspace uses the published Agent and model catalog routes for collection editing, immutable history, default/archive, and rollback, plus a read-only comparison of two returned revisions. When those capabilities are absent, it shows an unsupported state and does not call Agent endpoints. The task client retains the legacy Magpie catalog and `{prompt, model}` shape for older runtimes; Agent-capable runtimes use `{prompt, agentId, modelOverride?}` and the provider-neutral catalog. Both modes share polling, progress, cancel, and retry controls. The task history client uses `GET /v1/tasks` to display mixed Agent and legacy records, state/Agent filters, and server-pinned details. Agent task inspection shows the pinned Agent revision, Runtime configuration revision, and effective provider/model. The configuration client uses the versioned configuration contract for active revision, history, validate, and apply/rollback routes, mirrors the v1/v2 union, renders field-level errors, gates v2 writes on `composition-execution`, and does not consume event cursor, tool request/approval, or observation routes.
 
@@ -37,7 +37,9 @@ Keep the UI web-first. A native desktop wrapper can be selected after installer,
 src/
 ├── app/                            # application composition and page shell
 ├── features/<capability>/          # feature UI and its local state
-└── shared/api/                     # typed clients for Conchbase's public API
+└── shared/
+    ├── api/                        # typed clients for Conchbase's public API
+    └── ui/                         # dependency-free presentation primitives and display vocabulary
 ```
 
-Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. Keep HTTP parsing at the API boundary and pass typed data into feature components. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
+Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.

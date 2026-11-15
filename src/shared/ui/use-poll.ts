@@ -3,8 +3,10 @@ import { useEffect, useRef } from 'react';
 /**
  * Run a callback on an interval without leaking in-flight work.
  *
- * The previous tick's request is aborted before a new one starts, the last
- * request is aborted on unmount, and hidden tabs skip the tick entirely.
+ * A tick is skipped while the previous request is still running, so a slow
+ * request is allowed to settle instead of being aborted by the next interval.
+ * The last request is aborted only when polling is disabled or the component
+ * unmounts, and hidden tabs skip the tick entirely.
  */
 export function useVisiblePolling(
   callback: (signal: AbortSignal) => void | Promise<void>,
@@ -18,11 +20,12 @@ export function useVisiblePolling(
     if (!enabled) return;
     let inFlight: AbortController | null = null;
     const tick = () => {
-      if (document.visibilityState !== 'visible') return;
-      inFlight?.abort();
+      if (document.visibilityState !== 'visible' || inFlight !== null) return;
       const controller = new AbortController();
       inFlight = controller;
-      void callbackRef.current(controller.signal);
+      void Promise.resolve(callbackRef.current(controller.signal)).finally(() => {
+        if (inFlight === controller) inFlight = null;
+      });
     };
     const timer = window.setInterval(tick, intervalMs);
     return () => {
