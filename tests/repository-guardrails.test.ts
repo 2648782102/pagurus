@@ -508,6 +508,7 @@ describe('AI-first entry documents', () => {
       '0033-agent-chat-landing-panel.md',
       '0034-shared-ui-primitives-and-hierarchy.md',
       '0035-conversation-close-out-report-display.md',
+      '0036-frontend-modular-architecture.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

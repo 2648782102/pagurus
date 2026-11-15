@@ -180,6 +180,11 @@
       "id": "close-out-report-display",
       "summary": "The Agent Chat thread recognizes the Runtime-published project close-out text and renders its headline, outcomes, open issues, and next steps as sections without reading private state or adding a second schema.",
       "evidence": "src/features/agent-chat/AgentChatThread.tsx"
+    },
+    {
+      "id": "modular-frontend-architecture",
+      "summary": "Pagurus is split into app, feature, shared UI, and shared API layers with container/component separation, an isolated Agent Chat live-transport hook, and an enforced 500-line module ceiling plus import-direction checks.",
+      "evidence": "tests/architecture.test.ts"
     }
   ],
   "validationEvidence": [
@@ -279,6 +284,12 @@
       "id": "close-out-report-display-fixture",
       "summary": "An executable jsdom fixture renders a published close-out report as a headline and three labelled sections.",
       "evidence": "tests/agent-chat-panel.test.tsx",
+      "executableFixture": true
+    },
+    {
+      "id": "architecture-boundary-fixture",
+      "summary": "An executable fixture enforces the module-size ceiling and the app -> features -> shared dependency direction, and rejects value imports of transport clients from presentation modules.",
+      "evidence": "tests/architecture.test.ts",
       "executableFixture": true
     }
   ],
