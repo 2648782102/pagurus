@@ -64,6 +64,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .overview-runtime { min-width: 0; }
 .overview-runtime .runtime-panel { height: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); container-type: inline-size; }
+.runtime-panel { display: flex; flex-direction: column; }
+.runtime-footer { margin-top: auto; }
 .overview-launch { display: grid; align-content: start; gap: 10px; min-width: 0; padding: 22px 22px 18px; border: 1px solid #d8e2da; border-radius: var(--radius-lg); background: linear-gradient(155deg, #f6faf6 0%, #eef5f0 100%); }
 .overview-launch .eyebrow { margin-bottom: 0; }
 .overview-launch h2 { font-size: 20px; letter-spacing: -.03em; }
@@ -180,10 +182,27 @@ select:focus-visible, textarea:focus-visible { outline: 3px solid #d98b69; outli
 .agent-toolbar label, .agent-editor label { color: #4d5a53; font-size: 12px; font-weight: 600; }
 .agent-toolbar select, .agent-editor input, .agent-editor textarea, .agent-editor select { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid #d7d9d0; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; font-size: 12px; }
 .agent-editor { display: grid; gap: 10px; margin-top: 18px; }
+.config-form-surface {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #f8f7f2;
+}
+.config-form-surface > legend {
+  padding: 0 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+}
+.agent-capabilities { min-width: 0; margin: 4px 0 0; }
+.agent-capabilities-note { margin: 0 0 14px; max-width: 720px; }
+.agent-capability-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.agent-capability-grid .ui-textarea { min-height: 104px; font-family: var(--mono); font-size: 11px; }
 .secret-create-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .secret-create-form > .task-actions { grid-column: 1 / -1; }
 @media (max-width: 760px) {
   .secret-create-form { grid-template-columns: 1fr; }
+  .agent-capability-grid { grid-template-columns: 1fr; }
 }
 .agent-editor textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
 .agent-editor :disabled { background: #f1f1ec; color: #7c847e; }

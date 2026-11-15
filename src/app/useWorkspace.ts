@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export type WorkspaceId =
   | 'overview'
@@ -151,7 +151,6 @@ export function resolveWorkspace(hash: string): WorkspaceDefinition {
 export function useWorkspace() {
   const [active, setActive] = useState<WorkspaceId>(() => resolveWorkspace(window.location.hash).id);
   const [scrollTarget, setScrollTarget] = useState('');
-  const isFirstRender = useRef(true);
 
   useEffect(() => {
     const sync = () => {
@@ -165,13 +164,14 @@ export function useWorkspace() {
   }, []);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
     const main = document.getElementById('workspace-content');
     const target = scrollTarget ? document.getElementById(scrollTarget) : null;
-    if (target && typeof target.scrollIntoView === 'function') {
+    // A primary workspace link should reveal the page heading. Legacy anchors
+    // still point at an inner panel and keep their deep-link behavior.
+    const isPrimaryWorkspaceLink = WORKSPACES.some(
+      (workspace) => normalizeHash(workspace.href) === scrollTarget,
+    );
+    if (!isPrimaryWorkspaceLink && target && typeof target.scrollIntoView === 'function') {
       target.scrollIntoView({ block: 'start' });
     } else {
       document.documentElement.scrollTop = 0;

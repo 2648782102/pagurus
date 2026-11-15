@@ -4,11 +4,12 @@ import { AgentEditor } from './AgentEditor.js';
 import { AgentPicker } from './AgentPicker.js';
 import { AgentRevisionHistory } from './AgentRevisionHistory.js';
 import { earliestRevision } from './agent-revisions.js';
-import { Button, Notice, Section } from '../../shared/ui/primitives.js';
+import { Button, EmptyState, Notice, Section } from '../../shared/ui/primitives.js';
 
 export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => void }) {
   const agents = useAgents(onAgentsChanged);
   const selected = agents.selected;
+  const [creating, setCreating] = useState(false);
   const [compareLeftId, setCompareLeftId] = useState('');
   const [compareRightId, setCompareRightId] = useState('');
   const busy = agents.phase === 'saving' || agents.phase === 'loading';
@@ -17,6 +18,7 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
   const defaultCompareRightId = selected ? earliestRevision(selected.revisions)?.id ?? selected.currentRevisionId : '';
 
   useEffect(() => {
+    if (selected) setCreating(false);
     if (!selected) {
       setCompareLeftId('');
       setCompareRightId('');
@@ -26,12 +28,19 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
     setCompareRightId(earliestRevision(selected.revisions)?.id ?? selected.currentRevisionId);
   }, [selected?.currentRevisionId, selected?.id, selected?.revisions.length]);
 
+  const startNewAgent = () => {
+    setCreating(true);
+    agents.startNew();
+  };
+
   return (
     <Section
       className="agent-panel"
       id="agent-title"
       title="Agent 配置"
-      description={agents.supported ? `${agents.agents.length} 个配置` : undefined}
+      description={agents.supported
+        ? `${agents.agents.length} 个配置 · 选择身份后编辑内容或创建新版本`
+        : undefined}
     >
       {agents.phase === 'loading' && <p className="task-hint" role="status">正在读取 Runtime Agent 和模型目录…</p>}
       {agents.phase === 'unsupported' && (
@@ -51,10 +60,23 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
             agents={agents.agents}
             selectedAgentId={selected?.id}
             busy={busy}
-            onSelect={agents.select}
-            onStartNew={agents.startNew}
+            onSelect={(agentId) => {
+              setCreating(false);
+              agents.select(agentId);
+            }}
+            onStartNew={startNewAgent}
           />
           {agents.models.length === 0 && <Notice tone="warning">Runtime 当前没有可选择的模型。</Notice>}
+          {!selected && agents.agents.length === 0 && (
+            <EmptyState
+              tone="compact"
+              title="还没有 Agent。"
+              description="点击「新建 Agent」后填写名称、指令和默认模型；保存时会创建第一个不可变版本。"
+              action={<Button variant="primary" type="button" disabled={busy || agents.models.length === 0}
+                onClick={startNewAgent}>开始配置第一个 Agent</Button>}
+            />
+          )}
+          {(!selected && !creating) ? null : (
           <AgentEditor
             selected={selected}
             models={agents.models}
@@ -77,6 +99,7 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
             onDuplicate={agents.duplicate}
             onArchive={agents.archive}
           />
+          )}
           <AgentRevisionHistory
             selected={selected}
             busy={busy}

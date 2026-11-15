@@ -2,6 +2,7 @@ import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import type { RuntimeConnectionState, RuntimeConnectionError } from './useRuntimeStatus.js';
 import type { RuntimeHealth } from '../../shared/api/runtime.js';
 import { Button, Notice, StatusDot, Tag } from '../../shared/ui/primitives.js';
+import { runtimeEndpointLabel } from '../../shared/ui/runtime-endpoint.js';
 
 export function RuntimeStatusPanel({
   state,
@@ -52,7 +53,7 @@ export function RuntimeStatusPanel({
       </div>
 
       <div className="runtime-details" aria-live="polite">
-        <div><span className="detail-label">地址</span><code>127.0.0.1:4318</code></div>
+          <div><span className="detail-label">地址</span><code>{runtimeEndpointLabel()}</code></div>
         <div><span className="detail-label">API 版本</span><code>{health ? `v${health.apiVersion}` : '—'}</code></div>
         <div><span className="detail-label">Runtime 版本</span><code>{runtime?.version ?? '—'}</code></div>
         <div><span className="detail-label">能力数</span><code>{runtime?.capabilities.length ?? '—'}</code></div>

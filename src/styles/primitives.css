@@ -118,6 +118,22 @@
 .ui-disclosure-summary:focus-visible { outline: 3px solid #d98b69; outline-offset: 3px; border-radius: 4px; }
 .ui-disclosure-body { padding: 0 0 12px 14px; }
 .ui-empty { display: grid; justify-items: start; gap: 5px; padding: 18px 0; color: var(--muted); }
+.ui-empty[data-tone='compact'] {
+  justify-items: stretch;
+  margin: 14px 0;
+  padding: 15px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: #f8f7f1;
+}
+.ui-empty[data-tone='compact'] .ui-empty-copy {
+  display: grid;
+  gap: 5px;
+}
+.ui-empty[data-tone='compact'] .ui-empty-action {
+  justify-self: start;
+  margin-top: 4px;
+}
 .ui-empty-title { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 600; }
 .ui-empty-description { max-width: 560px; margin: 0; font-size: 10.5px; line-height: 1.65; }
 .ui-notice {

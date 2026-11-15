@@ -156,16 +156,20 @@ export function EmptyState({
   title,
   description,
   action,
+  tone = 'neutral',
 }: {
   readonly title: ReactNode;
   readonly description?: ReactNode;
   readonly action?: ReactNode;
+  readonly tone?: 'neutral' | 'compact';
 }) {
   return (
-    <div className="ui-empty" role="status">
-      <p className="ui-empty-title">{title}</p>
-      {description !== undefined && <p className="ui-empty-description">{description}</p>}
-      {action}
+    <div className="ui-empty" data-tone={tone} role="status">
+      <div className="ui-empty-copy">
+        <p className="ui-empty-title">{title}</p>
+        {description !== undefined && <p className="ui-empty-description">{description}</p>}
+      </div>
+      {action !== undefined && <div className="ui-empty-action">{action}</div>}
     </div>
   );
 }

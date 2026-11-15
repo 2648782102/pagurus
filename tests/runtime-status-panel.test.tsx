@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RuntimeStatusPanel } from '../src/features/runtime-status/RuntimeStatusPanel.js';
 import { useRuntimeStatus } from '../src/features/runtime-status/useRuntimeStatus.js';
+import { endpointHost, runtimeEndpointLabel } from '../src/shared/ui/runtime-endpoint.js';
 
 function Harness() {
   const status = useRuntimeStatus();
@@ -35,6 +36,20 @@ describe('RuntimeStatusPanel', () => {
 
     expect(screen.getByText('正在检查连接')).toBeTruthy();
     expect(screen.getByRole('button', { name: '检查中…' }).hasAttribute('disabled')).toBe(true);
+  });
+
+  it('formats any configured Runtime endpoint as a host label', () => {
+    expect(endpointHost('http://127.0.0.1:4338')).toBe('127.0.0.1:4338');
+    expect(endpointHost('https://runtime.example.test/')).toBe('runtime.example.test');
+    expect(endpointHost('127.0.0.1:4318')).toBe('127.0.0.1:4318');
+  });
+
+  it('shows the configured Runtime endpoint instead of a hard-coded port', () => {
+    fetchMock.mockReturnValue(new Promise(() => {}));
+
+    render(<Harness />);
+
+    expect(screen.getByText(runtimeEndpointLabel())).toBeTruthy();
   });
 
   it('shows a connection error and allows the user to retry', async () => {

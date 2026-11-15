@@ -6,6 +6,7 @@ import { OverviewContent } from './OverviewContent.js';
 import { PageHero } from './PageHero.js';
 import { WorkspaceContent } from './WorkspaceContent.js';
 import { useWorkspace } from './useWorkspace.js';
+import { runtimeEndpointLabel } from '../shared/ui/runtime-endpoint.js';
 
 export function App() {
   const [agentRefreshToken, setAgentRefreshToken] = useState(0);
@@ -29,7 +30,11 @@ export function App() {
         <ConsoleTopbar breadcrumb={activeBreadcrumb} state={runtimeStatus.state} />
 
         <div className="workspace-page">
-          <PageHero current={current} state={runtimeStatus.state} />
+          <PageHero
+            current={current}
+            state={runtimeStatus.state}
+            runtimeEndpoint={runtimeEndpointLabel()}
+          />
 
           <div className="workspace-content" aria-live="off">
             {workspace.active === 'overview'

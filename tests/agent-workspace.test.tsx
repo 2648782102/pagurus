@@ -36,6 +36,7 @@ describe('AgentWorkspace', () => {
       .mockResolvedValueOnce(json({ agent: AGENT }));
     const onAgentsChanged = vi.fn();
     render(<AgentWorkspace onAgentsChanged={onAgentsChanged} />);
+    fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
     fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
     fireEvent.change(screen.getByLabelText('Instructions'), { target: { value: 'Be precise' } });
@@ -50,6 +51,20 @@ describe('AgentWorkspace', () => {
     await waitFor(() => expect(onAgentsChanged).toHaveBeenCalledTimes(1));
   });
 
+  it('opens the editor from the empty state before the first Agent exists', async () => {
+    fetchMock
+      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
+      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
+    render(<AgentWorkspace />);
+
+    expect(await screen.findByText('还没有 Agent。')).toBeTruthy();
+    expect(screen.queryByLabelText('名称')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: '开始配置第一个 Agent' }));
+    expect(await screen.findByLabelText('名称')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '创建 Agent' })).toBeTruthy();
+  });
+
   it('sends the explicit capability grants and shows the fail-closed empty state', async () => {
     fetchMock
       .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
@@ -58,6 +73,7 @@ describe('AgentWorkspace', () => {
       .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
       .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }));
     render(<AgentWorkspace />);
+    fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
     expect(screen.getByText(/未授权任何能力/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
@@ -79,6 +95,7 @@ describe('AgentWorkspace', () => {
       .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
       .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
     render(<AgentWorkspace />);
+    fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
     fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
     fireEvent.change(screen.getByLabelText(/工具/), { target: { value: 'WorkspaceRead' } });

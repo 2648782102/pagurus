@@ -139,6 +139,31 @@ describe('workspace navigation', () => {
     }
   });
 
+  it('reveals the page heading when a primary workspace link is used', async () => {
+    render(<App />);
+    const scrollIntoView = Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>;
+    scrollIntoView.mockClear();
+
+    window.location.hash = '#task-operations-title';
+    fireEvent(window, new Event('hashchange'));
+
+    expect(await screen.findByRole('heading', { name: '任务工作区' })).toBeTruthy();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(document.documentElement.scrollTop).toBe(0);
+    expect(document.body.scrollTop).toBe(0);
+  });
+
+  it('reveals the page heading when a primary workspace URL is opened directly', async () => {
+    window.location.hash = '#agent-chat';
+    render(<App />);
+    const scrollIntoView = Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>;
+
+    expect(await screen.findByRole('heading', { name: 'Agent 对话工作区' })).toBeTruthy();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(document.documentElement.scrollTop).toBe(0);
+    expect(document.body.scrollTop).toBe(0);
+  });
+
   it('keeps capability and sensitive-handle panels in separate workspaces', async () => {
     render(<App />);
     window.location.hash = '#capability-title';

@@ -50,6 +50,9 @@ const consolePort = Number(process.env.PAGURUS_PORT ?? (session === 4318 ? 5173 
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __PAGURUS_RUNTIME_URL__: JSON.stringify(runtimeUrl),
+  },
   server: {
     port: consolePort,
     strictPort: false,

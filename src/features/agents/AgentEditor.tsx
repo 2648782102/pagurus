@@ -90,34 +90,36 @@ export function AgentEditor({
       </Field>
       {currentReference && <p className="task-hint">provider-neutral reference：<code>{currentReference.reference}</code></p>}
 
-      <fieldset className="agent-capabilities">
+      <fieldset className="agent-capabilities config-form-surface">
         <legend>能力授权</legend>
-        <p className="task-hint">
+        <p className="task-hint agent-capabilities-note">
           Runtime 只允许这里列出的能力。留空表示这个 Agent 不能调用任何工具或 Skill；
           能力名必须与 Runtime 已注册的一致，未注册的条目不会生效。
         </p>
-        <Field label={<>工具（每行一个，例如 <code>workspace_read</code>）</>} htmlFor="agent-tools">
-          <Textarea
-            id="agent-tools"
-            value={toolNames}
-            onChange={(event) => onToolNamesChange(event.target.value)}
-            rows={3}
-            spellCheck={false}
-            placeholder={'workspace_list\nworkspace_read'}
-            disabled={busy || selected?.archived}
-          />
-        </Field>
-        <Field label="Skill（每行一个 Skill 目录名）" htmlFor="agent-skills">
-          <Textarea
-            id="agent-skills"
-            value={skillNames}
-            onChange={(event) => onSkillNamesChange(event.target.value)}
-            rows={2}
-            spellCheck={false}
-            placeholder="release-notes"
-            disabled={busy || selected?.archived}
-          />
-        </Field>
+        <div className="agent-capability-grid">
+          <Field label="工具授权" hint="每行一个，例如 workspace_read。留空即禁用工具。" htmlFor="agent-tools">
+            <Textarea
+              id="agent-tools"
+              value={toolNames}
+              onChange={(event) => onToolNamesChange(event.target.value)}
+              rows={4}
+              spellCheck={false}
+              placeholder={'workspace_list\nworkspace_read'}
+              disabled={busy || selected?.archived}
+            />
+          </Field>
+          <Field label="Skill 授权" hint="每行一个 Skill 目录名。Skill 只提供指令，不授予工具。" htmlFor="agent-skills">
+            <Textarea
+              id="agent-skills"
+              value={skillNames}
+              onChange={(event) => onSkillNamesChange(event.target.value)}
+              rows={4}
+              spellCheck={false}
+              placeholder="release-notes"
+              disabled={busy || selected?.archived}
+            />
+          </Field>
+        </div>
         {(!selected || (selected.current.grantedCapabilities?.length ?? 0) === 0)
           && toolNames.trim().length === 0
           && skillNames.trim().length === 0 && (

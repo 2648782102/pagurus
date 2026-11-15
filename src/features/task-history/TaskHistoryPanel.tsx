@@ -55,7 +55,13 @@ export function TaskHistoryPanel() {
           </Field>
         </div>
 
-        {history.visibleTasks.length === 0 && <EmptyState title="当前筛选条件下没有任务记录。" />}
+        {history.visibleTasks.length === 0 && (
+          <EmptyState
+            tone="compact"
+            title="当前筛选条件下没有任务记录。"
+            description="调整状态或 Agent 筛选后可以重新查看历史任务。"
+          />
+        )}
         {history.visibleTasks.length > 0 && <div className="history-layout">
           <div className="history-list" role="listbox" aria-label="任务记录">
             {history.visibleTasks.map((task) => (

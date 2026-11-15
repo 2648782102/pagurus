@@ -44,7 +44,13 @@ export function AttentionWorkbenchPanel({ runtime }: { runtime: RuntimeInfo | nu
       )}
 
       {(workbench.phase === 'ready' || workbench.phase === 'loading') && <>
-        {workbench.workItems.length === 0 && <EmptyState title="Runtime 暂无持久工作项。" />}
+        {workbench.workItems.length === 0 && (
+          <EmptyState
+            tone="compact"
+            title="Runtime 暂无持久工作项。"
+            description="当 Runtime 发布一个 WorkItem 后，这里会出现完整的工作项、交付证据与控制入口。"
+          />
+        )}
         {workbench.workItems.length > 0 && <div className="work-layout">
           <div className="work-list" role="listbox" aria-label="持久工作项">
             {workbench.workItems.map((item) => (

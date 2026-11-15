@@ -87,7 +87,13 @@ export function SecretHandlePanel({ runtime }: { runtime: RuntimeInfo | null }) 
       </form>}
 
       {secrets.phase === 'ready' && <>
-        {secrets.handles.length === 0 && <EmptyState title="暂无句柄。" />}
+        {secrets.handles.length === 0 && (
+          <EmptyState
+            tone="compact"
+            title="暂无句柄。"
+            description="提交一次值后会生成 Key、状态和摘要；明文不会被回读或保留在界面中。"
+          />
+        )}
         <ul className="revision-list">
           {secrets.handles.map((handle) => (
             <li key={handle.id}>

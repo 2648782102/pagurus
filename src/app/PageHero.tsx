@@ -4,9 +4,11 @@ import type { WorkspaceDefinition } from './useWorkspace.js';
 export function PageHero({
   current,
   state,
+  runtimeEndpoint,
 }: {
   readonly current: WorkspaceDefinition;
   readonly state: RuntimeConnectionState;
+  readonly runtimeEndpoint: string;
 }) {
   return (
     <header className={`page-hero page-hero-${current.id}`}>
@@ -18,7 +20,7 @@ export function PageHero({
       <aside className="page-aside" aria-label="当前工作区提示">
         <span className="page-aside-label">运行边界</span>
         <strong>{state === 'connected' ? '本机 Runtime 已连接' : '本机 Runtime 未就绪'}</strong>
-        <span>执行与权限 · 海螺 Conchbase</span>
+        <span>{state === 'connected' ? `${runtimeEndpoint} · 执行与权限由海螺负责` : '执行与权限 · 海螺 Conchbase'}</span>
       </aside>
     </header>
   );

@@ -37,7 +37,13 @@ export function CapabilityPanel({ runtime }: { runtime: RuntimeInfo | null }) {
       {capabilities.phase === 'error' && <Notice tone="danger">{capabilities.error}</Notice>}
       {capabilities.message && <p className="task-hint" role="status">{capabilities.message}</p>}
       {capabilities.phase === 'ready' && <>
-        {capabilities.capabilities.length === 0 && <EmptyState title="暂无能力记录。" />}
+        {capabilities.capabilities.length === 0 && (
+          <EmptyState
+            tone="compact"
+            title="暂无能力记录。"
+            description="能力目录只保存有界元数据；添加记录不会安装 MCP、Skill 或插件，也不会授予权限。"
+          />
+        )}
         <ul className="revision-list">
           {capabilities.capabilities.map((record) => (
             <li key={record.id}>
@@ -47,7 +53,7 @@ export function CapabilityPanel({ runtime }: { runtime: RuntimeInfo | null }) {
           ))}
         </ul>
       </>}
-      {capabilities.phase !== 'checking' && capabilities.phase !== 'unsupported' && <form className="agent-editor" onSubmit={submit}>
+      {capabilities.phase !== 'checking' && capabilities.phase !== 'unsupported' && <form className="agent-editor config-form-surface" onSubmit={submit}>
         <Field label="类型" htmlFor="capability-kind">
           <Select id="capability-kind" value={kind} onChange={(event) => setKind(event.target.value as CapabilityKind)}>
             <option value="mcp">MCP</option><option value="skill">Skill</option>
