@@ -114,8 +114,8 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       return;
     }
     const timer = window.setInterval(() => {
-      if (Date.now() - lastFrameAtRef.current > 8_000) setStreamStalled(true);
-    }, 2_000);
+      if (Date.now() - lastFrameAtRef.current > 45_000) setStreamStalled(true);
+    }, 5_000);
     return () => window.clearInterval(timer);
   }, [streamConnected, conversation]);
 

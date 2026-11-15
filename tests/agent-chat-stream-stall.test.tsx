@@ -89,10 +89,17 @@ describe('Agent Chat stream stall recovery', () => {
     vi.useRealTimers();
   });
 
-  it('falls back to polling when the stream stays silent', async () => {
+  it('falls back to polling only after the stream stays silent well past the heartbeat', async () => {
     render(<AgentChatPanel runtime={runtime} />);
     await waitFor(() => expect(screen.getByText('你好')).toBeTruthy());
     await waitFor(() => expect(screen.getByText('已完成')).toBeTruthy(), { timeout: 20_000 });
     expect(screen.queryByText('正在思考…')).toBeNull();
   }, 25_000);
+
+  it('does not label a slow model as stalled before the heartbeat window expires', async () => {
+    render(<AgentChatPanel runtime={runtime} />);
+    await waitFor(() => expect(screen.getByText('你好')).toBeTruthy());
+    await new Promise((resolve) => setTimeout(resolve, 9_000));
+    expect(screen.queryByText(/已恢复轮询/)).toBeNull();
+  }, 20_000);
 });
