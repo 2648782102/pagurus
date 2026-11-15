@@ -54,4 +54,12 @@ describe('front-end architecture boundaries', () => {
     expect(offenders, `pass explicit view fields and actions instead of a controller:\n${offenders.join('\n')}`)
       .toEqual([]);
   });
+
+  it('keeps the Runtime endpoint out of hard-coded display copy', () => {
+    // The development proxy follows the current worktree. A hard-coded label
+    // would make a parallel console claim it is connected to the main checkout.
+    const panel = read('src/features/runtime-status/RuntimeStatusPanel.tsx');
+    expect(panel).toMatch(/runtimeEndpointLabel\(\)/);
+    expect(panel).not.toMatch(/<code>127\.0\.0\.1:4318<\/code>/);
+  });
 });
