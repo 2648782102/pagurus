@@ -94,6 +94,8 @@ describe('Organization Console', () => {
     expect(screen.getByText('项目创建')).toBeTruthy();
     expect(screen.getByLabelText('自动刷新')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Attention 优先队列' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '回答' }).className).toContain('ui-button-primary');
+    expect(screen.getByRole('button', { name: '撤回' }).className).toContain('ui-button');
     expect(screen.getAllByText('project_alpha').length).toBeGreaterThan(0);
     expect(screen.getByText('sha256_instructions')).toBeTruthy();
     expect(screen.getByText(/conversationContract: 1\.4\.0/)).toBeTruthy();

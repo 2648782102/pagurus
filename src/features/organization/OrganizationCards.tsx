@@ -7,7 +7,7 @@ import type {
   OrganizationReportRecord,
   OrganizationWorkItemRecord,
 } from '../../shared/api/organization.js';
-import { Tag } from '../../shared/ui/primitives.js';
+import { Button, Tag } from '../../shared/ui/primitives.js';
 import { eventLabel, projectStateLabel } from './organization-labels.js';
 
 export function OrganizationTimeline({
@@ -66,10 +66,10 @@ export function AttentionQueue({
             <code>{attention.id}</code>
           </button>
           {attention.id === selected?.id && attention.state === 'open' && <>
-            <button className="button-primary" type="button" disabled={busy}
-              onClick={() => onAnswer(attention)}>回答</button>
-            <button className="button-secondary" type="button" disabled={busy}
-              onClick={() => onWithdraw(attention)}>撤回</button>
+            <Button size="sm" variant="primary" type="button" disabled={busy}
+              onClick={() => onAnswer(attention)}>回答</Button>
+            <Button size="sm" type="button" disabled={busy}
+              onClick={() => onWithdraw(attention)}>撤回</Button>
           </>}
         </div>
       ))}

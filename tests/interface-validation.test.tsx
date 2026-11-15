@@ -93,6 +93,9 @@ describe('executable interface validation', () => {
     expect(styles).toMatch(/@media \(max-width: 520px\)/);
     expect(styles).toMatch(/\.workspace-page \{\s*padding: 0 13px 24px;/);
     expect(styles).toMatch(/\.console-main \{ min-width: 0; outline: none; background: var\(--canvas\); \}/);
+    expect(styles).toMatch(/\.organization-panel/);
+    expect(styles).toMatch(/\.secret-create-form \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
+    expect(styles).not.toMatch(/\.page-description \{ display: none; \}/);
     expect(path.isAbsolute(repositoryRoot)).toBe(true);
   });
 
