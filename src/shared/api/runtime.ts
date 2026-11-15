@@ -13,6 +13,7 @@ export interface RuntimeInfo {
   version: string;
   state: 'ready';
   capabilities: string[];
+  executionMode?: 'restricted' | 'unrestricted';
   organizationContract?: '1.1.0';
   organizationPaths?: number;
   executionContract?: '1.2.0';

@@ -28,6 +28,12 @@ export function RuntimeStatusPanel({
       ? `${error.message}。启动 Conchbase 后可以重新连接。`
       : null;
 
+  const executionModeLabel = runtime?.executionMode === 'unrestricted'
+    ? '完全放开（工具不经审批直接执行）'
+    : runtime?.executionMode === 'restricted'
+      ? '限制模式（写操作与外部操作需审批）'
+      : null;
+
   return (
     <section className={`runtime-panel status-${state}`} aria-labelledby="runtime-title">
       <div className="runtime-heading">
@@ -44,6 +50,14 @@ export function RuntimeStatusPanel({
         <div><span className="detail-label">Runtime 版本</span><code>{runtime?.version ?? '—'}</code></div>
         <div><span className="detail-label">能力数</span><code>{runtime?.capabilities.length ?? '—'}</code></div>
         <div><span className="detail-label">状态</span><code>{health?.status ?? (state === 'checking' ? '检查中' : '离线')}</code></div>
+        {executionModeLabel && (
+          <div>
+            <span className="detail-label">执行模式</span>
+            <code className={runtime?.executionMode === 'unrestricted' ? 'is-unrestricted' : undefined}>
+              {executionModeLabel}
+            </code>
+          </div>
+        )}
       </div>
 
       {errorMessage && (
