@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAgents } from './useAgents.js';
 import type { AgentRevision, CapabilityGrant } from '../../shared/api/agents.js';
+import { Button, Field, Notice, Section, Select, Tag, Textarea, TextInput } from '../../shared/ui/primitives.js';
 
 function providerName(providerId: string): string {
   return providerId;
@@ -34,34 +35,30 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
   }, [selected?.currentRevisionId, selected?.id, selected?.revisions.length]);
 
   return (
-    <section className="agent-panel" id="agent-panel" aria-labelledby="agent-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">AGENT WORKSPACE</p>
-          <h2 id="agent-title">Agent 配置</h2>
-        </div>
-        {agents.supported && <span className="muted-label">{agents.agents.length} 个配置</span>}
-      </div>
+    <Section
+      className="agent-panel"
+      id="agent-title"
+      title="Agent 配置"
+      description={agents.supported ? `${agents.agents.length} 个配置` : undefined}
+    >
 
       {agents.phase === 'loading' && <p className="task-hint" role="status">正在读取 Runtime Agent 和模型目录…</p>}
       {agents.phase === 'unsupported' && (
-        <div className="agent-notice">
-          <strong>当前 Runtime 未开放 Agent 管理</strong>
-          <p>任务运行和全局配置仍可照常使用。连接支持 agents 与 provider-neutral-model-catalog 能力的 Conchbase 后，此处即可管理 Agent。</p>
-        </div>
+        <Notice tone="warning" title="当前 Runtime 未开放 Agent 管理">
+          任务运行和全局配置仍可照常使用。连接支持 agents 与 provider-neutral-model-catalog 能力的 Conchbase 后，此处即可管理 Agent。
+        </Notice>
       )}
       {agents.phase === 'error' && (
-        <div className="agent-notice" role="alert">
-          <p>{agents.error}</p>
-          <button className="button-secondary" type="button" onClick={() => agents.refresh()}>重新加载</button>
-        </div>
+        <Notice tone="danger" action={<Button size="sm" type="button" onClick={() => agents.refresh()}>重新加载</Button>}>
+          {agents.error}
+        </Notice>
       )}
 
       {agents.supported && (
         <>
           <div className="agent-toolbar">
-            <label htmlFor="agent-select">选择 Agent</label>
-            <select
+            <Field label="选择 Agent" htmlFor="agent-select">
+            <Select
               id="agent-select"
               value={selected?.id ?? ''}
               onChange={(event) => agents.select(event.target.value)}
@@ -73,22 +70,21 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                   {agent.current.name}{agent.isDefault ? ' · 默认' : ''}{agent.archived ? ' · 已归档' : ''}
                 </option>
               ))}
-            </select>
-            <button className="button-secondary" type="button" onClick={agents.startNew} disabled={busy}>新建 Agent</button>
+            </Select>
+            </Field>
+            <Button type="button" onClick={agents.startNew} disabled={busy}>新建 Agent</Button>
           </div>
 
-          {agents.models.length === 0 && <p className="task-hint">Runtime 当前没有可选择的模型。</p>}
+          {agents.models.length === 0 && <Notice tone="warning">Runtime 当前没有可选择的模型。</Notice>}
           <form className="agent-editor" onSubmit={(event) => { event.preventDefault(); agents.save(); }}>
             <div className="agent-editor-heading">
-              <div>
-                <label htmlFor="agent-name">名称</label>
-                {selected && <code>{selected.id}</code>}
-              </div>
-              {selected && <span className={`agent-state${selected.archived ? ' is-archived' : ''}`}>
+              {selected && <code>{selected.id}</code>}
+              {selected && <Tag tone={selected.archived ? 'danger' : 'success'}>
                 {selected.archived ? '已归档' : selected.isDefault ? '默认 Agent' : '可用'}
-              </span>}
+              </Tag>}
             </div>
-            <input
+            <Field label="名称" htmlFor="agent-name">
+            <TextInput
               id="agent-name"
               value={agents.name}
               onChange={(event) => agents.setName(event.target.value)}
@@ -96,9 +92,10 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
               required
               disabled={busy || selected?.archived}
             />
+            </Field>
 
-            <label htmlFor="agent-instructions">Instructions</label>
-            <textarea
+            <Field label="Instructions" htmlFor="agent-instructions">
+            <Textarea
               id="agent-instructions"
               value={agents.instructions}
               onChange={(event) => agents.setInstructions(event.target.value)}
@@ -107,9 +104,10 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
               placeholder="定义这个 Agent 的工作目标、语气和边界。这里的指令不会授予工具或权限。"
               disabled={busy || selected?.archived}
             />
+            </Field>
 
-            <label htmlFor="agent-model">默认模型</label>
-            <select
+            <Field label="默认模型" htmlFor="agent-model">
+            <Select
               id="agent-model"
               value={agents.modelReference}
               onChange={(event) => agents.setModelReference(event.target.value)}
@@ -121,7 +119,8 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                   {model.displayName} · {providerName(model.providerId)} / {model.modelId}
                 </option>
               ))}
-            </select>
+            </Select>
+            </Field>
             {currentReference && <p className="task-hint">provider-neutral reference：<code>{currentReference.reference}</code></p>}
 
             <fieldset className="agent-capabilities">
@@ -130,8 +129,8 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                 Runtime 只允许这里列出的能力。留空表示这个 Agent 不能调用任何工具或 Skill；
                 能力名必须与 Runtime 已注册的一致，未注册的条目不会生效。
               </p>
-              <label htmlFor="agent-tools">工具（每行一个，例如 <code>workspace_read</code>）</label>
-              <textarea
+              <Field label={<>工具（每行一个，例如 <code>workspace_read</code>）</>} htmlFor="agent-tools">
+              <Textarea
                 id="agent-tools"
                 value={agents.toolNames}
                 onChange={(event) => agents.setToolNames(event.target.value)}
@@ -140,8 +139,9 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                 placeholder={'workspace_list\nworkspace_read'}
                 disabled={busy || selected?.archived}
               />
-              <label htmlFor="agent-skills">Skill（每行一个 Skill 目录名）</label>
-              <textarea
+              </Field>
+              <Field label="Skill（每行一个 Skill 目录名）" htmlFor="agent-skills">
+              <Textarea
                 id="agent-skills"
                 value={agents.skillNames}
                 onChange={(event) => agents.setSkillNames(event.target.value)}
@@ -150,46 +150,44 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                 placeholder="release-notes"
                 disabled={busy || selected?.archived}
               />
+              </Field>
               {(!selected || (selected.current.grantedCapabilities?.length ?? 0) === 0)
                 && agents.toolNames.trim().length === 0
                 && agents.skillNames.trim().length === 0 && (
-                <p className="task-hint" role="status">
+                <Notice role="status">
                   当前版本未授权任何能力，该 Agent 无法调用工具或 Skill。
-                </p>
+                </Notice>
               )}
             </fieldset>
 
             <div className="agent-actions">
-              <button className="button-primary" type="submit" disabled={busy || !agents.models.length || selected?.archived}>
+              <Button variant="primary" type="submit" disabled={busy || !agents.models.length || selected?.archived}>
                 {agents.phase === 'saving' ? '保存中…' : selected ? '保存新版本' : '创建 Agent'}
-              </button>
+              </Button>
               {selected && !selected.archived && <>
-                {!selected.isDefault && <button className="button-secondary" type="button" onClick={agents.makeDefault} disabled={busy}>设为默认</button>}
-                {selected.isDefault && <button className="button-secondary" type="button" onClick={agents.clearDefault} disabled={busy}>取消默认</button>}
-                <button className="button-secondary" type="button" onClick={agents.duplicate} disabled={busy}>复制</button>
-                <button className="button-secondary danger-action" type="button" onClick={agents.archive} disabled={busy}>归档</button>
+                {!selected.isDefault && <Button type="button" onClick={agents.makeDefault} disabled={busy}>设为默认</Button>}
+                {selected.isDefault && <Button type="button" onClick={agents.clearDefault} disabled={busy}>取消默认</Button>}
+                <Button type="button" onClick={agents.duplicate} disabled={busy}>复制</Button>
+                <Button variant="danger" type="button" onClick={agents.archive} disabled={busy}>归档</Button>
               </>}
             </div>
           </form>
 
           {selected && (
             <div className="agent-history">
-              <div className="section-heading">
-                <div><p className="eyebrow">IMMUTABLE HISTORY</p><h3>版本历史</h3></div>
-                <span className="muted-label">当前版本 <code>{selected.currentRevisionId}</code></span>
-              </div>
+              <Section title="版本历史" description={<>当前版本 <code>{selected.currentRevisionId}</code></>}>
               <ol className="revision-list">
                 {[...selected.revisions].reverse().map((revision) => (
                   <li key={revision.id}>
                     <div><strong>{revision.name}</strong><code>{revision.id}</code><small>{new Date(revision.createdAt).toLocaleString()}</small></div>
                     {revision.id === selected.currentRevisionId
                       ? <span className="revision-current">当前</span>
-                      : <button
-                        className="button-secondary"
+                      : <Button
+                        size="sm"
                         type="button"
                         disabled={busy || selected.archived}
                         onClick={() => agents.rollback(revision.id)}
-                      >恢复此版本</button>}
+                      >恢复此版本</Button>}
                   </li>
                 ))}
               </ol>
@@ -200,17 +198,18 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
                 onLeftChange={setCompareLeftId}
                 onRightChange={setCompareRightId}
               />
+              </Section>
             </div>
           )}
           {agents.message && <p className="config-message" role="status">{agents.message}</p>}
-          {agents.error && <div className="agent-error" role="alert"><p>{agents.error}</p>
-            {agents.error.includes('重新加载') || agents.error.includes('Agent 已被其他操作更新')
-              ? <button className="button-secondary" type="button" onClick={() => agents.refresh(selected?.id)}>重新加载当前版本</button>
-              : null}
-          </div>}
+          {agents.error && <Notice tone="danger" action={
+            agents.error.includes('重新加载') || agents.error.includes('Agent 已被其他操作更新')
+              ? <Button size="sm" type="button" onClick={() => agents.refresh(selected?.id)}>重新加载当前版本</Button>
+              : undefined
+          }>{agents.error}</Notice>}
         </>
       )}
-    </section>
+    </Section>
   );
 }
 
@@ -239,14 +238,16 @@ function RevisionComparison({
       </div>
       {revisions.length < 2 ? <p className="task-hint">至少保存两个版本后才能比较。</p> : <>
         <div className="revision-compare-selects">
-          <label htmlFor="revision-compare-left">版本 A</label>
-          <select id="revision-compare-left" value={leftId} onChange={(event) => onLeftChange(event.target.value)}>
+          <Field label="版本 A" htmlFor="revision-compare-left">
+          <Select id="revision-compare-left" value={leftId} onChange={(event) => onLeftChange(event.target.value)}>
             {revisions.map((revision) => <option key={revision.id} value={revision.id}>{revision.name} · {revision.id}</option>)}
-          </select>
-          <label htmlFor="revision-compare-right">版本 B</label>
-          <select id="revision-compare-right" value={rightId} onChange={(event) => onRightChange(event.target.value)}>
+          </Select>
+          </Field>
+          <Field label="版本 B" htmlFor="revision-compare-right">
+          <Select id="revision-compare-right" value={rightId} onChange={(event) => onRightChange(event.target.value)}>
             {revisions.map((revision) => <option key={revision.id} value={revision.id}>{revision.name} · {revision.id}</option>)}
-          </select>
+          </Select>
+          </Field>
         </div>
         {!hasComparison && <p className="task-hint">请选择两个不同的版本。</p>}
         {hasComparison && <div className="revision-compare-grid">

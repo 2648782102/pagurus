@@ -4,7 +4,7 @@
   "pairedRepository": "conchbase",
   "project": "Pagurus / 寄居蟹",
   "release": "1.0.0",
-  "statusUpdatedAt": "2026-11-14",
+  "statusUpdatedAt": "2026-11-16",
   "objectiveMode": "target-mode",
   "developmentBoundaryAdr": "0011-ai-handoff-readiness-development-boundary.md",
   "runtimeContract": {
@@ -170,6 +170,11 @@
       "id": "agent-chat-model-selection-console",
       "summary": "Pagurus ADR 0028 and Conchbase ADR 0051 add a model selector sourced from the Runtime model catalog to Agent Chat setup and send the selected model override at conversation creation.",
       "evidence": "src/features/agent-chat/AgentChatPanel.tsx"
+    },
+    {
+      "id": "shared-ui-primitives",
+      "summary": "A dependency-free presentation primitive layer (Button, Field, Notice, Section, Tag, StatusDot, Disclosure, EmptyState) gives every console panel the same focus, label, disabled, tone, and notice behavior; the overview, Agent Chat, and dense evidence surfaces now use a restrained, work-first hierarchy.",
+      "evidence": "src/shared/ui/primitives.tsx"
     }
   ],
   "validationEvidence": [
@@ -257,6 +262,12 @@
       "id": "agent-chat-conversation-states-console-fixture",
       "summary": "Executable fixtures cover expanded typed-client state fields and visible thinking/streaming/organizing/waiting-attention/replied/failed/unavailable/cancelled rendering.",
       "evidence": "tests/agent-chat-panel.test.tsx",
+      "executableFixture": true
+    },
+    {
+      "id": "ui-primitives-fixture",
+      "summary": "An executable jsdom fixture covers control variants, field association, status text alternatives, disclosure behavior, empty state, and explicit notice roles.",
+      "evidence": "tests/ui-primitives.test.tsx",
       "executableFixture": true
     }
   ],

@@ -1,4 +1,5 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { Button } from '../../shared/ui/primitives.js';
 import { AgentChatComposer } from './AgentChatComposer.js';
 import { AgentChatThread } from './AgentChatThread.js';
 import { useAgentChat } from './useAgentChat.js';
@@ -27,10 +28,14 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
         <div className="agent-chat-shell">
           <header className="agent-chat-header">
             <div>
-              <p className="agent-chat-kicker">正在对话</p>
-              <h2 id="agent-chat-title">{activeName}</h2>
-              <p className="agent-chat-subtitle">{chat.conversation.providerId}:{chat.conversation.modelId}</p>
-              <p className="agent-chat-subtitle">思考强度：{chat.conversation.reasoningEffort}</p>
+              <div className="agent-chat-identity">
+                <span className="agent-chat-avatar" aria-hidden="true">{activeName.slice(0, 1)}</span>
+                <div>
+                  <p className="agent-chat-kicker">正在对话</p>
+                  <h2 id="agent-chat-title">{activeName}</h2>
+                </div>
+              </div>
+              <p className="agent-chat-subtitle">{chat.conversation.providerId}:{chat.conversation.modelId} · 思考强度 {chat.conversation.reasoningEffort}</p>
               {chat.hasPending && (
                 <p className="agent-chat-subtitle" role="status">
                   {chat.streamConnected
@@ -44,9 +49,9 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
               )}
             </div>
             <div className="agent-chat-header-actions">
-              <button className="button-secondary" type="button" onClick={() => chat.setDetailsOpen(!chat.detailsOpen)}
-                aria-expanded={chat.detailsOpen} aria-controls="agent-chat-details">会话信息</button>
-              <button className="button-secondary" type="button" onClick={chat.resetConversation}>更换 Agent</button>
+              <Button size="sm" type="button" onClick={() => chat.setDetailsOpen(!chat.detailsOpen)}
+                aria-expanded={chat.detailsOpen} aria-controls="agent-chat-details">会话信息</Button>
+              <Button size="sm" type="button" onClick={chat.resetConversation}>更换 Agent</Button>
             </div>
           </header>
 
@@ -62,19 +67,21 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
           )}
           {chat.error && <div className="work-error" role="alert"><p>{chat.error}</p></div>}
 
-          <AgentChatThread
-            messages={chat.conversation.messages}
-            agentName={activeName}
-            busy={chat.busy}
-            onDecision={chat.decideApproval}
-          />
-          <AgentChatComposer
-            draft={chat.draft}
-            busy={chat.busy}
-            waiting={chat.hasPending}
-            onDraftChange={chat.setDraft}
-            onSend={chat.sendMessage}
-          />
+          <div className="agent-chat-conversation">
+            <AgentChatThread
+              messages={chat.conversation.messages}
+              agentName={activeName}
+              busy={chat.busy}
+              onDecision={chat.decideApproval}
+            />
+            <AgentChatComposer
+              draft={chat.draft}
+              busy={chat.busy}
+              waiting={chat.hasPending}
+              onDraftChange={chat.setDraft}
+              onSend={chat.sendMessage}
+            />
+          </div>
         </div>
       )}
     </section>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentChatPanel } from '../src/features/agent-chat/AgentChatPanel.js';
 import type { RuntimeInfo } from '../src/shared/api/runtime.js';
@@ -158,5 +158,46 @@ describe('Agent Chat landing panel', () => {
     render(<AgentChatPanel runtime={runtime} />);
     fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
     expect(await screen.findByLabelText('输入消息')).toBeTruthy();
+  });
+
+  it('refreshes the landing history while it stays open and visible', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    try {
+      render(<AgentChatPanel runtime={runtime} />);
+      await act(async () => { await Promise.resolve(); });
+      expect(screen.getByText('较新的会话')).toBeTruthy();
+
+      fetchMock.mockImplementation((input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path === '/v1/agent-chat/agents') {
+          return Promise.resolve(json({ version: '1.8.0', agents: [{
+            id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
+            providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
+          }] }));
+        }
+        if (path === '/v1/model-catalog') {
+          return Promise.resolve(json({ models: [] }));
+        }
+        if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+          return Promise.resolve(json({
+            version: '1.8.0',
+            conversations: [{
+              id: newerConversationId, agentId: 'agt_alpha', reasoningEffort: 'medium',
+              createdAt: '2026-11-15T03:00:00.000Z', messageCount: 3,
+              lastMessagePreview: '项目已静默并归档。',
+            }],
+            defaultModelId: null,
+          }));
+        }
+        return Promise.resolve(json({ error: 'not found' }, 404));
+      });
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+      expect(screen.getByText('项目已静默并归档。')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

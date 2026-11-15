@@ -2,53 +2,49 @@ import { type RuntimeInfo } from '../../shared/api/runtime.js';
 import type { WorkEvent } from '../../shared/api/work.js';
 import { useAttentionWorkbench } from './useAttentionWorkbench.js';
 import type { WorkDeliveryReceipt, WorkItemDetail } from '../../shared/api/work.js';
+import { Button, EmptyState, Notice, Section, Tag } from '../../shared/ui/primitives.js';
 
 export function AttentionWorkbenchPanel({ runtime }: { runtime: RuntimeInfo | null }) {
   const workbench = useAttentionWorkbench(runtime);
   const busy = workbench.actionLabel !== null;
 
   return (
-    <section className="work-panel" id="workbench" aria-labelledby="workbench-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">CONTROL WORKBENCH</p>
-          <h2 id="workbench-title">持久工作控制台</h2>
-        </div>
-        <div className="history-heading-actions">
-          <span className="muted-label">{workbench.workItems.length} 个工作项</span>
-          <button
-            className="button-secondary"
+    <Section
+      className="work-panel"
+      id="workbench-title"
+      title="持久工作控制台"
+      description={`${workbench.workItems.length} 个工作项`}
+      action={
+          <Button
+            size="sm"
             type="button"
             onClick={workbench.load}
             disabled={workbench.phase === 'loading' || workbench.phase === 'checking' || busy}
           >
             {workbench.phase === 'loading' ? '读取中…' : '刷新'}
-          </button>
-        </div>
-      </div>
+          </Button>
+      }
+    >
 
       {workbench.phase === 'checking' && <p className="task-hint" role="status">正在检查 durable-work-contract 能力…</p>}
       {workbench.phase === 'unsupported' && (
-        <div className="work-notice" role="status">
-          <p>当前 Runtime 未发布 <code>durable-work-contract</code>，控制台保持关闭状态。</p>
-        </div>
+        <Notice>当前 Runtime 未发布 <code>durable-work-contract</code>，控制台保持关闭状态。</Notice>
       )}
       {workbench.phase === 'error' && (
-        <div className="work-error" role="alert">
-          <p>{workbench.error}</p>
-          <button className="button-secondary" type="button" onClick={workbench.load}>重新加载</button>
-        </div>
+        <Notice tone="danger" action={<Button size="sm" type="button" onClick={workbench.load}>重新加载</Button>}>
+          {workbench.error}
+        </Notice>
       )}
       {workbench.actionMessage && <p className="task-hint" role="status">{workbench.actionMessage}</p>}
       {(workbench.phase === 'ready' || workbench.phase === 'loading')
         && (!workbench.supportsControls || !workbench.supportsSourcePolicy) && (
-        <div className="work-notice" role="status">
-          <p>当前 Runtime 缺少 <code>asynchronous-work-control</code> 或 <code>local-source-policy</code>，相应控制已禁用。</p>
-        </div>
+        <Notice tone="warning">
+          当前 Runtime 缺少 <code>asynchronous-work-control</code> 或 <code>local-source-policy</code>，相应控制已禁用。
+        </Notice>
       )}
 
       {(workbench.phase === 'ready' || workbench.phase === 'loading') && <>
-        {workbench.workItems.length === 0 && <p className="task-hint">Runtime 暂无持久工作项。</p>}
+        {workbench.workItems.length === 0 && <EmptyState title="Runtime 暂无持久工作项。" />}
         {workbench.workItems.length > 0 && <div className="work-layout">
           <div className="work-list" role="listbox" aria-label="持久工作项">
             {workbench.workItems.map((item) => (
@@ -77,7 +73,7 @@ export function AttentionWorkbenchPanel({ runtime }: { runtime: RuntimeInfo | nu
       </>}
 
       <p className="task-note">控制台只通过已发布的 Runtime API 提交显式控制请求；Conchbase 持有工作身份与状态，Pagurus 不读取私有数据库。</p>
-    </section>
+    </Section>
   );
 }
 
@@ -110,29 +106,29 @@ function WorkDetail({
           <p className="eyebrow">SELECTED WORK · v{detail.version}</p>
           <h3 id="selected-work-title">工作项详情</h3>
         </div>
-        <strong>{state}</strong>
+        <Tag>{state}</Tag>
       </div>
 
       <div className="task-actions" aria-label="工作项控制">
-        <button className="button-primary" type="button"
+        <Button variant="primary" type="button"
           disabled={busy || controlsUnavailable || !['open', 'paused'].includes(state)}
           onClick={() => workbench.start(workItemId, state)}>
           {actionLabel === 'start' ? '启动中…' : '启动 / 恢复'}
-        </button>
-        <button className="button-secondary" type="button"
+        </Button>
+        <Button type="button"
           disabled={busy || controlsUnavailable || !['running', 'paused'].includes(state)}
           onClick={() => workbench.stop(workItemId, state)}>
           {actionLabel === 'stop' ? '停止中…' : '停止'}
-        </button>
-        <button className="button-secondary" type="button"
+        </Button>
+        <Button type="button"
           disabled={busy || controlsUnavailable || state !== 'running'}
           onClick={() => workbench.complete(workItemId, state)}>
           {actionLabel === 'complete' ? '完成中…' : '标记完成'}
-        </button>
-        <button className="button-secondary" type="button" disabled={busy || !workbench.supportsSourcePolicy}
-          onClick={() => workbench.source(detail.thread.threadKey, 'allow')}>允许本地事件</button>
-        <button className="button-secondary" type="button" disabled={busy || !workbench.supportsSourcePolicy}
-          onClick={() => workbench.source(detail.thread.threadKey, 'deny')}>拒绝本地事件</button>
+        </Button>
+        <Button type="button" disabled={busy || !workbench.supportsSourcePolicy}
+          onClick={() => workbench.source(detail.thread.threadKey, 'allow')}>允许本地事件</Button>
+        <Button type="button" disabled={busy || !workbench.supportsSourcePolicy}
+          onClick={() => workbench.source(detail.thread.threadKey, 'deny')}>拒绝本地事件</Button>
       </div>
 
       <dl className="history-detail-grid">
@@ -155,10 +151,10 @@ function WorkDetail({
           </dl>
         ))}
         {assignment?.state === 'interrupted' && <div className="task-actions">
-          <button className="button-secondary" type="button" disabled={busy || controlsUnavailable}
-            onClick={() => workbench.reconcile(assignment.id, 'succeeded')}>恢复为成功</button>
-          <button className="button-secondary" type="button" disabled={busy || controlsUnavailable}
-            onClick={() => workbench.reconcile(assignment.id, 'failed')}>恢复为失败</button>
+          <Button type="button" disabled={busy || controlsUnavailable}
+            onClick={() => workbench.reconcile(assignment.id, 'succeeded')}>恢复为成功</Button>
+          <Button type="button" disabled={busy || controlsUnavailable}
+            onClick={() => workbench.reconcile(assignment.id, 'failed')}>恢复为失败</Button>
         </div>}
       </div>
 
@@ -173,10 +169,10 @@ function WorkDetail({
           <p key={receipt.id} className="work-evidence">
             <span>{receipt.status}</span><code>{receipt.destinationDigest}</code><code>{receipt.payloadDigest}</code>
             {receipt.status === 'observed' && <>
-              <button className="button-secondary" type="button" disabled={busy}
-                onClick={() => workbench.decide(receipt.id, 'accepted')}>接受</button>
-              <button className="button-secondary" type="button" disabled={busy}
-                onClick={() => workbench.decide(receipt.id, 'rejected')}>拒绝</button>
+              <Button size="sm" type="button" disabled={busy}
+                onClick={() => workbench.decide(receipt.id, 'accepted')}>接受</Button>
+              <Button size="sm" type="button" disabled={busy}
+                onClick={() => workbench.decide(receipt.id, 'rejected')}>拒绝</Button>
             </>}
           </p>
         ))}

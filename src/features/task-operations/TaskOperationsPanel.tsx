@@ -1,4 +1,5 @@
 import { useTaskOperations } from './useTaskOperations.js';
+import { Button, Field, Section, Select, Tag, Textarea } from '../../shared/ui/primitives.js';
 
 const STATE_LABELS: Record<string, string> = {
   queued: '排队中',
@@ -24,22 +25,19 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
   const noUsableAgent = operations.agentMode && !operations.agents.some((agent) => !agent.archived);
 
   return (
-    <section className="task-panel" aria-labelledby="task-operations-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">PHASE 1 · TASK OPS</p>
-          <h2 id="task-operations-title">运行一次任务</h2>
-        </div>
-        <span className="muted-label">{operations.agentMode ? '按所选 Agent 版本固定执行' : 'Runtime 兼容任务模式'}</span>
-      </div>
+    <Section
+      className="task-panel"
+      id="task-operations-title"
+      title="运行一次任务"
+      description={operations.agentMode ? '按所选 Agent 版本固定执行' : 'Runtime 兼容任务模式'}
+    >
 
       <form className="task-form" onSubmit={(event) => {
         event.preventDefault();
         operations.startTask();
       }}>
-        {operations.agentMode && <div className="task-field">
-          <label htmlFor="task-agent">Agent</label>
-          <select
+        {operations.agentMode && <Field label="Agent" htmlFor="task-agent">
+          <Select
             id="task-agent"
             value={operations.selectedAgentId}
             onChange={(event) => operations.setSelectedAgentId(event.target.value)}
@@ -50,12 +48,11 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
               <option key={agent.id} value={agent.id}>{agent.current.name}{agent.isDefault ? ' · 默认' : ''}</option>
             ))}
             {operations.agents.every((agent) => agent.archived) && <option value="">暂无可用 Agent</option>}
-          </select>
-        </div>}
+          </Select>
+        </Field>}
 
-        <div className="task-field">
-          <label htmlFor="task-model">{operations.agentMode ? '本次使用模型' : '模型'}</label>
-          <select
+        <Field label={operations.agentMode ? '本次使用模型' : '模型'} htmlFor="task-model">
+          <Select
             id="task-model"
             value={operations.selectedModel}
             onChange={(event) => operations.setSelectedModel(event.target.value)}
@@ -67,22 +64,21 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
                 {model.displayName} · {operations.agentMode ? `${model.providerId} / ` : ''}{model.modelId}
               </option>
             ))}
-          </select>
+          </Select>
           {operations.agentMode && <p className="task-hint">可为本次任务覆盖 Agent 默认模型；执行时会固定实际采用的模型版本。</p>}
           {operations.phase === 'models-error' && (
-            <button
-              className="button-secondary inline-retry"
+            <Button
+              size="sm"
               type="button"
               onClick={operations.loadModels}
             >
               重新加载模型
-            </button>
+            </Button>
           )}
-        </div>
+        </Field>
 
-        <div className="task-field">
-          <label htmlFor="task-prompt">任务内容</label>
-          <textarea
+        <Field label="任务内容" htmlFor="task-prompt">
+          <Textarea
             id="task-prompt"
             value={operations.prompt}
             onChange={(event) => operations.setPrompt(event.target.value)}
@@ -90,33 +86,31 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
             rows={3}
             disabled={busy}
           />
-        </div>
+        </Field>
 
         <div className="task-actions">
-          <button
-            className="button-primary"
+          <Button
+            variant="primary"
             type="submit"
             disabled={busy || modelsUnavailable || noUsableAgent || (operations.agentMode && !operations.selectedAgentId)}
           >
             {operations.phase === 'submitting' ? '提交中…' : '开始任务'}
-          </button>
+          </Button>
           {operations.task && isActive(operations.task.state) && (
-            <button
-              className="button-secondary"
+            <Button
               type="button"
               onClick={operations.cancel}
             >
               取消任务
-            </button>
+            </Button>
           )}
           {operations.task && !isActive(operations.task.state) && operations.phase !== 'submitting' && (
-            <button
-              className="button-secondary"
+            <Button
               type="button"
               onClick={operations.retry}
             >
               显式重试
-            </button>
+            </Button>
           )}
         </div>
       </form>
@@ -134,7 +128,7 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
         {operations.task && (
           <div className="task-record">
             <div className="task-meta">
-              <span>状态：<strong>{STATE_LABELS[operations.task.state] ?? operations.task.state}</strong></span>
+              <span>状态：<Tag>{STATE_LABELS[operations.task.state] ?? operations.task.state}</Tag></span>
               <span>Attempt {operations.task.attempt}</span>
               <code>{operations.task.id}</code>
             </div>
@@ -162,6 +156,6 @@ export function TaskOperationsPanel({ agentRefreshToken = 0 }: { agentRefreshTok
         )}
       </div>
       <p className="task-note">Agent 任务固定所选 Agent 版本与 Runtime 配置版本；旧 Runtime 继续使用兼容任务模式。模型调用和权限仍由 Conchbase 管理。</p>
-    </section>
+    </Section>
   );
 }

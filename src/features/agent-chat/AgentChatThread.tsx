@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { AgentChatMessage, AgentChatMessageState } from '../../shared/api/agent-chat.js';
+import { Button, StatusDot } from '../../shared/ui/primitives.js';
 
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
@@ -26,6 +27,14 @@ const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
 function isWorking(state: AgentChatMessageState): boolean {
   return state === 'thinking' || state === 'streaming' || state === 'organizing'
     || state === 'pending';
+}
+
+function statusTone(state: AgentChatMessageState): 'neutral' | 'success' | 'warning' | 'danger' | 'info' {
+  if (state === 'failed' || state === 'cancelled' || state === 'unavailable') return 'danger';
+  if (state === 'waiting_approval' || state === 'waiting_attention') return 'warning';
+  if (state === 'thinking' || state === 'streaming' || state === 'organizing' || state === 'pending') return 'info';
+  if (state === 'replied') return 'success';
+  return 'neutral';
 }
 
 function messageBody(message: AgentChatMessage): string {
@@ -80,7 +89,10 @@ export function AgentChatThread({ messages, agentName, busy, onDecision }: Agent
               {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
             </span>
             {STATE_LABELS[message.state] && (
-              <span className="agent-chat-state-label" role="status">{STATE_LABELS[message.state]}</span>
+              <span className="agent-chat-state-label" role="status">
+                <StatusDot tone={statusTone(message.state)} />
+                {STATE_LABELS[message.state]}
+              </span>
             )}
           </div>
           {isWorking(message.state) && <div className="agent-chat-typing" aria-hidden="true"><i /><i /><i /></div>}
@@ -104,10 +116,10 @@ export function AgentChatThread({ messages, agentName, busy, onDecision }: Agent
           )}
           {message.state === 'waiting_approval' && message.taskId !== null && (
             <div className="agent-chat-approval-actions">
-              <button className="button-primary" type="button" disabled={busy}
-                onClick={() => onDecision(message.id, 'approved')}>批准并继续</button>
-              <button className="button-secondary" type="button" disabled={busy}
-                onClick={() => onDecision(message.id, 'rejected')}>拒绝</button>
+              <Button variant="primary" size="sm" type="button" disabled={busy}
+                onClick={() => onDecision(message.id, 'approved')}>批准并继续</Button>
+              <Button size="sm" type="button" disabled={busy}
+                onClick={() => onDecision(message.id, 'rejected')}>拒绝</Button>
             </div>
           )}
           {message.error && <small>{message.error}</small>}

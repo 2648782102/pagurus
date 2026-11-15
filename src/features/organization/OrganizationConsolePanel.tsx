@@ -1,5 +1,6 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { decideOrganizationAttention } from '../../shared/api/organization.js';
+import { Button, Section, Tag } from '../../shared/ui/primitives.js';
 import { PrimaryConversationPanel } from './PrimaryConversationPanel.js';
 import { useOrganizationConsole } from './useOrganizationConsole.js';
 
@@ -35,7 +36,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
       <div className="section-heading">
         <div>
           <p className="eyebrow">ORGANIZATION CONSOLE · 1.1.0</p>
-          <h2 id="organization-title">组织状态</h2>
+          <h2 id="organization-title">组织运行</h2>
         </div>
         <div className="history-heading-actions">
           <label className="organization-toggle" htmlFor="organization-auto-refresh">
@@ -82,13 +83,21 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
           }}
         />
 
-        <div className="organization-summary" aria-label="组织状态摘要">
-          <div><strong>{consoleState.projects.length}</strong><span>项目</span></div>
-          <div><strong>{consoleState.orderedAttention.filter((item) => item.state === 'open').length}</strong><span>待处理 Attention</span></div>
-          <div><strong>{consoleState.proposals.length}</strong><span>员工提案</span></div>
-          <div><strong>{consoleState.reports.length}</strong><span>结构化汇报</span></div>
-          <div><strong>{consoleState.timeline.length}</strong><span>已发布事实</span></div>
+        <div className="organization-rail" aria-label="组织状态摘要">
+          <div className="organization-summary">
+            <div><strong>{consoleState.projects.length}</strong><span>项目</span></div>
+            <div><strong>{consoleState.orderedAttention.filter((item) => item.state === 'open').length}</strong><span>待处理 Attention</span></div>
+            <div><strong>{consoleState.proposals.length}</strong><span>员工提案</span></div>
+            <div><strong>{consoleState.reports.length}</strong><span>结构化汇报</span></div>
+            <div><strong>{consoleState.timeline.length}</strong><span>已发布事实</span></div>
+          </div>
         </div>
+
+        <Section
+          className="organization-audit-section"
+          title="组织事实与审计"
+          description="只读 · 由 Runtime 发布"
+        />
 
         <div className="organization-layout">
           <article className="organization-card organization-card-timeline" aria-labelledby="organization-timeline-title">
@@ -121,10 +130,10 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
                   <code>{att.id}</code>
                 </button>
                 {att.id === consoleState.selectedAttention?.id && att.state === 'open' && <>
-                  <button className="button-primary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.answerAttention(att)}>回答</button>
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.withdrawAttention(att)}>撤回</button>
+                  <Button size="sm" variant="primary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.answerAttention(att)}>回答</Button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.withdrawAttention(att)}>撤回</Button>
                 </>}
               </div>
             ))}
@@ -147,7 +156,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
                   type="button"
                   onClick={() => consoleState.selectProject(project.id)}
                 >
-                  <strong>{project.state === 'archived' ? '归档' : project.state}</strong>
+                  <strong>{project.state === 'archived' ? '归档 · 可恢复' : project.state === 'quiet' ? '静默中' : project.state}</strong>
                   <code>{project.id}</code>
                 </button>
               ))}
@@ -168,13 +177,13 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
             {consoleState.proposals.length === 0 && <p className="task-hint">Runtime 尚未发布员工提案。</p>}
             {consoleState.proposals.map((proposal) => (
               <p className="organization-fact" key={proposal.workerId}>
-                <code>{proposal.workerId}</code><span>{proposal.state}</span>
+                <code>{proposal.workerId}</code><Tag>{proposal.state}</Tag>
                 <code>{proposal.instructionsDigest}</code>
               </p>
             ))}
             {consoleState.delegations.map((delegation) => (
               <p className="organization-fact" key={delegation.id}>
-                <code>{delegation.id}</code><span>{delegation.state}</span>
+                <code>{delegation.id}</code><Tag>{delegation.state}</Tag>
                 <small>depth {delegation.maxDelegationDepth} · ttl #{delegation.expiresAtSequence}</small>
               </p>
             ))}
@@ -185,7 +194,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
             {consoleState.reports.length === 0 && <p className="task-hint">Runtime 尚未发布报告。</p>}
             {[...consoleState.reports].reverse().map((report) => (
               <p className="organization-fact" key={report.id}>
-                <span>#{report.sequence}</span><span>{report.state}</span>
+                <span>#{report.sequence}</span><Tag tone={report.state === 'failed' ? 'danger' : 'neutral'}>{report.state}</Tag>
                 <code>{report.summaryDigest}</code>
               </p>
             ))}
@@ -196,7 +205,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
             {consoleState.workItems.length === 0 && <p className="task-hint">Runtime 尚未发布工作项视图。</p>}
             {consoleState.workItems.map((workItem) => (
               <p className="organization-fact" key={workItem.workItemId}>
-                <code>{workItem.workItemId}</code><span>{workItem.state}</span>
+                <code>{workItem.workItemId}</code><Tag>{workItem.state}</Tag>
                 <small>{workItem.workerId}</small>
               </p>
             ))}

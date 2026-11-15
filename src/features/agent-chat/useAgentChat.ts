@@ -83,6 +83,23 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
 
   useEffect(() => { void loadAgents(); }, [loadAgents]);
 
+  /**
+   * A Runtime notice can arrive without a user message (for example when an
+   * idle project converges). While no conversation is open, SSE is not
+   * connected, so the landing list needs a low-frequency refresh to show the
+   * new last-message preview. An open conversation is handled by its stream.
+   */
+  useEffect(() => {
+    if (!supported || conversation !== null) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      void listAgentChatConversations()
+        .then((history) => setRecent(history.conversations))
+        .catch(() => undefined);
+    }, 15_000);
+    return () => window.clearInterval(timer);
+  }, [conversation, supported]);
+
   const refreshConversation = useCallback(async () => {
     const current = conversationRef.current;
     if (!current) return;

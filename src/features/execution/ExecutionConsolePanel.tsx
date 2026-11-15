@@ -1,5 +1,6 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useExecutionConsole } from './useExecutionConsole.js';
+import { Button, Field, Notice, Section, Tag, TextInput } from '../../shared/ui/primitives.js';
 
 const STATE_LABELS: Readonly<Record<string, string>> = {
   recorded: '已记录',
@@ -25,28 +26,27 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
   const consoleState = useExecutionConsole(runtime);
 
   return (
-    <section className="work-panel execution-panel" id="execution-console" aria-labelledby="execution-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">CONTROLLED EXECUTION · 1.2.0 / ISOLATED RUNS · 1.3.0</p>
-          <h2 id="execution-title">受控执行状态</h2>
-        </div>
-        <button className="button-secondary" type="button" onClick={consoleState.load}
+    <Section
+      className="work-panel execution-panel"
+      id="execution-title"
+      title="受控执行状态"
+      description="受控执行 1.2.0 / 隔离运行 1.3.0"
+      action={<Button size="sm" type="button" onClick={consoleState.load}
           disabled={!consoleState.supported || consoleState.busy || consoleState.phase === 'loading'}>
           {consoleState.phase === 'loading' ? '读取中…' : '刷新执行状态'}
-        </button>
-      </div>
+        </Button>}
+    >
 
-      {consoleState.phase === 'unsupported' && <div className="work-notice" role="status">
-        <p>当前 Runtime 未发布 <code>executionContract: 1.2.0</code>；受控执行台保持关闭。</p>
-      </div>}
-      {consoleState.error && <div className="work-error" role="alert"><p>{consoleState.error}</p></div>}
+      {consoleState.phase === 'unsupported' && <Notice>
+        当前 Runtime 未发布 <code>executionContract: 1.2.0</code>；受控执行台保持关闭。
+      </Notice>}
+      {consoleState.error && <Notice tone="danger">{consoleState.error}</Notice>}
       {consoleState.message && <p className="task-hint" role="status">{consoleState.message}</p>}
 
       {consoleState.supported && <>
-        <div className="execution-notice" role="note">
+        <Notice role="note">
           `1.2.0` 是确定性 fake executor；`1.3.0` 是 Runtime 拥有的隔离子进程，只接受封闭的 hash / echo_length / fixed_matrix 操作。两者都不安装 MCP、不加载 Skill/plugin、不执行任意宿主命令、不写外部系统、不读取明文密钥。能力记录与显式授权、审批、执行结果是不同状态。
-        </div>
+        </Notice>
 
         <div className="execution-grid">
           <article className="organization-card" aria-labelledby="execution-capability-title">
@@ -63,11 +63,12 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
                 <small>{capability.destinationDigest}</small>
               </button>
             ))}
-            <label className="execution-field" htmlFor="execution-operation">操作</label>
-            <input id="execution-operation" value={consoleState.operation}
-              onChange={(event) => consoleState.setOperation(event.target.value)} />
-            <button className="button-primary" type="button" onClick={consoleState.createGrant}
-              disabled={consoleState.busy}>创建显式授权</button>
+            <Field label="操作" htmlFor="execution-operation">
+              <TextInput id="execution-operation" value={consoleState.operation}
+                onChange={(event) => consoleState.setOperation(event.target.value)} />
+            </Field>
+            <Button variant="primary" type="button" onClick={consoleState.createGrant}
+              disabled={consoleState.busy}>创建显式授权</Button>
           </article>
 
           <article className="organization-card" aria-labelledby="execution-grant-title">
@@ -75,13 +76,13 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
             {consoleState.grants.length === 0 && <p className="task-hint">Runtime 尚未发布授权。</p>}
             {consoleState.grants.map((grant) => (
               <div className="organization-fact" key={grant.id}>
-                <strong>{stateLabel(grant.state)}</strong><code>{grant.id}</code>
+                <Tag tone={grant.state === 'revoked' ? 'danger' : grant.state === 'granted' ? 'success' : 'neutral'}>{stateLabel(grant.state)}</Tag><code>{grant.id}</code>
                 <small>v{grant.expectedVersion} · {grant.operation} · {grant.agentRevisionId}</small>
                 {grant.state === 'granted' && <>
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.createRequest(grant)}>提交请求</button>
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.revokeGrant(grant)}>撤销</button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.createRequest(grant)}>提交请求</Button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.revokeGrant(grant)}>撤销</Button>
                 </>}
               </div>
             ))}
@@ -92,18 +93,18 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
             {consoleState.requests.length === 0 && <p className="task-hint">尚未在本会话提交请求。</p>}
             {[...consoleState.requests].reverse().map((request) => (
               <div className="organization-fact" key={request.id}>
-                <strong>{stateLabel(request.state)}</strong><code>{request.id}</code>
+                <Tag tone={request.state === 'rejected' ? 'danger' : request.state === 'succeeded' ? 'success' : 'neutral'}>{stateLabel(request.state)}</Tag><code>{request.id}</code>
                 <small>v{request.expectedVersion} · {request.operation}</small>
                 {request.state === 'pending' && <>
-                  <button className="button-primary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.approveRequest(request)}>批准并假执行</button>
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.rejectRequest(request)}>拒绝</button>
+                  <Button size="sm" variant="primary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.approveRequest(request)}>批准并假执行</Button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.rejectRequest(request)}>拒绝</Button>
                 </>}
                 {request.resultDigest && <small>result {request.resultDigest}</small>}
                 {consoleState.runsSupported && request.state === 'succeeded' && (
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.createRun(request)}>创建隔离 run</button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.createRun(request)}>创建隔离 run</Button>
                 )}
               </div>
             ))}
@@ -115,19 +116,19 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
             {consoleState.runsSupported && consoleState.runs.length === 0 && <p className="task-hint">尚未发布隔离执行 run。</p>}
             {[...consoleState.runs].reverse().map((run) => (
               <div className="organization-fact" key={run.id}>
-                <strong>{stateLabel(run.state)}</strong><code>{run.id}</code>
+                <Tag tone={run.state === 'failed' ? 'danger' : run.state === 'succeeded' ? 'success' : 'neutral'}>{stateLabel(run.state)}</Tag><code>{run.id}</code>
                 <small>v{run.expectedVersion} · attempt {run.attempt} · {run.operation} · exit {run.exitCode ?? '—'}</small>
                 {run.resultDigest && <small>result {run.resultDigest}</small>}
                 {run.errorDigest && <small>error {run.errorDigest}</small>}
                 {run.state === 'queued' && <>
-                  <button className="button-primary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.startRun(run)}>启动隔离子进程</button>
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.cancelRun(run)}>取消</button>
+                  <Button size="sm" variant="primary" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.startRun(run)}>启动隔离子进程</Button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.cancelRun(run)}>取消</Button>
                 </>}
                 {(run.state === 'interrupted' || run.state === 'failed') && (
-                  <button className="button-secondary" type="button" disabled={consoleState.busy}
-                    onClick={() => consoleState.recoverRun(run)}>恢复</button>
+                  <Button size="sm" type="button" disabled={consoleState.busy}
+                    onClick={() => consoleState.recoverRun(run)}>恢复</Button>
                 )}
               </div>
             ))}
@@ -152,6 +153,6 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
           </article>
         </div>
       </>}
-    </section>
+    </Section>
   );
 }

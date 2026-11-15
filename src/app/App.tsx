@@ -11,6 +11,7 @@ import { SecretHandlePanel } from '../features/secrets/SecretHandlePanel.js';
 import { TaskHistoryPanel } from '../features/task-history/TaskHistoryPanel.js';
 import { TaskOperationsPanel } from '../features/task-operations/TaskOperationsPanel.js';
 import { AttentionWorkbenchPanel } from '../features/work/AttentionWorkbenchPanel.js';
+import { Section } from '../shared/ui/primitives.js';
 import { useWorkspace, type WorkspaceId } from './useWorkspace.js';
 
 const CONNECTION_LABELS = {
@@ -19,6 +20,26 @@ const CONNECTION_LABELS = {
   disconnected: '未连接',
   incompatible: '版本不兼容',
 } as const;
+
+const OVERVIEW_GROUPS = [
+  {
+    title: '组织与对话',
+    note: '把目标交给老板 Agent，或直接与一个配置好的 Agent 对话。',
+    ids: ['organization', 'agentChat'],
+  },
+  {
+    title: '运行与审计',
+    note: '查看任务、持久工作与每一次受控执行的证据。',
+    ids: ['tasks', 'work', 'execution'],
+  },
+  {
+    title: '构建与管理',
+    note: '维护 Agent 版本、运行时策略、能力记录与只写句柄。',
+    ids: ['agents', 'settings', 'capabilities', 'secrets'],
+  },
+] as const;
+
+const QUICK_STARTS = ['organization', 'agentChat', 'tasks'] as const;
 
 export function App() {
   const [agentRefreshToken, setAgentRefreshToken] = useState(0);
@@ -33,6 +54,7 @@ export function App() {
     document.getElementById('workspace-content')?.focus({ preventScroll: true });
   }, []);
   const activeBreadcrumb = current.id === 'overview' ? current.label : current.section;
+  const workspaceById = new Map(workspace.workspaces.map((entry) => [entry.id, entry]));
 
   const workspaceContent = (id: WorkspaceId) => {
     switch (id) {
@@ -58,9 +80,75 @@ export function App() {
       case 'settings':
         return <ConfigurationPanel />;
       default:
-        return <RuntimeStatusPanel {...runtimeStatus} />;
+        return null;
     }
   };
+
+  const overviewContent = (
+    <>
+      <section className="overview-deck" aria-labelledby="overview-deck-title">
+        <div className="overview-runtime">
+          <RuntimeStatusPanel {...runtimeStatus} />
+        </div>
+        <aside className="overview-launch" aria-labelledby="overview-deck-title">
+          <p className="eyebrow">从这里开始</p>
+          <h2 id="overview-deck-title">选一个入口</h2>
+          <p className="overview-launch-note">
+            海螺负责执行与权限；这个控制台只读取已发布状态，并提交 Runtime 已接受的操作。
+          </p>
+          <div className="overview-quick-list">
+            {QUICK_STARTS.map((id) => {
+              const entry = workspaceById.get(id);
+              if (!entry) return null;
+              return (
+                <a className="overview-quick-link" href={entry.href} key={entry.id}>
+                  <span className="overview-quick-icon" aria-hidden="true">{entry.icon}</span>
+                  <span>
+                    <strong>{entry.label}</strong>
+                    <small>{entry.hint}</small>
+                  </span>
+                  <span className="overview-quick-arrow" aria-hidden="true">↗</span>
+                </a>
+              );
+            })}
+          </div>
+        </aside>
+      </section>
+
+      <Section
+        className="overview-directory"
+        id="directory-title"
+        title="管理空间"
+        description={`本地优先 · ${workspace.workspaces.length} 个工作区`}
+      >
+        <div className="directory-groups">
+          {OVERVIEW_GROUPS.map((group) => (
+            <article className="directory-group" key={group.title}>
+              <h3>{group.title}</h3>
+              <p>{group.note}</p>
+              <div className="directory-list">
+                {group.ids.map((id) => {
+                  const entry = workspaceById.get(id);
+                  if (!entry) return null;
+                  const label = entry.id === 'settings' ? '运行时配置' : entry.label;
+                  return (
+                    <a className="directory-link" href={entry.href} key={entry.id}>
+                      <span className="directory-icon" aria-hidden="true">{entry.icon}</span>
+                      <span className="directory-copy">
+                        <strong>{label}</strong>
+                        <small>{entry.hint}</small>
+                      </span>
+                      <span className="directory-arrow" aria-hidden="true">→</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+      </Section>
+    </>
+  );
 
   return (
     <div className="shell">
@@ -112,73 +200,21 @@ export function App() {
         </header>
 
         <div className="workspace-page">
-          <header className="page-hero">
+          <header className={`page-hero page-hero-${current.id}`}>
             <div className="page-hero-copy">
               <p className="page-kicker">LOCAL CONTROL PLANE · v1.0</p>
               <h1 id="page-title">{current.title}</h1>
               <p className="page-description">{current.description}</p>
             </div>
             <aside className="page-aside" aria-label="当前工作区提示">
-              <span className="page-aside-label">当前工作区</span>
-              <strong>{current.label}</strong>
-              <span>{workspace.workspaces.length} 个工作区 · {workspace.workspaces.length} 个已开放</span>
+              <span className="page-aside-label">运行边界</span>
+              <strong>{runtimeStatus.state === 'connected' ? '本机 Runtime 已连接' : '本机 Runtime 未就绪'}</strong>
+              <span>执行与权限 · 海螺 Conchbase</span>
             </aside>
           </header>
 
-          {workspace.active === 'overview' && <section className="overview-grid" aria-labelledby="next-title">
-            <div className="section-heading overview-heading">
-              <div>
-                <p className="eyebrow">WORKSPACE</p>
-                <h2 id="next-title">管理空间</h2>
-              </div>
-              <span className="muted-label">本地优先 · 全部已开放</span>
-            </div>
-            <div className="workspace-list">
-              <a className="workspace-row is-live" href="#organization-console">
-                <span className="row-icon icon-agent" aria-hidden="true">◎</span>
-                <span className="row-copy"><strong>组织主会话</strong><small>提交主意图、处理 Attention、查看项目与委派审计</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" id="tasks" href="#task-operations-title">
-                <span className="row-icon icon-tools" aria-hidden="true">↗</span>
-                <span className="row-copy"><strong>任务运行</strong><small>创建、查看、取消和重试模型任务</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" href="#task-history-title">
-                <span className="row-icon icon-tools" aria-hidden="true">≋</span>
-                <span className="row-copy"><strong>任务历史</strong><small>按状态和 Agent 查看任务与固定版本</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" href="#workbench-title">
-                <span className="row-icon icon-tools" aria-hidden="true">≋</span>
-                <span className="row-copy"><strong>持久工作</strong><small>控制工作项、查看恢复状态与交付证据</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" id="agents" href="#agent-title">
-                <span className="row-icon icon-agent" aria-hidden="true">A</span>
-                <span className="row-copy"><strong>Agent 配置</strong><small>管理独立版本、模型和任务身份</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" href="#configuration-title">
-                <span className="row-icon icon-agent" aria-hidden="true">↻</span>
-                <span className="row-copy"><strong>运行时配置</strong><small>校验、应用与回滚全局策略配置</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" id="tools" href="#capability-title">
-                <span className="row-icon icon-tools" aria-hidden="true">⌘</span>
-                <span className="row-copy"><strong>能力目录</strong><small>记录 MCP、Skill、插件与句柄配置元数据</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-              <a className="workspace-row is-live" id="skills" href="#secrets-title">
-                <span className="row-icon icon-skills" aria-hidden="true">✳</span>
-                <span className="row-copy"><strong>敏感信息</strong><small>只写提交、轮换、禁用与摘要收据</small></span>
-                <span className="row-state">已开放</span><span className="row-arrow" aria-hidden="true">↗</span>
-              </a>
-            </div>
-          </section>}
-
           <div className="workspace-content" aria-live="off">
-            {workspaceContent(workspace.active)}
+            {workspace.active === 'overview' ? overviewContent : workspaceContent(workspace.active)}
           </div>
 
           <footer className="page-footer"><span>Pagurus · 寄居蟹</span><span>配置在此管理，执行由 Conchbase 负责。</span></footer>

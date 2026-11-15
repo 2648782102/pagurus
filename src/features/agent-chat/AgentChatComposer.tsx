@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from 'react';
+import { Button, Textarea } from '../../shared/ui/primitives.js';
 
 interface AgentChatComposerProps {
   readonly draft: string;
@@ -21,7 +22,7 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
     }}>
       <label className="sr-only" htmlFor="agent-chat-message">输入消息</label>
       <div className="agent-chat-composer-field">
-        <textarea
+        <Textarea
           id="agent-chat-message"
           value={draft}
           rows={2}
@@ -35,10 +36,15 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
           placeholder="输入消息，Enter 发送，Shift + Enter 换行"
           disabled={busy}
         />
-        <button className="button-primary agent-chat-send" type="submit"
-          disabled={busy || draft.trim().length === 0} aria-label="发送消息">
+        <Button
+          className="agent-chat-send"
+          type="submit"
+          variant="primary"
+          disabled={busy || draft.trim().length === 0}
+          aria-label="发送消息"
+        >
           ↑
-        </button>
+        </Button>
       </div>
       <p className="agent-chat-composer-hint" role="status">
         {busy ? '正在提交…' : waiting ? '正在等待回复…' : 'Runtime 发布事实后消息才会显示'}

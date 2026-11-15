@@ -1,6 +1,7 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import type { RuntimeConnectionState, RuntimeConnectionError } from './useRuntimeStatus.js';
 import type { RuntimeHealth } from '../../shared/api/runtime.js';
+import { Button, Notice, StatusDot, Tag } from '../../shared/ui/primitives.js';
 
 export function RuntimeStatusPanel({
   state,
@@ -44,7 +45,10 @@ export function RuntimeStatusPanel({
           <p className="eyebrow">RUNTIME</p>
           <h2 id="runtime-title">海螺 Conchbase</h2>
         </div>
-        <span className="status-pill"><span className="status-dot" />{statusText}</span>
+        <Tag tone={state === 'connected' ? 'success' : state === 'checking' ? 'info' : state === 'incompatible' ? 'warning' : 'danger'}>
+          <StatusDot tone={state === 'connected' ? 'success' : state === 'checking' ? 'info' : state === 'incompatible' ? 'warning' : 'danger'} />
+          {statusText}
+        </Tag>
       </div>
 
       <div className="runtime-details" aria-live="polite">
@@ -72,24 +76,21 @@ export function RuntimeStatusPanel({
       </div>
 
       {errorMessage && (
-        <p className="error-message" role="status">{errorMessage}</p>
+        <Notice tone="danger" role="status">{errorMessage}</Notice>
       )}
 
       {isUnrestricted && (
-        <div className="mode-warning" role="status">
-          <strong>完全放开模式已启用</strong>
-          <p>
-            这个 Runtime 里，Agent 被授权的工具会直接执行，不会停下来等你确认。适用于一次性工作区、
-            沙箱机器或你完全信任的场景；在存放真实凭据和个人数据的机器上请改用限制模式。
-          </p>
-        </div>
+        <Notice tone="warning" title="完全放开模式已启用">
+          这个 Runtime 里，Agent 被授权的工具会直接执行，不会停下来等你确认。适用于一次性工作区、
+          沙箱机器或你完全信任的场景；在存放真实凭据和个人数据的机器上请改用限制模式。
+        </Notice>
       )}
 
       <div className="runtime-footer">
         <span className="connection-note">这里读取 Runtime 状态；任务执行和权限由海螺负责。</span>
-        <button className="button-secondary" type="button" onClick={() => void refresh()} disabled={state === 'checking'}>
+        <Button type="button" onClick={() => void refresh()} disabled={state === 'checking'}>
           {state === 'checking' ? '检查中…' : '重新连接'}
-        </button>
+        </Button>
       </div>
     </section>
   );

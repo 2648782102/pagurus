@@ -5,6 +5,7 @@ import {
   type ConversationMessage,
 } from '../../shared/api/conversation.js';
 import { usePrimaryConversation } from './usePrimaryConversation.js';
+import { Button, Field, Textarea } from '../../shared/ui/primitives.js';
 
 interface PrimaryConversationPanelProps {
   readonly runtime: RuntimeInfo | null;
@@ -44,10 +45,10 @@ export function PrimaryConversationPanel({
           <span className="muted-label">
             {conversation.refreshing ? '同步中…' : conversation.lastUpdatedAt ? `已同步 ${conversation.lastUpdatedAt.slice(11, 19)}` : '等待 Runtime'}
           </span>
-          <button className="button-secondary" type="button" onClick={conversation.refresh}
+          <Button size="sm" type="button" onClick={conversation.refresh}
             disabled={!conversation.supported || conversation.refreshing}>
             刷新对话
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -76,10 +77,10 @@ export function PrimaryConversationPanel({
                 <span>{message.state}</span>
                 {message.projectId && <code>{message.projectId}</code>}
                 {message.attentionId && message.state === 'open' && message.expectedVersion !== null && <>
-                  <button className="button-primary" type="button" disabled={busy}
-                    onClick={() => onDecideAttention(message.attentionId!, message.expectedVersion!, 'answer')}>回答</button>
-                  <button className="button-secondary" type="button" disabled={busy}
-                    onClick={() => onDecideAttention(message.attentionId!, message.expectedVersion!, 'withdraw')}>撤回</button>
+                  <Button size="sm" variant="primary" type="button" disabled={busy}
+                    onClick={() => onDecideAttention(message.attentionId!, message.expectedVersion!, 'answer')}>回答</Button>
+                  <Button size="sm" type="button" disabled={busy}
+                    onClick={() => onDecideAttention(message.attentionId!, message.expectedVersion!, 'withdraw')}>撤回</Button>
                 </>}
               </footer>
             </article>
@@ -90,8 +91,8 @@ export function PrimaryConversationPanel({
           event.preventDefault();
           if (!busy && intentText.trim().length > 0) void onSubmitIntent();
         }}>
-          <label htmlFor="primary-conversation-intent">给老板 Agent 发消息</label>
-          <textarea
+          <Field label="给老板 Agent 发消息" htmlFor="primary-conversation-intent">
+          <Textarea
             id="primary-conversation-intent"
             value={intentText}
             onChange={(event) => onIntentTextChange(event.target.value)}
@@ -99,11 +100,12 @@ export function PrimaryConversationPanel({
             rows={3}
             disabled={busy}
           />
+          </Field>
           <div className="conversation-composer-actions">
-            <button className="button-primary" type="submit"
+            <Button variant="primary" type="submit"
               disabled={busy || intentText.trim().length === 0}>
               {busy ? '提交中…' : '发送'}
-            </button>
+            </Button>
             <p className="task-note">发送后只显示本地 pending 状态；用户消息、Boss 回执与员工进展均以 Runtime 发布事实为准。</p>
           </div>
         </form>

@@ -1,5 +1,6 @@
 import { useTaskHistory, type TaskHistoryFilter } from './useTaskHistory.js';
 import type { Task } from '../../shared/api/tasks.js';
+import { Button, EmptyState, Field, Notice, Section, Select, Tag } from '../../shared/ui/primitives.js';
 
 const STATE_LABELS: Record<string, string> = {
   queued: '排队中',
@@ -32,40 +33,38 @@ export function TaskHistoryPanel() {
   const history = useTaskHistory();
 
   return (
-    <section className="history-panel" id="task-history" aria-labelledby="task-history-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">TASK HISTORY</p>
-          <h2 id="task-history-title">任务历史</h2>
-        </div>
-        <div className="history-heading-actions">
-          <span className="muted-label">{history.tasks.length} 条记录</span>
-          <button className="button-secondary" type="button" onClick={history.load} disabled={history.phase === 'loading'}>
+    <Section
+      className="history-panel"
+      id="task-history-title"
+      title="任务历史"
+      description={`${history.tasks.length} 条记录`}
+      action={
+          <Button size="sm" type="button" onClick={history.load} disabled={history.phase === 'loading'}>
             {history.phase === 'loading' ? '读取中…' : '刷新'}
-          </button>
-        </div>
-      </div>
+          </Button>
+      }
+    >
 
       {history.phase === 'loading' && history.tasks.length === 0 && <p className="task-hint" role="status">正在读取任务历史…</p>}
       {history.phase === 'error' && (
-        <div className="history-notice" role="alert">
-          <p>{history.error}</p>
-          <button className="button-secondary" type="button" onClick={history.load}>重新加载</button>
-        </div>
+        <Notice tone="danger" action={<Button size="sm" type="button" onClick={history.load}>重新加载</Button>}>
+          {history.error}
+        </Notice>
       )}
 
       {history.phase !== 'error' && <>
         <div className="history-filters" aria-label="任务筛选">
-          <label htmlFor="history-state-filter">状态</label>
-          <select
+          <Field label="状态" htmlFor="history-state-filter">
+          <Select
             id="history-state-filter"
             value={history.stateFilter}
             onChange={(event) => history.setStateFilter(event.target.value as TaskHistoryFilter)}
           >
             {STATE_FILTERS.map((filter) => <option key={filter.value} value={filter.value}>{filter.label}</option>)}
-          </select>
-          <label htmlFor="history-agent-filter">Agent</label>
-          <select
+          </Select>
+          </Field>
+          <Field label="Agent" htmlFor="history-agent-filter">
+          <Select
             id="history-agent-filter"
             value={history.agentFilter}
             onChange={(event) => history.setAgentFilter(event.target.value)}
@@ -73,10 +72,11 @@ export function TaskHistoryPanel() {
             <option value="all">全部 Agent</option>
             <option value="legacy">旧 Runtime 任务</option>
             {history.agentIds.map((agentId) => <option key={agentId} value={agentId}>{agentId}</option>)}
-          </select>
+          </Select>
+          </Field>
         </div>
 
-        {history.visibleTasks.length === 0 && <p className="task-hint">当前筛选条件下没有任务记录。</p>}
+        {history.visibleTasks.length === 0 && <EmptyState title="当前筛选条件下没有任务记录。" />}
         {history.visibleTasks.length > 0 && <div className="history-layout">
           <div className="history-list" role="listbox" aria-label="任务记录">
             {history.visibleTasks.map((task) => (
@@ -100,7 +100,7 @@ export function TaskHistoryPanel() {
         </div>}
       </>}
       {history.activeConfigurationRevisionId && <p className="task-note">当前 Runtime 配置版本：<code>{history.activeConfigurationRevisionId}</code>。历史任务仍显示创建时固定的配置版本。</p>}
-    </section>
+    </Section>
   );
 }
 
@@ -112,7 +112,9 @@ function TaskHistoryDetail({ task }: { task: Task }) {
           <p className="eyebrow">SELECTED TASK</p>
           <h3 id="selected-task-title">任务详情</h3>
         </div>
-        <strong>{STATE_LABELS[task.state] ?? task.state}</strong>
+        <Tag tone={task.state === 'failed' ? 'danger' : task.state === 'succeeded' ? 'success' : 'neutral'}>
+          {STATE_LABELS[task.state] ?? task.state}
+        </Tag>
       </div>
       <dl className="history-detail-grid">
         <div><dt>任务 id</dt><dd><code>{task.id}</code></dd></div>
