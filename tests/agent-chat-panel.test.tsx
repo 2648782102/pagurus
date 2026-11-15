@@ -199,6 +199,35 @@ describe('Agent Chat panel', () => {
     expect(await screen.findByText('Agent revision')).toBeTruthy();
   });
 
+  it('renders a published project close-out report as sections', () => {
+    const body = [
+      '项目 project_alpha：2 名员工、3 份汇报（成功 2、失败 1）。',
+      '成果：',
+      '- 完成了 CLI 与 README。',
+      '- 验证了统计结果。',
+      '遗留问题：',
+      '- 还有一份失败汇报。',
+      '如需继续：',
+      '- 恢复项目并派发新任务。',
+    ].join('\n');
+    render(<AgentChatThread
+      messages={[{
+        id: `amsg_${'5'.repeat(24)}`, sequence: 1, author: 'assistant', body,
+        state: 'replied', taskId: null, error: null, phase: 'terminal', progress: null,
+        updatedAt: '2026-11-16T00:00:00.000Z', replyToId: null, activity: [],
+      }]}
+      agentName="老板 Agent"
+      busy={false}
+      onDecision={() => undefined}
+    />);
+
+    expect(screen.getByText('项目 project_alpha：2 名员工、3 份汇报（成功 2、失败 1）。')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '成果' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '遗留问题' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '如需继续' })).toBeTruthy();
+    expect(screen.getByText('完成了 CLI 与 README。')).toBeTruthy();
+  });
+
   it('labels the Runtime-owned Boss Agent as organization orchestration', async () => {
     render(<AgentChatPanel runtime={runtime} />);
     const bossCard = await screen.findByRole('button', { name: /老板 Agent/ });

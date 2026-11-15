@@ -50,6 +50,34 @@ function messageBody(message: AgentChatMessage): string {
   return '';
 }
 
+/**
+ * A Runtime close-out report is published as ordinary Boss text today, because
+ * the organization contract does not expose the structured document. Render
+ * the published sections as blocks without inventing any new facts. Once a
+ * public read model exists, this fallback can be replaced by typed data.
+ */
+function closeOutSections(body: string): readonly { readonly title: string; readonly lines: readonly string[] }[] | null {
+  if (!/^项目 .+：/.test(body)) return null;
+  const sections: { title: string; lines: string[] }[] = [];
+  let current: { title: string; lines: string[] } | null = null;
+  for (const raw of body.split('\n')) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line === '成果：' || line === '遗留问题：' || line === '如需继续：') {
+      current = { title: line.slice(0, -1), lines: [] };
+      sections.push(current);
+      continue;
+    }
+    if (line.startsWith('- ') && current) {
+      current.lines.push(line.slice(2));
+      continue;
+    }
+    if (sections.length === 0) continue;
+    return null;
+  }
+  return sections.length > 0 ? sections : null;
+}
+
 export function AgentChatThread({ messages, agentName, busy, onDecision }: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
@@ -97,7 +125,27 @@ export function AgentChatThread({ messages, agentName, busy, onDecision }: Agent
           </div>
           {isWorking(message.state) && <div className="agent-chat-typing" aria-hidden="true"><i /><i /><i /></div>}
           {messageBody(message).length > 0 && (
-            <p>{messageBody(message)}{message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}</p>
+            (() => {
+              const body = messageBody(message);
+              const sections = closeOutSections(body);
+              if (!sections) {
+                return <p>{body}{message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}</p>;
+              }
+              const headline = body.split('\n')[0] ?? '';
+              return (
+                <div className="agent-chat-report">
+                  <p className="agent-chat-report-headline">{headline}</p>
+                  {sections.map((section) => (
+                    <section key={section.title} className="agent-chat-report-section">
+                      <h3>{section.title}</h3>
+                      <ul>
+                        {section.lines.map((line, index) => <li key={`${section.title}-${index}`}>{line}</li>)}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+              );
+            })()
           )}
           {message.progress !== null && message.progress > 0 && message.progress < 100 && (
             <div className="agent-chat-progress" aria-label={`回复进度 ${message.progress}%`}>

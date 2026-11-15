@@ -175,6 +175,11 @@
       "id": "shared-ui-primitives",
       "summary": "A dependency-free presentation primitive layer (Button, Field, Notice, Section, Tag, StatusDot, Disclosure, EmptyState) gives every console panel the same focus, label, disabled, tone, and notice behavior; the overview, Agent Chat, and dense evidence surfaces now use a restrained, work-first hierarchy.",
       "evidence": "src/shared/ui/primitives.tsx"
+    },
+    {
+      "id": "close-out-report-display",
+      "summary": "The Agent Chat thread recognizes the Runtime-published project close-out text and renders its headline, outcomes, open issues, and next steps as sections without reading private state or adding a second schema.",
+      "evidence": "src/features/agent-chat/AgentChatThread.tsx"
     }
   ],
   "validationEvidence": [
@@ -268,6 +273,12 @@
       "id": "ui-primitives-fixture",
       "summary": "An executable jsdom fixture covers control variants, field association, status text alternatives, disclosure behavior, empty state, and explicit notice roles.",
       "evidence": "tests/ui-primitives.test.tsx",
+      "executableFixture": true
+    },
+    {
+      "id": "close-out-report-display-fixture",
+      "summary": "An executable jsdom fixture renders a published close-out report as a headline and three labelled sections.",
+      "evidence": "tests/agent-chat-panel.test.tsx",
       "executableFixture": true
     }
   ],
