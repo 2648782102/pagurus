@@ -94,4 +94,19 @@ describe('front-end architecture boundaries', () => {
     expect(offenders, `product modules must not carry another vendor's identity:\n${offenders.join('\n')}`)
       .toEqual([]);
   });
+
+  it('keeps the reading column centred at a predictable width', () => {
+    // ADR 0041 sets the measure from tokens. A `ch`-based measure depends on the
+    // root font size and came out far narrower than intended, which read as a
+    // column stuck to the left of a wide window. Assert the unit, not the pixel
+    // value, so the intent survives a font change.
+    const tokens = read('src/styles/agent-tokens.css');
+    const measure = /--ag-measure:\s*([^;]+);/.exec(tokens)?.[1]?.trim() ?? '';
+    expect(measure, 'the reading measure must be a length, not a ch-unit').toMatch(/rem|px$/);
+
+    const chat = read('src/styles/agent-chat.css');
+    // Both the thread and the composer must use the same symmetric padding.
+    const symmetric = /max\(24px, calc\(\(100% - var\(--ag-measure\)\) \/ 2\)\)/g;
+    expect((chat.match(symmetric) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
 });

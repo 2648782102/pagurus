@@ -10,7 +10,11 @@
   .agent-chrome { gap: 10px; padding: 0 12px; }
   .agent-chrome-thread, .agent-chrome-divider { display: none; }
   .agent-chrome-status { display: none; }
-  .agent-chrome-button { padding: 6px 11px; font-size: 11px; }
+  /* Two actions must stay distinguishable at 320–420px. The history action
+     keeps a text label; the primary action is already visually distinct by
+     fill, so it can tighten before either label is truncated. */
+  .agent-chrome-actions { gap: 6px; }
+  .agent-chrome-button { padding: 6px 10px; font-size: 11px; }
   .agent-page-head { padding: 10px 16px 0; }
   .agent-page-note { display: none; }
   .agent-thread-area .agent-chat-thread { padding: 6px 16px 18px; }

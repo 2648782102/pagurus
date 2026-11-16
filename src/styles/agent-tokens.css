@@ -45,7 +45,16 @@
      typographically uniform, with the Latin serif catching Latin words. */
   --ag-serif: 'Songti SC', 'Noto Serif SC', 'Iowan Old Style', 'Charter', Palatino, Georgia, serif;
 
-  --ag-measure: 66ch;
+  /*
+   * Reading width for the conversation column.
+   *
+   * `ch` is measured against the root font size, not the serif body, so a
+   * ch-based measure came out far narrower than intended (≈498px inside 16px
+   * serif text, leaving most of a wide window empty). A rem cap is predictable
+   * across the window and still keeps the line near 66–72 characters at the
+   * answer's 16px size.
+   */
+  --ag-measure: 44rem;
   --ag-rail-width: 272px;
   --ag-radius: 3px;
 }
