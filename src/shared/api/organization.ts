@@ -97,14 +97,6 @@ export interface OrganizationSessionView extends OrganizationVersioned {
   readonly attentionRequests: readonly OrganizationAttentionRecord[];
 }
 
-export interface OrganizationProjectList extends OrganizationVersioned {
-  readonly projects: readonly OrganizationProjectRecord[];
-}
-
-export interface OrganizationProjectView extends OrganizationVersioned {
-  readonly project: OrganizationProjectRecord;
-}
-
 export interface OrganizationProjectThreadList extends OrganizationVersioned {
   readonly projectId: string;
   readonly threads: readonly { readonly eventId: string; readonly sequence: number; readonly type: string }[];
@@ -257,15 +249,6 @@ function isIntentResult(value: unknown): value is OrganizationIntentResult {
     && value.state === 'accepted' && Number.isInteger(value.expectedSequence);
 }
 
-function isProjectList(value: unknown): value is OrganizationProjectList {
-  return isVersioned(value) && isRecord(value)
-    && Array.isArray(value.projects) && value.projects.every(isProject);
-}
-
-function isProjectView(value: unknown): value is OrganizationProjectView {
-  return isVersioned(value) && isRecord(value) && isProject(value.project);
-}
-
 function isProjectThreadList(value: unknown): value is OrganizationProjectThreadList {
   return isVersioned(value) && isRecord(value) && isBoundedString(value.projectId)
     && Array.isArray(value.threads) && value.threads.every((thread) => isRecord(thread)
@@ -318,27 +301,6 @@ export async function requestJson<T>(
 
 export function getOrganizationSession(signal?: AbortSignal): Promise<OrganizationSessionView> {
   return requestJson('/v1/organization/session', isSessionView, { signal });
-}
-
-export function listOrganizationProjects(signal?: AbortSignal): Promise<OrganizationProjectList> {
-  return requestJson('/v1/organization/projects', isProjectList, { signal });
-}
-
-export function listOrganizationProjectsFrom(
-  session: OrganizationSessionView,
-): OrganizationProjectList {
-  return Object.freeze({ version: ORGANIZATION_CONTRACT_VERSION, projects: session.projects });
-}
-
-export function getOrganizationProject(
-  projectId: string,
-  signal?: AbortSignal,
-): Promise<OrganizationProjectView> {
-  return requestJson(
-    `/v1/organization/projects/${encodeURIComponent(projectId)}`,
-    isProjectView,
-    { signal },
-  );
 }
 
 export function getOrganizationProjectThreads(

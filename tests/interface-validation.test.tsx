@@ -111,4 +111,15 @@ describe('executable interface validation', () => {
     expect(styles).toMatch(/\.sidebar \{[^}]*background: var\(--navy\);/);
     expect(styles).toMatch(/\.task-panel,\s*\.history-panel/);
   });
+
+  it('styles the Agent Chat activity and approval surfaces it renders', () => {
+    const thread = readFileSync(
+      path.join(repositoryRoot, 'src/features/agent-chat/AgentChatThread.tsx'),
+      'utf8',
+    );
+    expect(thread).toContain('agent-chat-activity');
+    expect(thread).toContain('agent-chat-approval-actions');
+    expect(styles).toMatch(/\.agent-chat-activity \{/);
+    expect(styles).toMatch(/\.agent-chat-approval-actions \{/);
+  });
 });

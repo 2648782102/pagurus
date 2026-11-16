@@ -32,22 +32,6 @@
 .ui-button-danger { color: var(--danger); background: var(--danger-wash); border-color: #dcb7ab; }
 .ui-button-danger:hover:not(:disabled) { background: #f3dcd4; border-color: #c99c8d; }
 
-.ui-icon-button {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  color: var(--ink-soft);
-  background: transparent;
-  cursor: pointer;
-}
-.ui-icon-button:hover:not(:disabled) { background: rgba(23, 33, 36, .06); }
-.ui-icon-button:disabled { cursor: not-allowed; opacity: .4; }
-.ui-icon-button:focus-visible { outline: 2px solid var(--rust); outline-offset: 2px; }
-
 .ui-field { display: grid; gap: 6px; min-width: 0; }
 .ui-field-label { color: var(--ink-soft); font-size: 11px; font-weight: 650; letter-spacing: .01em; }
 .ui-field-hint { color: var(--muted); font-size: 10px; line-height: 1.55; }

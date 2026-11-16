@@ -42,23 +42,6 @@ export function Button({
   );
 }
 
-export function IconButton({
-  label,
-  className,
-  type = 'button',
-  ...rest
-}: { readonly label: string } & ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type={type}
-      aria-label={label}
-      title={label}
-      className={cx('ui-icon-button', className)}
-      {...rest}
-    />
-  );
-}
-
 export function Field({
   label,
   hint,

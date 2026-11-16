@@ -173,10 +173,6 @@ export function listExecutionRuns(signal?: AbortSignal) {
   return requestJson('/v1/execution/runs', isRunList, { signal });
 }
 
-export function getExecutionRun(runId: string, signal?: AbortSignal) {
-  return requestJson(`/v1/execution/runs/${encodeURIComponent(runId)}`, isRunEnvelope, { signal });
-}
-
 export function createExecutionRun(input: {
   readonly requestId: string;
   readonly expectedRequestVersion: number;

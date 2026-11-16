@@ -247,10 +247,6 @@ export function createExecutionRequest(input: CreateExecutionRequestInput, signa
   });
 }
 
-export function getExecutionRequest(requestId: string, signal?: AbortSignal) {
-  return requestJson(`/v1/execution/requests/${encodeURIComponent(requestId)}`, isRequestEnvelope, { signal });
-}
-
 export function decideExecutionRequest(
   requestId: string,
   expectedVersion: number,
