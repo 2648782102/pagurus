@@ -7,6 +7,8 @@ import {
   type AgentChatStream,
 } from '../../shared/api/agent-chat.js';
 import { mergeConversation } from './merge-conversation.js';
+import { useAbortablePolling, useTicker } from '../../shared/ui/use-poll.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 /**
  * Owns the live transport for one Agent Chat conversation:
@@ -28,8 +30,6 @@ export function useAgentChatStream(options: {
   const [streamStalled, setStreamStalled] = useState(false);
   const [streamAttempt, setStreamAttempt] = useState(0);
   const lastFrameAtRef = useRef(0);
-  const pollRef = useRef<number | null>(null);
-  const refreshRef = useRef<AbortController | null>(null);
   const streamRef = useRef<AgentChatStream | null>(null);
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
@@ -46,42 +46,25 @@ export function useAgentChatStream(options: {
       });
     } catch (cause) {
       if (signal?.aborted) return;
-      onError(cause instanceof Error ? cause.message.slice(0, 240) : 'Agent 对话刷新失败');
+      onError(errorMessage(cause, 'Agent 对话刷新失败'));
     }
   }, [onError, setConversation]);
 
   const pending = conversation?.messages.some((message) =>
     message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
 
-  useEffect(() => {
-    if (!pending || (streamConnected && !streamStalled)) {
-      if (pollRef.current !== null) window.clearInterval(pollRef.current);
-      pollRef.current = null;
-      return;
-    }
-    pollRef.current = window.setInterval(() => {
-      refreshRef.current?.abort();
-      const controller = new AbortController();
-      refreshRef.current = controller;
-      void refreshConversation(controller.signal);
-    }, 700);
-    return () => {
-      if (pollRef.current !== null) window.clearInterval(pollRef.current);
-      pollRef.current = null;
-      refreshRef.current?.abort();
-      refreshRef.current = null;
-    };
-  }, [pending, refreshConversation, streamConnected, streamStalled]);
+  useAbortablePolling(refreshConversation, 700, pending && (!streamConnected || streamStalled));
+
+  useTicker(
+    () => {
+      if (Date.now() - lastFrameAtRef.current > 45_000) setStreamStalled(true);
+    },
+    5_000,
+    pending && streamConnected,
+  );
 
   useEffect(() => {
-    if (!streamConnected || !pending) {
-      setStreamStalled(false);
-      return;
-    }
-    const timer = window.setInterval(() => {
-      if (Date.now() - lastFrameAtRef.current > 45_000) setStreamStalled(true);
-    }, 5_000);
-    return () => window.clearInterval(timer);
+    if (!streamConnected || !pending) setStreamStalled(false);
   }, [pending, streamConnected]);
 
   useEffect(() => {

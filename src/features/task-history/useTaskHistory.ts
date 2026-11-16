@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { listTasks, type Task, type TaskState } from '../../shared/api/tasks.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type TaskHistoryPhase = 'loading' | 'ready' | 'error';
 export type TaskHistoryFilter = 'all' | TaskState;
@@ -47,7 +48,7 @@ export function useTaskHistory() {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : '任务历史加载失败',
+        error: errorMessage(cause, '任务历史加载失败'),
       }));
     }
   }, []);

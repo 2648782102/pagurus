@@ -6,6 +6,7 @@ import {
   type RuntimeInfo,
 } from '../../shared/api/runtime.js';
 import { UnsupportedRuntimeApiError } from '../../shared/api/errors.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type RuntimeConnectionState =
   | 'checking'
@@ -49,7 +50,7 @@ export function useRuntimeStatus() {
 
       setError({
         kind: 'connection',
-        message: cause instanceof Error ? cause.message : '无法连接到 Runtime',
+        message: errorMessage(cause, '无法连接到 Runtime'),
       });
       setState('disconnected');
     }

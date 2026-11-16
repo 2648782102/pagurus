@@ -1,0 +1,78 @@
+/* ---------------------------------------------------------------------------
+   Page header: a masthead, not a hero card
+   --------------------------------------------------------------------------- */
+
+.page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: end;
+  gap: 30px;
+  padding: 26px 0 18px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.page-kicker {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font: 600 10px var(--font-mono);
+  letter-spacing: .02em;
+}
+.page-hero h1 {
+  max-width: 820px;
+  margin: 0 0 6px;
+  font-size: clamp(25px, 2.6vw, 32px);
+  font-weight: 650;
+  line-height: 1.16;
+  letter-spacing: -.035em;
+}
+.page-description { max-width: 760px; margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.65; }
+.page-aside {
+  display: grid;
+  gap: 3px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--steel);
+  background: var(--paper);
+}
+.page-aside-label { color: var(--muted); font-size: 10px; }
+.page-aside strong { color: var(--ink); font-size: 12px; font-weight: 650; }
+.page-aside span:last-child { color: var(--muted); font: 10px/1.5 var(--font-mono); overflow-wrap: anywhere; }
+
+.workspace-content { margin-top: 18px; }
+.workspace-content > .runtime-panel,
+.workspace-content > .agent-panel,
+.workspace-content > .task-panel:first-child,
+.workspace-content > .history-panel:first-child,
+.workspace-content > .work-panel,
+.workspace-content > .config-panel { margin-top: 0; }
+.workspace-content > .task-panel + .history-panel,
+.workspace-content > .task-panel + .task-panel { margin-top: 14px; }
+
+/* ---------------------------------------------------------------------------
+   Shared panel surface: rules, not floating cards
+   --------------------------------------------------------------------------- */
+
+.task-panel,
+.history-panel,
+.agent-panel,
+.config-panel,
+.work-panel,
+.organization-panel,
+.runtime-panel {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.overview-directory { padding: 20px 22px 22px; border: 1px solid var(--line); background: var(--paper); }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font: 600 10px var(--font-mono);
+  letter-spacing: .02em;
+}
+h2 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
+h3 { margin: 0 0 10px; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
+h4 { margin: 0 0 8px; font-size: 12px; font-weight: 650; }
+.muted-label, .connection-note, .task-hint, .task-note, .detail-label { color: var(--muted); font-size: 10.5px; }
+.error-message { color: var(--danger); font-size: 11px; }
+

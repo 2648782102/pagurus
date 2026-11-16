@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useVisiblePolling } from '../src/shared/ui/use-poll.js';
+import { useAbortablePolling, useTicker, useVisiblePolling } from '../src/shared/ui/use-poll.js';
 
 let visibility: DocumentVisibilityState = 'visible';
 
@@ -80,5 +80,80 @@ describe('visible polling', () => {
     visibility = 'visible';
     act(() => { vi.advanceTimersByTime(4000); });
     expect(onTick).toHaveBeenCalledTimes(1);
+  });
+});
+
+function AbortPoller({
+  onTick,
+  enabled = true,
+}: {
+  readonly onTick: (signal: AbortSignal) => void;
+  readonly enabled?: boolean;
+}) {
+  useAbortablePolling(onTick, 700, enabled);
+  return null;
+}
+
+describe('abortable fallback polling', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('fires immediately and cancels the previous request on the next tick', () => {
+    const signals: AbortSignal[] = [];
+    const { unmount } = render(<AbortPoller onTick={(signal) => { signals.push(signal); }} />);
+
+    expect(signals).toHaveLength(1);
+    act(() => { vi.advanceTimersByTime(700); });
+    expect(signals).toHaveLength(2);
+    expect(signals[0]?.aborted).toBe(true);
+    expect(signals[1]?.aborted).toBe(false);
+
+    unmount();
+    expect(signals[1]?.aborted).toBe(true);
+  });
+
+  it('stays idle while disabled', () => {
+    const onTick = vi.fn();
+    render(<AbortPoller onTick={onTick} enabled={false} />);
+
+    act(() => { vi.advanceTimersByTime(2_100); });
+    expect(onTick).not.toHaveBeenCalled();
+  });
+});
+
+describe('ticker', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('runs only while enabled and stops on unmount', () => {
+    function Ticker({ onTick, enabled }: { readonly onTick: () => void; readonly enabled: boolean }) {
+      useTicker(onTick, 5_000, enabled);
+      return null;
+    }
+
+    const onTick = vi.fn();
+    const { rerender, unmount } = render(<Ticker onTick={onTick} enabled={false} />);
+    act(() => { vi.advanceTimersByTime(10_000); });
+    expect(onTick).not.toHaveBeenCalled();
+
+    rerender(<Ticker onTick={onTick} enabled />);
+    act(() => { vi.advanceTimersByTime(10_000); });
+    expect(onTick).toHaveBeenCalledTimes(2);
+
+    unmount();
+    act(() => { vi.advanceTimersByTime(10_000); });
+    expect(onTick).toHaveBeenCalledTimes(2);
   });
 });

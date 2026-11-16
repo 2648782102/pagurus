@@ -85,7 +85,10 @@ const forbiddenPackages: readonly string[] = [
 
 const forbiddenImport = /(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"](node:fs|node:fs\/promises|node:sqlite|better-sqlite3|sqlite3|openai|@anthropic-ai\/sdk|@modelcontextprotocol\/sdk|@tanstack\/react-query|zustand)['"]/;
 const nonLoopbackAddress = /0\.0\.0\.0|::\/0/;
-const readOnlyFetch = /await fetch\(path, \{[\s\S]*?headers: \{ Accept: 'application\/json'[\s\S]*?signal,\s*\}\)/;
+// ADR 0038 moved the wire rules into one transport. The read-only probe must
+// still issue only bodyless GETs without parsing an error body, expressed by
+// delegating to the shared transport instead of declaring a private fetch call.
+const sharedTransportImport = /import \{[^}]*requestJson[^}]*\} from '\.\/http\.js'/;
 const forbiddenBrowserStorage = /\b(?:localStorage|sessionStorage|indexedDB)\b/;
 const forbiddenHttpMethod = /\bmethod:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/;
 const acceptedTaskPosts = [
@@ -225,7 +228,9 @@ function assertTaskListClientBoundary(source: string, label: string): void {
 function assertApiBoundary(source: string, label: string): void {
   expect(source, `${label} must keep the current health route`).toContain("getJson('/v1/health'");
   expect(source, `${label} must keep the current runtime route`).toContain("getJson('/v1/runtime'");
-  expect(source, `${label} must use a read-only fetch helper`).toMatch(readOnlyFetch);
+  expect(source, `${label} must use the shared transport`).toMatch(sharedTransportImport);
+  expect(source, `${label} must not declare its own fetch call`).not.toMatch(/\bfetch\s*\(/);
+  expect(source, `${label} must not pass a request body`).not.toMatch(/\bbody\s*:/);
   expect(forbiddenHttpMethod.test(source), `${label} must not add a write call here`).toBe(false);
 }
 
@@ -465,7 +470,9 @@ describe('AI-first entry documents', () => {
     expect(read('docs/RELEASE_NOTES_1.0.0.zh-CN.md')).toMatch(/本 Release 同时附带上述中文文档资产/);
     expect(read('docs/RELEASE_NOTES_1.1.0.zh-CN.md')).toMatch(/Boss Mode `1\.1\.0`/);
     expect(read('docs/QUICK_START.zh-CN.md')).toMatch(/组织主会话/);
-    expect(read('src/shared/api/tasks.ts')).toMatch(/init\.body === undefined \? \{\}/);
+    // ADR 0038 centralised the bodyless-POST rule: the transport derives the
+    // JSON content type from an actual body, and the task API test proves it.
+    expect(read('src/shared/api/http.ts')).toMatch(/jsonContentType = body !== undefined/);
     expect(read('tests/task-api.test.ts')).toMatch(/does not declare a JSON body for bodyless POST operations/);
   });
 
@@ -512,6 +519,7 @@ describe('AI-first entry documents', () => {
       '0035-conversation-close-out-report-display.md',
       '0036-frontend-modular-architecture.md',
       '0037-operations-desk-visual-theme.md',
+      '0038-shared-runtime-transport.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

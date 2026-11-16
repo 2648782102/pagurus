@@ -1,3 +1,6 @@
+import { hasOnlyKeys, isRecord } from './guards.js';
+import { fromRequestInit, requestJson } from './http.js';
+
 export type ConfigurationSource = 'inline' | 'file' | 'registry' | 'env';
 
 export interface ConfigurationReference {
@@ -110,14 +113,6 @@ const COMPOSITION_KEYS = [
   'metadata',
 ];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
-  return Object.keys(value).every((key) => keys.includes(key));
-}
-
 function isBoundedString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -215,35 +210,31 @@ function isValidationIssue(value: unknown): value is ConfigurationValidationIssu
     && typeof value.reason === 'string';
 }
 
-async function request<T>(
+function configurationHttpError(status: number, payload: unknown): Error | undefined {
+  if (status === 400 && isRecord(payload) && Array.isArray(payload.details)) {
+    const details = payload.details.filter(isValidationIssue);
+    if (details.length > 0) return new ConfigurationValidationError(details);
+  }
+  if (status === 404) return new Error('配置版本不存在');
+  if (status === 503) return new Error('Runtime 配置服务未就绪');
+  return undefined;
+}
+
+function request<T>(
   path: string,
   isPayload: (value: unknown) => value is T,
   init: RequestInit = {},
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init.headers,
-      Accept: 'application/json',
-    },
-    ...(signal ? { signal } : {}),
+  return requestJson(path, isPayload, {
+    ...fromRequestInit(init, signal),
+    // The configuration contract sends a JSON body on every request, including
+    // reads, because the legacy client always advertised a JSON content type.
+    jsonContentType: true,
+    httpError: configurationHttpError,
+    fallbackError: (status) => new Error(`Runtime 返回 HTTP ${status}`),
+    invalidPayload: (failedPath) => new Error(`Runtime 返回了不符合契约的数据：${failedPath}`),
   });
-  const payload: unknown = await response.json();
-  if (!response.ok) {
-    if (response.status === 400 && isRecord(payload) && Array.isArray(payload.details)) {
-      const details = payload.details.filter(isValidationIssue);
-      if (details.length > 0) throw new ConfigurationValidationError(details);
-    }
-    if (response.status === 404) throw new Error('配置版本不存在');
-    if (response.status === 503) throw new Error('Runtime 配置服务未就绪');
-    throw new Error(`Runtime 返回 HTTP ${response.status}`);
-  }
-  if (!isPayload(payload)) {
-    throw new Error(`Runtime 返回了不符合契约的数据：${path}`);
-  }
-  return payload;
 }
 
 function postJson(body: unknown, signal?: AbortSignal): RequestInit {
@@ -327,3 +318,4 @@ function isApplyResult(value: unknown): value is ApplyConfigurationResult {
     && Array.isArray(value.revisions)
     && value.revisions.every(isRevisionSummary);
 }
+

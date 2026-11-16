@@ -24,8 +24,9 @@ Agent model selection uses Conchbase's provider-neutral provider/model contract 
 
 - `src/app/` composes the application, owns the ten-workspace shell, overview registry, and hash resolver, and mounts only the active feature panels.
 - `src/features/<capability>/` owns feature presentation and feature-local state.
-- `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary.
-- `src/shared/ui/` contains dependency-free presentation primitives and shared display vocabulary. It must not call the Runtime API.
+- `src/shared/api/` contains typed clients for Conchbase's public API. Validate untrusted HTTP payloads at this boundary. `http.ts` is the only `fetch` call; `guards.ts` holds generic predicates. A new client keeps its route, its validator, and its user-facing status copy, then delegates to `requestJson`; see [ADR 0038](decisions/0038-shared-runtime-transport.md).
+- `src/shared/ui/` contains dependency-free presentation primitives, polling hooks, error formatting, and shared display vocabulary. It must not call the Runtime API.
+- `src/styles.css` is import-only; add a workspace surface as its own layer under `src/styles/` rather than growing an existing one.
 - Leaf components receive narrow typed view fields and actions. Do not pass a whole `ReturnType<typeof use...>` controller into a presenter.
 - A feature panel performs mutations through its controller so busy, error, capability gating, and refresh remain one path.
 - `src/features/configuration/` owns the versioned configuration document editor and its feature-local state. It mirrors the Conchbase `0.5.0` v1/v2 document union, kept by `0.6.0`, including required base sections, the v2 topology-neutral composition section, the exclusion of `source: url`, and the `composition-execution` capability guard. It must not create a second schema, credential store, capability installer, graph identity calculator, visual composition builder, or composition template.

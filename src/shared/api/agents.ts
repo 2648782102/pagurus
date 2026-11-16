@@ -1,4 +1,6 @@
 import { hasRuntimeCapability, getRuntimeInfo, type RuntimeInfo } from './runtime.js';
+import { isRecord } from './guards.js';
+import { jsonBody, requestJson } from './http.js';
 
 export interface ModelReference {
   providerId: string;
@@ -49,10 +51,6 @@ export interface AgentTaskBinding {
   agentRevisionId: string;
   providerId: string;
   modelId: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isModelReference(value: unknown): value is ModelReference {
@@ -121,33 +119,30 @@ function isProviderModelCatalog(value: unknown): value is { models: ProviderMode
     && entry.capabilities.every((capability) => typeof capability === 'string'));
 }
 
-async function request<T>(
+function agentHttpError(status: number): Error | undefined {
+  if (status === 400) return new Error('请求不符合 Agent Runtime API 契约');
+  if (status === 404) return new Error('Agent 或模型不存在');
+  if (status === 409) return new Error('Agent 已被其他操作更新，请重新加载后再编辑');
+  if (status === 502) return new Error('模型目录暂不可用');
+  if (status === 503) return new Error('Runtime Agent 服务未就绪');
+  return undefined;
+}
+
+function request<T>(
   path: string,
-  valid: (value: unknown) => value is T,
+  isPayload: (value: unknown) => value is T,
   method: 'GET' | 'POST' | 'PATCH' | 'PUT' = 'GET',
   body?: unknown,
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(path, {
-    method,
-    headers: {
-      Accept: 'application/json',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    ...(signal ? { signal } : {}),
+  return requestJson(path, isPayload, {
+    ...(method === 'GET' ? {} : { method }),
+    ...(body === undefined ? {} : { body: jsonBody(body) }),
+    signal,
+    httpError: agentHttpError,
+    fallbackError: (status) => new Error(`Runtime 返回 HTTP ${status}`),
+    invalidPayload: (failedPath) => new Error(`Runtime 返回了不符合契约的数据：${failedPath}`),
   });
-  if (!response.ok) {
-    if (response.status === 400) throw new Error('请求不符合 Agent Runtime API 契约');
-    if (response.status === 404) throw new Error('Agent 或模型不存在');
-    if (response.status === 409) throw new Error('Agent 已被其他操作更新，请重新加载后再编辑');
-    if (response.status === 502) throw new Error('模型目录暂不可用');
-    if (response.status === 503) throw new Error('Runtime Agent 服务未就绪');
-    throw new Error(`Runtime 返回 HTTP ${response.status}`);
-  }
-  const payload: unknown = await response.json();
-  if (!valid(payload)) throw new Error(`Runtime 返回了不符合契约的数据：${path}`);
-  return payload;
 }
 
 export async function supportsAgentManagement(signal?: AbortSignal): Promise<boolean> {

@@ -14,6 +14,7 @@ import {
   type SecretHandleUseWrite,
 } from '../../shared/api/platform.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type SecretPanelPhase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
 
@@ -59,7 +60,7 @@ export function useSecretHandles(runtime: RuntimeInfo | null) {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : 'SecretHandle 元数据读取失败',
+        error: errorMessage(cause, 'SecretHandle 元数据读取失败'),
       }));
     }
   }, [runtime]);
@@ -84,7 +85,7 @@ export function useSecretHandles(runtime: RuntimeInfo | null) {
       setState((current) => ({
         ...current,
         pending: null,
-        error: cause instanceof Error ? cause.message : 'SecretHandle 操作失败',
+        error: errorMessage(cause, 'SecretHandle 操作失败'),
       }));
     }
   }, [load, runtime]);

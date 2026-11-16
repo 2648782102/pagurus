@@ -1,3 +1,5 @@
+import { isBoundedString, isNullableString, isRecord, isStringArray } from './guards.js';
+import { fromRequestInit, requestJson as sendJsonRequest } from './http.js';
 import type { RuntimeInfo } from './runtime.js';
 
 export const EXECUTION_CONTRACT_VERSION = '1.2.0';
@@ -106,24 +108,8 @@ export interface CreateExecutionRequestInput {
   readonly idempotencyKey: string;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isVersioned(value: unknown): value is ExecutionVersioned {
   return isRecord(value) && value.version === EXECUTION_CONTRACT_VERSION;
-}
-
-function isBoundedString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= 240;
-}
-
-function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
-}
-
-function isNullableString(value: unknown): value is string | null {
-  return value === null || typeof value === 'string';
 }
 
 function isCapability(value: unknown): value is ExecutionCapability {
@@ -196,21 +182,12 @@ export function supportsExecutionContract(runtime: RuntimeInfo | null): boolean 
     && runtime.executionPaths === EXECUTION_PUBLIC_PATHS.length;
 }
 
-async function requestJson<T>(
+function requestJson<T>(
   path: string,
   isPayload: (value: unknown) => value is T,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
-    headers: { Accept: 'application/json', ...(init?.body ? { 'content-type': 'application/json' } : {}) },
-    signal: init?.signal,
-    ...(init?.method ? { method: init.method } : {}),
-    ...(init?.body ? { body: init.body } : {}),
-  });
-  if (!response.ok) throw new Error(`Runtime returned HTTP ${response.status}`);
-  const payload: unknown = await response.json();
-  if (!isPayload(payload)) throw new Error(`Runtime returned an invalid response from ${path}`);
-  return payload;
+  return sendJsonRequest(path, isPayload, fromRequestInit(init));
 }
 
 export function getExecutionHealth(signal?: AbortSignal) {

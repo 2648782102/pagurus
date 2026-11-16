@@ -1,3 +1,5 @@
+import { isRecord, isStringArray } from './guards.js';
+import { jsonBody, requestJson } from './http.js';
 import { hasRuntimeCapability, type RuntimeInfo } from './runtime.js';
 
 export const WORK_CONTRACT_CAPABILITY = 'durable-work-contract';
@@ -126,16 +128,8 @@ export function supportsLocalSourcePolicy(runtime: RuntimeInfo | null): boolean 
   return hasRuntimeCapability(runtime, LOCAL_SOURCE_POLICY_CAPABILITY);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isVersionTwo(value: unknown): value is Record<string, unknown> {
   return isRecord(value) && value.version === PLATFORM_VERSION;
-}
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
 function isModelReference(value: unknown): value is WorkModelReference {
@@ -254,18 +248,11 @@ export async function requestWorkJson<T>(
   isPayload: (value: unknown) => value is T,
   init?: { signal?: AbortSignal; method?: 'GET' | 'POST'; body?: unknown },
 ): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (init?.body !== undefined) headers['Content-Type'] = 'application/json';
-  const response = await fetch(path, {
-    method: init?.method ?? 'GET',
-    headers,
-    ...(init?.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+  return requestJson(path, isPayload, {
+    ...(init?.method === undefined ? {} : { method: init.method }),
+    ...(init?.body === undefined ? {} : { body: jsonBody(init.body) }),
     ...(init?.signal === undefined ? {} : { signal: init.signal }),
   });
-  if (!response.ok) throw new Error(`Runtime returned HTTP ${response.status}`);
-  const payload: unknown = await response.json();
-  if (!isPayload(payload)) throw new Error(`Runtime returned an invalid response from ${path}`);
-  return payload;
 }
 
 export function listWorkItems(signal?: AbortSignal): Promise<WorkItemList> {

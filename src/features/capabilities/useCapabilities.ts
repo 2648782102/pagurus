@@ -7,6 +7,7 @@ import {
   type CapabilityWrite,
 } from '../../shared/api/platform.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type CapabilityPhase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
 
@@ -42,7 +43,7 @@ export function useCapabilities(runtime: RuntimeInfo | null) {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : '能力目录读取失败',
+        error: errorMessage(cause, '能力目录读取失败'),
       }));
     }
   }, [runtime]);
@@ -67,7 +68,7 @@ export function useCapabilities(runtime: RuntimeInfo | null) {
       setState((current) => ({
         ...current,
         pending: false,
-        error: cause instanceof Error ? cause.message : '能力记录保存失败',
+        error: errorMessage(cause, '能力记录保存失败'),
       }));
     }
   }, [load, runtime]);

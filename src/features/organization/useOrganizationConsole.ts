@@ -21,6 +21,7 @@ import {
 } from '../../shared/api/organization.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type OrganizationConsolePhase =
   | 'checking'
@@ -68,7 +69,7 @@ const initialState: OrganizationConsoleState = {
 };
 
 function errorText(cause: unknown): string {
-  return cause instanceof Error ? cause.message : '组织状态读取失败';
+  return errorMessage(cause, '组织状态读取失败');
 }
 
 function latestEventCursor(events: readonly OrganizationEventRecord[]): string | null {

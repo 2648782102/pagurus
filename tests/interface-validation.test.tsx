@@ -6,7 +6,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App.js';
 
 const repositoryRoot = process.cwd();
-const styles = readFileSync(path.join(repositoryRoot, 'src/styles.css'), 'utf8');
+const styleLayers = [
+  'base.css',
+  'shell.css',
+  'page.css',
+  'overview.css',
+  'tasks.css',
+  'workbench.css',
+  'organization.css',
+  'execution.css',
+  'conversation.css',
+  'configuration.css',
+  'footer.css',
+  'responsive.css',
+];
+const styleEntry = readFileSync(path.join(repositoryRoot, 'src/styles.css'), 'utf8');
+/**
+ * ADR 0038 keeps one entry point but splits the cascade by layer. Tests assert
+ * against the composed sheet so a selector's file location stays free to move.
+ */
+const styles = styleLayers
+  .map((file) => readFileSync(path.join(repositoryRoot, 'src/styles', file), 'utf8'))
+  .join('\n');
 const tokens = readFileSync(path.join(repositoryRoot, 'src/styles/tokens.css'), 'utf8');
 
 function json(body: unknown, status = 200): Response {
@@ -102,6 +123,9 @@ describe('executable interface validation', () => {
   });
 
   it('keeps the operations-desk theme distinct from the generic warm-card default', () => {
+    for (const file of styleLayers) {
+      expect(styleEntry, `styles.css must import ${file}`).toContain(`"./styles/${file}"`);
+    }
     expect(tokens).toMatch(/--canvas: #e9edee;/);
     expect(tokens).toMatch(/--navy: #17272c;/);
     expect(tokens).toMatch(/--rust: #9f4522;/);

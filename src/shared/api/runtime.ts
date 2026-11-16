@@ -1,4 +1,6 @@
 import { UnsupportedRuntimeApiError } from './errors.js';
+import { isRecord } from './guards.js';
+import { requestJson } from './http.js';
 
 export interface RuntimeHealth {
   status: 'ok';
@@ -33,10 +35,6 @@ export interface RuntimeInfo {
 
 export function hasRuntimeCapability(runtime: RuntimeInfo | null, capability: string): boolean {
   return runtime?.capabilities.includes(capability) ?? false;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
 function isRuntimeHealth(value: unknown): value is RuntimeHealth {
@@ -79,35 +77,15 @@ function isLoopBudget(value: unknown): boolean {
     && Number.isInteger(value.deadlineMs);
 }
 
-export async function fetchJson<T>(
-  path: string,
-  init?: RequestInit,
-  signal?: AbortSignal,
-): Promise<T> {
-  const response = await fetch(path, {
-    ...(init ?? {}),
-    headers: { Accept: 'application/json', ...(init?.headers ?? {}) },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Runtime returned HTTP ${response.status}`);
-  }
-
-  const payload: unknown = await response.json();
-  return payload as T;
-}
-
 async function getJson<T>(
   path: string,
   isPayload: (value: unknown) => value is T,
   signal?: AbortSignal,
 ): Promise<T> {
-  const payload: unknown = await fetchJson<unknown>(path, undefined, signal);
-  if (!isPayload(payload)) {
-    throw new Error(`Runtime returned an invalid response from ${path}`);
-  }
-  return payload;
+  return requestJson(path, isPayload, {
+    signal,
+    invalidPayload: (failedPath) => new Error(`Runtime returned an invalid response from ${failedPath}`),
+  });
 }
 
 export function getRuntimeHealth(signal?: AbortSignal): Promise<RuntimeHealth> {

@@ -37,9 +37,38 @@ Keep the UI web-first. A native desktop wrapper can be selected after installer,
 src/
 ├── app/                            # application composition and page shell
 ├── features/<capability>/          # feature UI and its local state
-└── shared/
-    ├── api/                        # typed clients for Conchbase's public API
-    └── ui/                         # dependency-free presentation primitives and display vocabulary
+├── shared/
+│   ├── api/                        # typed clients for Conchbase's public API
+│   └── ui/                         # dependency-free primitives, polling, display vocabulary
+└── styles/                         # ordered cascade layers; styles.css is import-only
 ```
 
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
+
+## Transport and validation
+
+`src/shared/api/http.ts` is the only module that calls `fetch` for the Runtime.
+It composes `Accept`, derives `Content-Type` from whether a body actually
+exists, JSON-encodes bodies, forwards the abort signal, and translates a failed
+status through a caller-supplied mapper. `requestJson` validates the payload
+before returning it; `fetchJson` is the deliberately narrow read-only probe that
+never parses an error body.
+
+Each domain module still owns its published routes, its payload validators, and
+its user-facing status copy. `runtime.ts`, `agents.ts`, `tasks.ts`,
+`configuration.ts`, `work.ts`, `organization.ts`, `execution.ts`, and
+`execution-runs.ts` keep their existing exported helper names so callers,
+tests, and Conchbase's paired Runtime acceptance do not change. See
+[ADR 0038](decisions/0038-shared-runtime-transport.md).
+
+`src/shared/api/guards.ts` owns the primitive payload predicates
+(`isRecord`, bounded strings, string arrays, nullable values, `hasOnlyKeys`,
+versioned records). Contract-shaped validators stay in their domain module
+because they encode that contract, not a generic JSON question.
+
+## Styles
+
+`src/styles.css` is an import entry point only. It declares the cascade order:
+tokens, primitives, base, shell, page, and one layer per workspace surface.
+`tests/architecture.test.ts` caps each layer at 300 lines and the entry point at
+30 lines, so a new surface adds a layer instead of extending the largest file.

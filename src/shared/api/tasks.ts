@@ -1,3 +1,6 @@
+import { isRecord } from './guards.js';
+import { fromRequestInit, requestJson } from './http.js';
+
 export type TaskState =
   | 'queued'
   | 'running'
@@ -45,10 +48,6 @@ const TASK_STATES: readonly TaskState[] = [
   'waiting_approval',
 ];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isTask(value: unknown): value is Task {
   if (!isRecord(value)) return false;
   return typeof value.id === 'string'
@@ -88,46 +87,29 @@ function isModelCatalog(value: unknown): value is { models: ModelCatalogEntry[] 
     && typeof entry.displayName === 'string');
 }
 
-async function request<T>(
+function taskHttpError(path: string, status: number): Error | undefined {
+  if (status === 400) return new Error('请求不符合 Runtime API 契约');
+  if (status === 404) return new Error('任务不存在');
+  if (status === 409) return new Error('任务当前状态不支持这个操作');
+  if (status === 502) {
+    return new Error(path === '/v1/models' ? '模型目录暂不可用' : 'Runtime 上游服务暂不可用');
+  }
+  if (status === 503) return new Error('Runtime 任务服务未就绪');
+  return undefined;
+}
+
+function request<T>(
   path: string,
   isPayload: (value: unknown) => value is T,
   init: RequestInit = {},
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }),
-      ...init.headers,
-      Accept: 'application/json',
-    },
-    ...(signal ? { signal } : {}),
+  return requestJson(path, isPayload, {
+    ...fromRequestInit(init, signal),
+    httpError: (status) => taskHttpError(path, status),
+    fallbackError: (status) => new Error(`Runtime 返回 HTTP ${status}`),
+    invalidPayload: (failedPath) => new Error(`Runtime 返回了不符合契约的数据：${failedPath}`),
   });
-
-  if (!response.ok) {
-    if (response.status === 400) {
-      throw new Error('请求不符合 Runtime API 契约');
-    }
-    if (response.status === 404) {
-      throw new Error('任务不存在');
-    }
-    if (response.status === 409) {
-      throw new Error('任务当前状态不支持这个操作');
-    }
-    if (response.status === 502) {
-      throw new Error(path === '/v1/models' ? '模型目录暂不可用' : 'Runtime 上游服务暂不可用');
-    }
-    if (response.status === 503) {
-      throw new Error('Runtime 任务服务未就绪');
-    }
-    throw new Error(`Runtime 返回 HTTP ${response.status}`);
-  }
-
-  const payload: unknown = await response.json();
-  if (!isPayload(payload)) {
-    throw new Error(`Runtime 返回了不符合契约的数据：${path}`);
-  }
-  return payload;
 }
 
 function postJson(body?: unknown, signal?: AbortSignal): RequestInit {

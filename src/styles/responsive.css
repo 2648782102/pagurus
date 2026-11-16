@@ -1,0 +1,78 @@
+
+/* ---------------------------------------------------------------------------
+   Responsive: compact rail, then a single operating column
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+  :root { --rail-width: 216px; }
+  .sidebar-brand { padding: 12px 14px; }
+  .sidebar-nav { padding: 0 8px 12px; }
+  .nav-link { padding: 6px 7px; }
+  .workspace-page { padding: 0 20px 28px; }
+  .console-topbar { padding: 0 20px; }
+  .history-layout, .work-layout, .agent-landing-grid { grid-template-columns: 1fr; }
+  .organization-layout { grid-template-columns: 1fr; }
+  .organization-card-timeline, .organization-card-projects { grid-row: auto; }
+  .execution-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  :root { --topbar-height: 48px; --rail-width: 66px; }
+  .sidebar-brand { justify-content: center; padding: 12px 0; }
+  .brand-copy, .sidebar-nav::before, .nav-copy, .sidebar-foot { display: none; }
+  .sidebar-nav { padding: 8px; }
+  .nav-link { grid-template-columns: 1fr; justify-items: center; min-height: 42px; border-left-width: 2px; }
+  .nav-icon { width: 26px; height: 26px; font-size: 13px; }
+  .page-hero { grid-template-columns: 1fr; gap: 12px; padding: 20px 0 14px; }
+  .page-hero h1 { font-size: 24px; }
+  .page-description { font-size: 11.5px; }
+  .page-aside { max-width: 360px; }
+  .runtime-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .runtime-details > div { grid-column: auto; }
+  .runtime-details > div:nth-child(n) { padding-left: 10px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); }
+  .runtime-details > div:nth-child(2n + 1) { padding-left: 0; border-left: 0; }
+  .runtime-details > div:nth-child(-n + 2) { border-top: 0; }
+  .runtime-details > div:nth-last-child(1):nth-child(odd) { grid-column: 1 / -1; }
+  .runtime-details > div { padding: 9px 10px; }
+  .directory-groups { grid-template-columns: 1fr; }
+  .agent-landing-grid { grid-template-columns: 1fr; }
+  .agent-chat-shell { height: calc(100vh - 160px); min-height: 480px; }
+  .agent-chat-header, .agent-chat-pins, .agent-chat-mode-note { padding-left: 14px; padding-right: 14px; }
+  .agent-chat-thread, .agent-chat-composer { padding-left: 14px; padding-right: 14px; }
+  .agent-capability-grid { grid-template-columns: 1fr; }
+  .secret-create-form { grid-template-columns: 1fr; }
+  .task-binding, .history-detail-grid, .revision-compare-selects, .history-filters { grid-template-columns: 1fr; }
+  .history-heading-actions { align-items: flex-end; flex-direction: column; gap: 6px; }
+  .page-footer { flex-direction: column; gap: 5px; }
+}
+
+@media (max-width: 520px) {
+  :root { --rail-width: 58px; }
+  .workspace-page { padding: 0 13px 24px; }
+  .console-topbar { padding: 0 13px; }
+  .profile-chip > span:last-child, .breadcrumbs > span:first-child, .breadcrumbs > span[aria-hidden] { display: none; }
+  .page-hero h1 { font-size: 21px; }
+  .page-description { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: 11px; }
+  .runtime-details { grid-template-columns: 1fr; }
+  .runtime-details > div, .runtime-details > div:nth-child(n) { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .runtime-details > div:first-child { border-top: 0; }
+  .runtime-footer { align-items: flex-start; flex-direction: column; }
+  .overview-quick-link small, .directory-copy small { white-space: normal; }
+  .task-actions > button, .agent-actions > button { width: 100%; }
+  .agent-toolbar { grid-template-columns: 1fr; }
+  .agent-toolbar > * { width: 100%; }
+  .revision-list li, .work-evidence { grid-template-columns: 1fr; display: grid; }
+  .revision-list li { align-items: flex-start; flex-direction: column; }
+  .work-evidence { grid-template-columns: 1fr; }
+  .compare-field dd { grid-template-columns: 1fr; }
+  .compare-field dd span + span { padding: 6px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+  .organization-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .organization-summary > div { border-top: 1px solid var(--line); }
+  .organization-summary > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .history-heading-actions .ui-button, .config-history .ui-button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .agent-chat-typing i, .agent-chat-caret { animation: none !important; }
+}

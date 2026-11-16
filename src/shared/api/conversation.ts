@@ -1,4 +1,6 @@
-import { fetchJson, type RuntimeInfo } from './runtime.js';
+import { isRecord, isVersioned as hasContractVersion } from './guards.js';
+import { requestJson as fetchJson } from './http.js';
+import type { RuntimeInfo } from './runtime.js';
 
 export const CONVERSATION_CONTRACT_VERSION = '1.4.0';
 
@@ -60,12 +62,8 @@ export interface ConversationMessagePage {
   readonly hasMore: boolean;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isVersioned(value: unknown): value is Record<string, unknown> & { version: string } {
-  return isRecord(value) && value.version === CONVERSATION_CONTRACT_VERSION;
+  return hasContractVersion(value, CONVERSATION_CONTRACT_VERSION);
 }
 
 function boundedString(value: unknown): value is string {
@@ -136,8 +134,10 @@ export function supportsConversationContract(runtime: RuntimeInfo | null): boole
 }
 
 export async function getPrimaryConversation(signal?: AbortSignal): Promise<PrimaryConversationView> {
-  const value: unknown = await fetchJson<unknown>('/v1/organization/conversation', undefined, signal);
-  if (!isView(value)) throw new Error('Runtime returned an invalid primary conversation view.');
+  const value = await fetchJson('/v1/organization/conversation', isView, {
+    signal,
+    invalidPayload: () => new Error('Runtime returned an invalid primary conversation view.'),
+  });
   return Object.freeze({ ...value, messages: Object.freeze(value.messages) });
 }
 
@@ -148,12 +148,11 @@ export async function getConversationMessages(
 ): Promise<ConversationMessagePage> {
   const query = new URLSearchParams({ limit: String(limit) });
   if (after) query.set('after', after);
-  const value: unknown = await fetchJson<unknown>(
+  const value = await fetchJson(
     `/v1/organization/conversation/messages?${query.toString()}`,
-    undefined,
-    signal,
+    isPage,
+    { signal, invalidPayload: () => new Error('Runtime returned an invalid conversation message page.') },
   );
-  if (!isPage(value)) throw new Error('Runtime returned an invalid conversation message page.');
   return Object.freeze({ ...value, messages: Object.freeze(value.messages) });
 }
 

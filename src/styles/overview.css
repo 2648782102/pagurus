@@ -1,0 +1,101 @@
+/* ---------------------------------------------------------------------------
+   Overview: one runtime instrument + a compact launch ledger
+   --------------------------------------------------------------------------- */
+
+.overview-deck {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.overview-runtime { min-width: 0; }
+.overview-runtime .runtime-panel { height: 100%; }
+.runtime-panel { display: flex; flex-direction: column; }
+.runtime-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.runtime-heading .eyebrow { margin-bottom: 4px; }
+.runtime-details {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  margin: 14px 0 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.runtime-details > div {
+  grid-column: span 2;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-left: 1px solid var(--line);
+}
+.runtime-details > div:nth-child(3n + 1) { padding-left: 0; border-left: 0; }
+.runtime-details > div:nth-child(n + 4) { border-top: 1px solid var(--line); }
+.runtime-details > div:nth-last-child(1):nth-child(3n + 1) { grid-column: 1 / -1; }
+.runtime-details code { overflow-wrap: anywhere; font-size: 11px; }
+.budget-value { line-height: 1.5; }
+code.is-unrestricted { color: var(--danger); font-weight: 650; }
+.runtime-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: auto; }
+
+.overview-launch {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--paper-inset);
+}
+.overview-launch .eyebrow { margin-bottom: 0; }
+.overview-launch h2 { font-size: 17px; }
+.overview-launch-note { margin: 0 0 3px; color: var(--ink-soft); font-size: 11px; line-height: 1.6; }
+.overview-quick-list { display: grid; gap: 0; border-top: 1px solid var(--line-strong); }
+.overview-quick-link {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.overview-quick-link:hover { background: var(--paper); }
+.overview-quick-icon { display: grid; place-items: center; width: 22px; height: 22px; color: var(--steel); font: 12px var(--font-mono); }
+.overview-quick-link > span:nth-child(2) { display: grid; gap: 1px; min-width: 0; }
+.overview-quick-link strong { font-size: 12px; font-weight: 650; }
+.overview-quick-link small { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.overview-quick-arrow { color: var(--muted); font-size: 11px; text-align: right; }
+
+.overview-directory { margin-top: 14px; container-type: inline-size; }
+.directory-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line-strong); }
+.directory-group { min-width: 0; padding: 12px 18px 0 0; border-right: 1px solid var(--line); }
+.directory-group:last-child { padding-right: 0; border-right: 0; }
+.directory-group:not(:first-child) { padding-left: 18px; }
+.directory-group h3 { margin: 0 0 3px; font-size: 12px; }
+.directory-group > p { min-height: 30px; margin: 0 0 6px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.directory-list { display: grid; }
+.directory-link {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 10px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+.directory-link:hover strong { color: var(--steel-ink); }
+.directory-icon { display: grid; place-items: center; width: 18px; height: 18px; color: var(--steel); font: 10px var(--font-mono); }
+.directory-copy { display: grid; gap: 0; min-width: 0; }
+.directory-copy strong { font-size: 11px; font-weight: 650; }
+.directory-copy small { overflow: hidden; color: var(--muted); font-size: 9.5px; text-overflow: ellipsis; white-space: nowrap; }
+.directory-arrow { color: var(--faint); font-size: 10px; }
+
+@media (max-width: 1120px) {
+  .overview-deck { grid-template-columns: 1fr; }
+  .directory-groups { grid-template-columns: 1fr; border-top: 0; }
+  .directory-group, .directory-group:not(:first-child) { padding: 12px 0; border-right: 0; border-top: 1px solid var(--line-strong); }
+}
+@container (max-width: 640px) {
+  .overview-directory .directory-groups { grid-template-columns: 1fr; }
+}
+

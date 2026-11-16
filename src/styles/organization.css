@@ -1,0 +1,49 @@
+/* ---------------------------------------------------------------------------
+   Organization console
+   --------------------------------------------------------------------------- */
+
+.organization-rail { margin: 14px 0; }
+.organization-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.organization-summary > div { display: grid; gap: 2px; padding: 10px 12px; border-left: 1px solid var(--line); }
+.organization-summary > div:first-child { padding-left: 0; border-left: 0; }
+.organization-summary strong { color: var(--ink); font: 650 20px var(--font-mono); letter-spacing: -.03em; }
+.organization-summary span { color: var(--muted); font-size: 10px; }
+.organization-audit-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
+.organization-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.organization-card { min-width: 0; padding: 12px 14px; border: 1px solid var(--line); background: var(--paper); }
+.organization-card h3 { margin: 0 0 8px; font-size: 12px; }
+.organization-card-timeline, .organization-card-projects { grid-row: span 2; }
+.organization-attention-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 7px 0; border-top: 1px solid var(--line); }
+.organization-attention-row > button:first-child { display: grid; flex: 1 1 210px; gap: 3px; padding: 0; border: 0; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
+.organization-attention-row code { color: var(--muted); font-size: 9px; }
+.organization-fact { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 0; padding: 7px 0; border-top: 1px solid var(--line); font-size: 11px; }
+.organization-fact span { color: var(--steel-ink); font-weight: 650; }
+.organization-fact code { color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.organization-fact small, .organization-timeline-copy small { color: var(--muted); font-size: 9px; overflow-wrap: anywhere; }
+.organization-timeline { display: grid; max-height: 440px; margin: 0; padding: 0; overflow: auto; list-style: none; border-top: 1px solid var(--line-strong); }
+.organization-timeline li { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 9px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.organization-timeline-sequence { color: var(--steel); font: 10px var(--font-mono); }
+.organization-timeline-copy { display: grid; gap: 2px; min-width: 0; }
+.organization-timeline-copy strong { font-size: 11px; }
+.organization-timeline-copy code { color: var(--muted); font: 9px var(--font-mono); overflow-wrap: anywhere; }
+.organization-project-list { display: grid; border-top: 1px solid var(--line-strong); }
+.organization-project-row {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.organization-project-row:hover { background: var(--paper-inset); }
+.organization-project-row.is-selected { background: var(--steel-wash); box-shadow: inset 2px 0 0 var(--steel); }
+.organization-project-row code { color: var(--muted); font: 9px/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.organization-project-row strong, .organization-project-row small { min-width: 0; overflow-wrap: anywhere; }
+.organization-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10.5px; }
+.organization-toggle input { width: 13px; height: 13px; accent-color: var(--rust); }
+.organization-threads { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+

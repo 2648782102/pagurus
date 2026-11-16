@@ -1,0 +1,53 @@
+/* ---------------------------------------------------------------------------
+   Workbench and evidence
+   --------------------------------------------------------------------------- */
+
+.work-layout { display: grid; grid-template-columns: minmax(230px, .8fr) minmax(0, 1.2fr); gap: 14px; }
+.work-list { display: grid; align-content: start; max-height: 480px; overflow: auto; border-top: 1px solid var(--line-strong); }
+.work-row {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.work-row:hover { background: var(--paper-inset); }
+.work-row.is-selected { background: var(--steel-wash); box-shadow: inset 2px 0 0 var(--steel); }
+.work-row-title { font-size: 11px; }
+.work-row-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
+.work-row-meta code { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.work-detail { min-width: 0; padding: 12px; border: 1px solid var(--line); background: var(--paper-raised); }
+.work-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.work-section h4 { margin: 0 0 7px; }
+.work-evidence {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.work-evidence code { overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.work-notice, .work-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--steel);
+  background: var(--steel-wash);
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.work-error { border-left-color: var(--danger); background: var(--danger-wash); color: #76392d; }
+.work-notice p, .work-error p { flex: 1 1 300px; margin: 0; }
+

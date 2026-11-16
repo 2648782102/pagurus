@@ -1,3 +1,5 @@
+import { isRecord, isStringArray } from './guards.js';
+import { fromRequestInit, requestJson as sendJsonRequest } from './http.js';
 import { type RuntimeInfo } from './runtime.js';
 
 export const ORGANIZATION_CONTRACT_VERSION = '1.1.0';
@@ -165,20 +167,12 @@ export interface OrganizationIntentInput {
   readonly idempotencyKey: string;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isVersioned(value: unknown): value is OrganizationVersioned {
   return isRecord(value) && value.version === ORGANIZATION_CONTRACT_VERSION;
 }
 
 function isBoundedString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= 240;
-}
-
-function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
 }
 
 function isProject(value: unknown): value is OrganizationProjectRecord {
@@ -287,16 +281,9 @@ export async function requestJson<T>(
   isPayload: (value: unknown) => value is T,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
-    headers: { Accept: 'application/json', ...(init?.body ? { 'content-type': 'application/json' } : {}) },
-    signal: init?.signal,
-    ...(init?.method ? { method: init.method } : {}),
-    ...(init?.body ? { body: init.body } : {}),
+  return sendJsonRequest(path, isPayload, {
+    ...fromRequestInit(init),
   });
-  if (!response.ok) throw new Error(`Runtime returned HTTP ${response.status}`);
-  const payload: unknown = await response.json();
-  if (!isPayload(payload)) throw new Error(`Runtime returned an invalid response from ${path}`);
-  return payload;
 }
 
 export function getOrganizationSession(signal?: AbortSignal): Promise<OrganizationSessionView> {

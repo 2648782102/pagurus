@@ -64,6 +64,62 @@ describe('Controlled execution console', () => {
     window.location.hash = '';
   });
 
+  it('keeps locally created requests across a console refresh', async () => {
+    // Conchbase publishes no request-list route. A refresh must not erase the
+    // requests this console created, so they stay outside the read snapshot.
+    const grant = {
+      version: '1.2.0', id: 'grant_alpha', capabilityId: capability.id, state: 'granted',
+      expectedVersion: 1, agentId: 'agent_alpha', agentRevisionId: 'revision_alpha',
+      configurationRevisionId: 'config_alpha', delegationId: 'delegation_alpha',
+      projectId: 'project_alpha', workItemId: 'work_alpha', assignmentId: 'assignment_alpha',
+      operation: 'observe', destinationDigest, scope: ['project:console-demo'],
+      capabilities: ['cap_read_context'], expiresAtSequence: 100,
+      createdAt: '2026-11-14T00:00:00.000Z',
+    };
+    const request = {
+      version: '1.2.0', id: 'request_alpha', grantId: grant.id, state: 'pending',
+      expectedVersion: 1, operation: 'observe', argumentsDigest: digest,
+      idempotencyKey: 'idem-alpha', resultDigest: null, errorDigest: null,
+      createdAt: '2026-11-14T00:00:00.000Z', decidedAt: null, startedAt: null, finishedAt: null,
+    };
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/v1/runtime') return Promise.resolve(json(runtime));
+      if (path === '/v1/execution/capabilities') {
+        return Promise.resolve(json({ version: '1.2.0', capabilities: [capability] }));
+      }
+      if (path === '/v1/execution/grants') {
+        return Promise.resolve(json({ version: '1.2.0', grants: [grant] }));
+      }
+      if (path.startsWith('/v1/execution/events')) {
+        return Promise.resolve(json({ version: '1.2.0', events: [], nextCursor: null, hasMore: false }));
+      }
+      if (path === '/v1/execution/requests') {
+        return Promise.resolve(json({ version: '1.2.0', request }, 201));
+      }
+      if (path === '/v1/execution/adapters') return Promise.resolve(json({ version: '1.3.0', adapters: [] }));
+      if (path === '/v1/execution/runs') return Promise.resolve(json({ version: '1.3.0', runs: [] }));
+      return Promise.resolve(json({}));
+    }));
+
+    function Harness() {
+      const consoleState = useExecutionConsole(runtime as never);
+      return <>
+        <p role="status">{consoleState.requests.length}</p>
+        <button type="button" onClick={() => consoleState.createRequest(grant as never)}>create request</button>
+        <button type="button" onClick={consoleState.load}>reload</button>
+      </>;
+    }
+
+    render(<Harness />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'create request' })).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: 'create request' }));
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('1'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'reload' }));
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('1'));
+  });
+
   it('separates recorded capability facts from explicit grants and execution', async () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: '受控执行工作台' })).toBeTruthy();

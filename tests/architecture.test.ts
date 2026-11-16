@@ -16,6 +16,14 @@ function sourceFiles(relativeDir: string): string[] {
     .sort();
 }
 
+function styleFiles(): string[] {
+  const absoluteDir = path.join(repositoryRoot, 'src/styles');
+  return readdirSync(absoluteDir)
+    .filter((entry) => entry.endsWith('.css'))
+    .map((entry) => path.join('src/styles', entry))
+    .sort();
+}
+
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
 }
@@ -24,8 +32,20 @@ describe('front-end architecture boundaries', () => {
   it('keeps modules small enough to review in one pass', () => {
     const oversized = sourceFiles('src')
       .map((file) => ({ file, lines: read(file).split('\n').length - 1 }))
-      .filter(({ file, lines }) => !file.endsWith('styles.css') && lines > 500);
+      .filter(({ lines }) => lines > 500);
     expect(oversized, `split oversized modules:\n${oversized.map(({ file, lines }) => `${file} (${lines})`).join('\n')}`)
+      .toEqual([]);
+  });
+
+  it('keeps every cascade layer small enough to review in one pass', () => {
+    // ADR 0038 split the 955-line sheet into named layers. The entry point is
+    // now import-only, so the ceiling applies per layer rather than to one file.
+    expect(read('src/styles.css').split('\n').length - 1, 'src/styles.css must stay an import entry point')
+      .toBeLessThanOrEqual(30);
+    const oversized = styleFiles()
+      .map((file) => ({ file, lines: read(file).split('\n').length - 1 }))
+      .filter(({ lines }) => lines > 300);
+    expect(oversized, `split oversized style layers:\n${oversized.map(({ file, lines }) => `${file} (${lines})`).join('\n')}`)
       .toEqual([]);
   });
 

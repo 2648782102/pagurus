@@ -16,6 +16,7 @@ import {
   type AgentRecord,
   type ProviderModel,
 } from '../../shared/api/agents.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 interface TaskModel extends ProviderModel {
   legacyId?: string;
@@ -101,7 +102,7 @@ export function useTaskOperations(refreshToken = 0) {
       setState((current) => ({
         ...current,
         phase: 'models-error',
-        error: cause instanceof Error ? cause.message : '模型目录加载失败',
+        error: errorMessage(cause, '模型目录加载失败'),
       }));
     }
   }, []);
@@ -124,7 +125,7 @@ export function useTaskOperations(refreshToken = 0) {
         setState((current) => ({
           ...current,
           phase: 'finished',
-          error: cause instanceof Error ? cause.message : '任务状态读取失败',
+          error: errorMessage(cause, '任务状态读取失败'),
         }));
         return;
       }
@@ -185,7 +186,7 @@ export function useTaskOperations(refreshToken = 0) {
       setState((current) => ({
         ...current,
         phase: 'ready',
-        error: cause instanceof Error ? cause.message : '任务创建失败',
+        error: errorMessage(cause, '任务创建失败'),
       }));
     }
   }, [beginWatching, state]);
@@ -198,7 +199,7 @@ export function useTaskOperations(refreshToken = 0) {
     } catch (cause) {
       setState((current) => ({
         ...current,
-        error: cause instanceof Error ? cause.message : '取消失败',
+        error: errorMessage(cause, '取消失败'),
       }));
     }
   }, [beginWatching, state.task]);
@@ -213,7 +214,7 @@ export function useTaskOperations(refreshToken = 0) {
       setState((current) => ({
         ...current,
         phase: 'finished',
-        error: cause instanceof Error ? cause.message : '重试失败',
+        error: errorMessage(cause, '重试失败'),
       }));
     }
   }, [beginWatching, state.task]);

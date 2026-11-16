@@ -1,0 +1,17 @@
+/* ---------------------------------------------------------------------------
+   Controlled execution
+   --------------------------------------------------------------------------- */
+
+.execution-panel { border-color: var(--line-strong); }
+.execution-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.execution-panel .organization-card { padding: 0; border: 0; background: transparent; }
+.execution-panel .organization-card > h3 {
+  margin: 0 0 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 12px;
+}
+.execution-panel .organization-card > .ui-field { margin-top: 8px; }
+.execution-panel .organization-fact { align-items: flex-start; }
+.execution-panel .organization-fact small { flex-basis: 100%; }
+

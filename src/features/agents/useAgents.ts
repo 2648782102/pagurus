@@ -17,6 +17,7 @@ import {
   type CapabilityGrant,
   type ProviderModel,
 } from '../../shared/api/agents.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 type Phase = 'loading' | 'ready' | 'unsupported' | 'error' | 'saving';
 
@@ -133,7 +134,7 @@ export function useAgents(onChanged?: () => void) {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : 'Agent 列表加载失败',
+        error: errorMessage(cause, 'Agent 列表加载失败'),
       }));
     }
   }, []);
@@ -156,7 +157,7 @@ export function useAgents(onChanged?: () => void) {
       setState((current) => ({
         ...current,
         phase: 'ready',
-        error: cause instanceof Error ? cause.message : 'Agent 操作失败',
+        error: errorMessage(cause, 'Agent 操作失败'),
       }));
     }
   }, [load, onChanged, state.selected?.id]);
@@ -180,7 +181,7 @@ export function useAgents(onChanged?: () => void) {
     } catch (cause) {
       setState((current) => ({
         ...current,
-        error: cause instanceof Error ? cause.message : '能力授权格式无效。',
+        error: errorMessage(cause, '能力授权格式无效。'),
       }));
       return;
     }

@@ -20,6 +20,7 @@ import {
 } from '../../shared/api/work.js';
 import { ingestLocalSourceEvent, type SourcePolicy } from '../../shared/api/platform.js';
 import type { RuntimeInfo as RuntimeStatusInfo } from '../../shared/api/runtime.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type AttentionWorkbenchPhase =
   | 'checking'
@@ -105,7 +106,7 @@ export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : '持久工作读取失败',
+        error: errorMessage(cause, '持久工作读取失败'),
       }));
     }
   }, [runtime]);
@@ -144,7 +145,7 @@ export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
       setState((current) => ({
         ...current,
         actionLabel: null,
-        error: cause instanceof Error ? cause.message : '工作控制失败',
+        error: errorMessage(cause, '工作控制失败'),
       }));
     }
   }, [load, runtime]);
@@ -161,7 +162,7 @@ export function useAttentionWorkbench(runtime: RuntimeStatusInfo | null) {
       setState((current) => ({
         ...current,
         phase: 'error',
-        error: cause instanceof Error ? cause.message : '工作项详情读取失败',
+        error: errorMessage(cause, '工作项详情读取失败'),
       }));
     }
   }, [runtime]);

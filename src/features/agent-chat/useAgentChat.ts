@@ -17,10 +17,12 @@ import {
   type AgentChatReasoningEffort,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
+import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 import { useAgentChatStream } from './useAgentChatStream.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 function errorText(cause: unknown): string {
-  return cause instanceof Error ? cause.message.slice(0, 240) : 'Agent 对话失败';
+  return errorMessage(cause, 'Agent 对话失败');
 }
 
 export function useAgentChat(runtime: RuntimeInfo | null) {
@@ -81,16 +83,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
    * connected, so the landing list needs a low-frequency refresh to show the
    * new last-message preview. An open conversation is handled by its stream.
    */
-  useEffect(() => {
-    if (!supported || conversation !== null) return;
-    const timer = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') return;
-      void listAgentChatConversations()
-        .then((history) => setRecent(history.conversations))
-        .catch(() => undefined);
-    }, 15_000);
-    return () => window.clearInterval(timer);
-  }, [conversation, supported]);
+  useVisiblePolling(
+    () => listAgentChatConversations()
+      .then((history) => setRecent(history.conversations))
+      .catch(() => undefined),
+    15_000,
+    supported && conversation === null,
+  );
 
   const {
     streamConnected,

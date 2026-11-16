@@ -1,3 +1,11 @@
+import {
+  isBoundedString,
+  isNullableInteger,
+  isNullableString,
+  isRecord,
+  isStringArray,
+} from './guards.js';
+import { fromRequestInit, requestJson as sendJsonRequest } from './http.js';
 import type { RuntimeInfo } from './runtime.js';
 
 export const EXECUTION_RUN_CONTRACT_VERSION = '1.3.0';
@@ -64,28 +72,8 @@ export interface ExecutionRunEventPage extends ExecutionRunVersioned {
   readonly hasMore: boolean;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isVersioned(value: unknown): value is ExecutionRunVersioned {
   return isRecord(value) && value.version === EXECUTION_RUN_CONTRACT_VERSION;
-}
-
-function isBoundedString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= 240;
-}
-
-function isNullableString(value: unknown): value is string | null {
-  return value === null || typeof value === 'string';
-}
-
-function isNullableInteger(value: unknown): value is number | null {
-  return value === null || Number.isInteger(value);
-}
-
-function isStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
 function isAdapter(value: unknown): value is ExecutionAdapter {
@@ -144,21 +132,12 @@ export function supportsExecutionRunContract(runtime: RuntimeInfo | null): boole
     && runtime.executionRunPaths === EXECUTION_RUN_PUBLIC_PATHS.length;
 }
 
-async function requestJson<T>(
+function requestJson<T>(
   path: string,
   isPayload: (value: unknown) => value is T,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
-    headers: { Accept: 'application/json', ...(init?.body ? { 'content-type': 'application/json' } : {}) },
-    signal: init?.signal,
-    ...(init?.method ? { method: init.method } : {}),
-    ...(init?.body ? { body: init.body } : {}),
-  });
-  if (!response.ok) throw new Error(`Runtime returned HTTP ${response.status}`);
-  const payload: unknown = await response.json();
-  if (!isPayload(payload)) throw new Error(`Runtime returned an invalid response from ${path}`);
-  return payload;
+  return sendJsonRequest(path, isPayload, fromRequestInit(init));
 }
 
 export function getExecutionRunHealth(signal?: AbortSignal) {

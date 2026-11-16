@@ -8,6 +8,7 @@ import {
 } from '../../shared/api/conversation.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export interface PrimaryConversationState {
   readonly supported: boolean;
@@ -34,7 +35,7 @@ const initialState: PrimaryConversationState = {
 };
 
 function errorText(cause: unknown): string {
-  return cause instanceof Error ? cause.message.slice(0, 240) : '主会话读取失败';
+  return errorMessage(cause, '主会话读取失败');
 }
 
 function mergeMessages(

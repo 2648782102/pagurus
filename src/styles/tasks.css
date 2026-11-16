@@ -1,0 +1,118 @@
+/* ---------------------------------------------------------------------------
+   Task operations, history, agents
+   --------------------------------------------------------------------------- */
+
+.task-form { display: grid; gap: 12px; margin-top: 14px; }
+.task-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.task-result { margin-top: 14px; }
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.task-binding, .history-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+  margin: 10px 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--paper-inset);
+}
+.task-binding > div, .history-detail-grid > div { display: grid; gap: 3px; min-width: 0; }
+.task-binding dt, .history-detail-grid dt { color: var(--muted); font-size: 10px; }
+.task-binding dd, .history-detail-grid dd { margin: 0; font-size: 11px; overflow-wrap: anywhere; }
+.task-output {
+  max-height: 260px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--rule);
+  background: #f1f3f2;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.65 var(--font-mono);
+}
+.task-progress-label { margin: 0 0 6px; color: var(--steel); font: 600 10px var(--font-mono); }
+.task-note { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); line-height: 1.6; }
+
+.history-heading-actions { display: flex; align-items: center; gap: 10px; }
+.history-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-bottom: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.history-layout { display: grid; grid-template-columns: minmax(250px, .82fr) minmax(0, 1.18fr); gap: 14px; }
+.history-list { display: grid; align-content: start; gap: 0; max-height: 480px; overflow: auto; border-top: 1px solid var(--line-strong); }
+.history-row {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.history-row:hover { background: var(--paper-inset); }
+.history-row.is-selected { background: var(--steel-wash); box-shadow: inset 2px 0 0 var(--steel); }
+.history-row-title { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.history-row-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
+.history-row-meta code { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.history-detail { min-width: 0; padding: 12px; border: 1px solid var(--line); background: var(--paper-raised); }
+.history-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.history-detail-heading h3 { margin: 0; font-size: 13px; }
+.history-prompt { margin: 10px 0; color: var(--ink-soft); font-size: 11px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.agent-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.agent-toolbar > .ui-field { max-width: 420px; }
+.agent-editor { display: grid; gap: 10px; }
+.config-form-surface { padding: 13px; border: 1px solid var(--line); background: var(--paper-inset); }
+.config-form-surface > legend { padding: 0 5px; color: var(--ink-soft); font-size: 11px; font-weight: 650; }
+.agent-capabilities { min-width: 0; margin: 2px 0 0; }
+.agent-capabilities-note { margin: 0 0 10px; max-width: 760px; }
+.agent-capability-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.agent-capability-grid .ui-textarea { min-height: 96px; font-family: var(--font-mono); font-size: 11px; }
+.agent-editor textarea { min-height: 108px; }
+.agent-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.agent-editor-heading code, .revision-list code { color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.revision-current { color: var(--signal); font: 650 10px var(--font-mono); white-space: nowrap; }
+.agent-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.agent-history { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.revision-list { display: grid; margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line-strong); }
+.revision-list li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.revision-list li > div { display: grid; gap: 3px; min-width: 0; }
+.revision-list li strong { font-size: 11px; }
+.revision-list li small { color: var(--muted); font-size: 10px; }
+.revision-compare { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.revision-compare-selects { display: grid; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px 10px; margin: 8px 0; }
+.revision-compare-grid { display: grid; gap: 6px; }
+.compare-field { display: grid; gap: 4px; padding: 8px 9px; border: 1px solid var(--line); background: var(--paper-raised); }
+.compare-field.is-changed { border-left: 2px solid var(--rust); background: var(--rust-wash); }
+.compare-field dd { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; color: var(--ink-soft); font-size: 11px; line-height: 1.55; }
+.compare-field dd span { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.compare-field dd span + span { padding-left: 10px; border-left: 1px solid var(--line); }
+.compare-field.is-changed dd span { color: var(--danger); }
+.compare-field small { color: var(--muted); font-size: 9px; }
+

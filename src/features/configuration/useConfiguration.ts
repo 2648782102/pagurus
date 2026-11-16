@@ -9,6 +9,8 @@ import {
   type ConfigurationRevisionSummary,
 } from '../../shared/api/configuration.js';
 import { getRuntimeInfo } from '../../shared/api/runtime.js';
+import { resolveDraft } from './configuration-draft.js';
+import { errorMessage } from '../../shared/ui/errors.js';
 
 export type ConfigurationPhase =
   | 'loading'
@@ -86,7 +88,7 @@ export function useConfiguration() {
       setState((current) => ({
         ...current,
         phase: 'disconnected',
-        message: cause instanceof Error ? cause.message : '无法读取配置版本',
+        message: errorMessage(cause, '无法读取配置版本'),
       }));
     }
   }, []);
@@ -97,47 +99,22 @@ export function useConfiguration() {
 
   const apply = useCallback(async () => {
     const current = stateRef.current;
-    if (!current.draft.trim()) {
-      setState((current) => ({
-        ...current,
+    const resolved = resolveDraft(current.draft, current.supportsComposition);
+    if (!resolved.ok) {
+      setState((value) => ({
+        ...value,
         phase: 'ready',
-        message: '请输入完整的配置文档。',
-        issues: [{ path: '$', reason: '文档不能为空' }],
+        message: resolved.message,
+        issues: [resolved.issue],
       }));
       return;
     }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(current.draft) as unknown;
-    } catch {
-      setState((current) => ({
-        ...current,
-        phase: 'ready',
-        message: '配置文档不是有效的 JSON。',
-        issues: [{ path: '$', reason: '必须是有效的 JSON' }],
-      }));
-      return;
-    }
-
     setState((current) => ({ ...current, phase: 'applying', message: null, issues: [] }));
     try {
-      if (
-        isRecord(parsed)
-        && parsed.schemaVersion === 2
-        && !current.supportsComposition
-      ) {
-        setState((current) => ({
-          ...current,
-          phase: 'ready',
-          message: '当前 Conchbase 未提供 composition-execution 能力，无法应用 schemaVersion 2。',
-          issues: [{ path: 'schemaVersion', reason: '需要 Conchbase 0.5.0 或更新版本' }],
-        }));
-        return;
-      }
       // Validation is an explicit earlier step. Apply submits the draft; the
       // Runtime validates it again inside the write path, so it never needs a
       // second client-side validate round trip.
-      const result = await applyConfiguration(parsed);
+      const result = await applyConfiguration(resolved.document);
       setState({
         phase: 'ready',
         revision: result.revision,
@@ -161,46 +138,26 @@ export function useConfiguration() {
       setState((current) => ({
         ...current,
         phase: 'disconnected',
-        message: cause instanceof Error ? cause.message : '应用配置失败',
+        message: errorMessage(cause, '应用配置失败'),
       }));
     }
   }, []);
 
   const validate = useCallback(async () => {
     const current = stateRef.current;
-    if (!current.draft.trim()) {
+    const resolved = resolveDraft(current.draft, current.supportsComposition);
+    if (!resolved.ok) {
       setState((value) => ({
         ...value,
         phase: 'ready',
-        message: '请输入完整的配置文档。',
-        issues: [{ path: '$', reason: '文档不能为空' }],
-      }));
-      return;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(current.draft) as unknown;
-    } catch {
-      setState((value) => ({
-        ...value,
-        phase: 'ready',
-        message: '配置文档不是有效的 JSON。',
-        issues: [{ path: '$', reason: '必须是有效的 JSON' }],
-      }));
-      return;
-    }
-    if (isRecord(parsed) && parsed.schemaVersion === 2 && !current.supportsComposition) {
-      setState((value) => ({
-        ...value,
-        phase: 'ready',
-        message: '当前 Conchbase 未提供 composition-execution 能力，无法应用 schemaVersion 2。',
-        issues: [{ path: 'schemaVersion', reason: '需要 Conchbase 0.5.0 或更新版本' }],
+        message: resolved.message,
+        issues: [resolved.issue],
       }));
       return;
     }
     setState((value) => ({ ...value, phase: 'validating', message: null, issues: [] }));
     try {
-      await validateConfiguration(parsed);
+      await validateConfiguration(resolved.document);
       setState((value) => ({
         ...value,
         phase: 'ready',
@@ -221,7 +178,7 @@ export function useConfiguration() {
       setState((value) => ({
         ...value,
         phase: 'disconnected',
-        message: cause instanceof Error ? cause.message : '校验配置失败',
+        message: errorMessage(cause, '校验配置失败'),
       }));
     }
   }, []);
@@ -245,7 +202,7 @@ export function useConfiguration() {
       setState((current) => ({
         ...current,
         phase: 'disconnected',
-        message: cause instanceof Error ? cause.message : '回滚失败',
+        message: errorMessage(cause, '回滚失败'),
       }));
     }
   }, []);
@@ -265,8 +222,4 @@ export function useConfiguration() {
     validate: () => void validate(),
     rollbackTo: (revisionId: string) => void rollbackTo(revisionId),
   };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
