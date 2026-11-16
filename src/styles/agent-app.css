@@ -1,0 +1,251 @@
+/* ---------------------------------------------------------------------------
+   Shipped Agent app surface.
+
+   Same product, different job: the console is an operations desk, this is a
+   quiet workspace for one conversation. It reuses the design tokens so both
+   surfaces stay recognisably Pagurus, but drops the instrument rules, the
+   masthead, and the status palette that only makes sense to an operator.
+   --------------------------------------------------------------------------- */
+
+.agent-app {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  height: 100vh;
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+.agent-app-blocked {
+  display: block;
+  max-width: 640px;
+  margin: 12vh auto 0;
+  padding: 0 24px;
+  background: transparent;
+}
+
+/* --- rail ---------------------------------------------------------------- */
+
+.agent-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 12px 12px;
+  overflow: hidden;
+  background: var(--navy);
+  color: #e7eeef;
+}
+.agent-sidebar.is-collapsed { padding: 14px 8px 12px; }
+.agent-sidebar-head { display: flex; align-items: center; gap: 9px; min-height: 32px; }
+.agent-brand-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #3c565d;
+  color: #f4f8f8;
+  font: 700 12px var(--font-mono);
+}
+.agent-brand-copy { display: grid; gap: 1px; min-width: 0; }
+.agent-brand-copy strong { color: #f2f6f5; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
+.agent-brand-copy small { color: #8fa3a7; font-size: 9.5px; }
+.agent-rail-toggle {
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #8fa3a7;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.agent-rail-toggle:hover { background: #20353b; color: #f2f6f5; }
+
+.agent-new-chat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid #3c565d;
+  border-radius: 2px;
+  background: transparent;
+  color: #e9f1f1;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.agent-new-chat:hover { background: #20353b; }
+.agent-sidebar.is-collapsed .agent-new-chat { justify-content: center; padding: 8px 0; }
+
+.agent-rail-section { display: grid; gap: 3px; margin-top: 8px; min-height: 0; }
+.agent-rail-section h2 {
+  margin: 0 0 2px;
+  padding: 0 6px;
+  color: #7e9498;
+  font: 600 9.5px var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.agent-rail-list { display: grid; gap: 1px; margin: 0; padding: 0; overflow: auto; list-style: none; }
+.agent-rail-empty { margin: 0; padding: 2px 6px 6px; color: #7e9498; font-size: 10.5px; line-height: 1.55; }
+.agent-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #cfdde0;
+  cursor: pointer;
+  text-align: left;
+}
+.agent-rail-item:hover { background: #20353b; }
+.agent-rail-item.is-active { background: #264249; color: #ffffff; }
+.agent-rail-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #3c565d;
+  color: #dfa184;
+  font: 650 10px var(--font-mono);
+}
+.agent-rail-copy { display: grid; gap: 1px; min-width: 0; }
+.agent-rail-copy strong {
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-rail-copy small {
+  overflow: hidden;
+  color: #8fa3a7;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-rail-thread { padding: 6px 8px; }
+.agent-rail-thread .agent-rail-copy strong { font-weight: 550; }
+
+.agent-sidebar-foot {
+  display: grid;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 9px;
+  border-top: 1px solid #2a4147;
+}
+.agent-connection { display: flex; align-items: center; gap: 6px; color: #8fa3a7; font-size: 9.5px; }
+.agent-connection-dot { width: 5px; height: 5px; border-radius: 50%; background: #6a7f83; }
+.agent-connection.status-connected .agent-connection-dot { background: #6fbf92; }
+.agent-connection.status-disconnected .agent-connection-dot { background: #d98a72; }
+.agent-connection.status-incompatible .agent-connection-dot { background: #d8b169; }
+.agent-console-link { color: #8fa3a7; font-size: 9.5px; text-decoration: none; }
+.agent-console-link:hover { color: #f2f6f5; text-decoration: underline; }
+
+/* --- conversation -------------------------------------------------------- */
+
+.agent-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--paper-raised); }
+.agent-main-scroll { flex: 1 1 auto; overflow: auto; padding: 40px 24px 48px; }
+
+/* The product's entry screen is a page, not an instrument panel: one column,
+   generous width, and no panel chrome borrowed from the console. */
+.agent-main-scroll > .agent-landing {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0;
+  gap: 20px;
+}
+.agent-main-scroll .agent-landing-heading h2 { font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+.agent-main-scroll .agent-chat-intro { max-width: 560px; font-size: 13px; }
+.agent-main-scroll .agent-landing-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.agent-main-scroll .agent-picker,
+.agent-main-scroll .agent-launcher,
+.agent-main-scroll .agent-history { border-color: var(--line); background: var(--paper); }
+.agent-main-scroll .agent-picker-heading,
+.agent-main-scroll .agent-launcher-heading { padding: 11px 14px; }
+.agent-main-scroll .agent-picker-list { max-height: 220px; }
+.agent-main-scroll .agent-picker-item { padding: 9px 14px; }
+.agent-main-scroll .agent-launcher-options { padding: 0 14px 14px; gap: 11px; }
+.agent-main-scroll .agent-launcher-options > .ui-button { justify-self: start; }
+.agent-main-scroll .agent-history { margin-top: 2px; }
+.agent-main-scroll .agent-history-list { max-height: none; }
+.agent-main-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.agent-main-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.agent-main-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--steel-wash);
+  color: var(--steel-ink);
+  font: 650 12px var(--font-mono);
+}
+.agent-main-header h1 {
+  overflow: hidden;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-main-header p { margin: 1px 0 0; color: var(--muted); font: 10px var(--font-mono); }
+.agent-main-status {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font: 600 10px var(--font-mono);
+}
+
+.agent-boss-note {
+  margin: 0;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--amber-wash);
+  color: #62501f;
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+.agent-inline-error {
+  margin: 10px 24px 0;
+  padding: 8px 10px;
+  border-left: 2px solid var(--danger);
+  background: var(--danger-wash);
+  color: #76392d;
+  font-size: 11px;
+}
+
+.agent-conversation {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+}
+/* The thread paints inside the product width, not the console panel width. */
+.agent-conversation .agent-chat-thread { padding: 0 max(24px, calc((100% - 780px) / 2)); }
+.agent-conversation .agent-chat-message { border-left: 0; padding: 14px 0; }
+.agent-conversation .agent-chat-composer { margin: 0 max(24px, calc((100% - 780px) / 2)) 20px; }
+
+@media (max-width: 860px) {
+  .agent-app { grid-template-columns: 76px minmax(0, 1fr); }
+  .agent-sidebar:not(.is-collapsed) { width: 268px; }
+  .agent-main-scroll { padding: 26px 16px 34px; }
+  .agent-main-header { padding: 12px 16px; }
+  .agent-conversation .agent-chat-thread { padding: 0 16px; }
+  .agent-conversation .agent-chat-composer { margin: 0 16px 14px; }
+}

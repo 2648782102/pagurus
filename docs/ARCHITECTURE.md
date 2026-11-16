@@ -35,13 +35,32 @@ Keep the UI web-first. A native desktop wrapper can be selected after installer,
 
 ```text
 src/
-├── app/                            # application composition and page shell
+├── app/                            # console composition, page shell, surface switch
+├── agent/                          # the shipped Agent product shell (no operator tools)
 ├── features/<capability>/          # feature UI and its local state
 ├── shared/
 │   ├── api/                        # typed clients for Conchbase's public API
 │   └── ui/                         # dependency-free primitives, polling, display vocabulary
 └── styles/                         # ordered cascade layers; styles.css is import-only
 ```
+
+## Two surfaces, one client core
+
+`src/app/surface.ts` chooses a surface from `?surface=`. The default is the
+operator console, and every `#workspace` link keeps working unchanged. With
+`?surface=agent`, `src/agent/AgentApp.tsx` renders the shipped product: an
+identity rail, one conversation, and a link back to the console.
+
+The product is a different shell, not a different client. Both surfaces call
+`useAgentChat` and `useAgentChatStream`, so the conversation contract, SSE
+resumption, polling fallback, and inline approval exist once. The single
+difference is entry behaviour: the console lands on a picker, the product
+resumes the newest thread that actually contains messages. See
+[ADR 0040](decisions/0040-agent-product-surface.md).
+
+Keep operator diagnostics in the console and user-facing behaviour in
+`src/agent/`. Anything both need belongs in `features/` or `shared/`; the
+product must never grow a second path to Runtime truth.
 
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
 

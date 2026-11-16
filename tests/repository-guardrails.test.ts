@@ -521,6 +521,7 @@ describe('AI-first entry documents', () => {
       '0037-operations-desk-visual-theme.md',
       '0038-shared-runtime-transport.md',
       '0039-domain-module-layering.md',
+      '0040-agent-product-surface.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

@@ -25,7 +25,19 @@ function errorText(cause: unknown): string {
   return errorMessage(cause, 'Agent 对话失败');
 }
 
-export function useAgentChat(runtime: RuntimeInfo | null) {
+/**
+ * `autoResume` decides what an initial load means:
+ * - `false` (console): land on the picker; an operator chooses explicitly.
+ * - `true` (product): continue the newest thread that actually has messages.
+ *
+ * Both share one load path, so there is no second request and no race between
+ * "load the catalog" and "resume something".
+ */
+export function useAgentChat(
+  runtime: RuntimeInfo | null,
+  options: { readonly autoResume?: boolean } = {},
+) {
+  const autoResume = options.autoResume ?? false;
   const supported = supportsAgentChat(runtime);
   const [agents, setAgents] = useState<readonly AgentChatAgent[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState('');
@@ -57,11 +69,15 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
         : undefined;
       setSelectedModelReference((current) => current || preferred?.reference || catalog[0]?.reference || '');
       setRecent(history?.conversations ?? []);
-      // The landing panel is the default entry point, so a conversation is only
-      // restored when the caller explicitly asks for it.
-      if (options.restoreLatest && history?.conversations[0]) {
+      // Restore the newest thread that contains messages. The Runtime lists
+      // newest-created first, so its head is often a conversation the user
+      // opened and abandoned; resuming that would look like a broken screen.
+      const resumable = options.restoreLatest
+        ? history?.conversations.find((entry) => entry.messageCount > 0)
+        : undefined;
+      if (resumable) {
         try {
-          setConversation(await getAgentChatConversation(history.conversations[0].id));
+          setConversation(await getAgentChatConversation(resumable.id));
         } catch {
           setConversation(null);
         }
@@ -75,7 +91,7 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
     }
   }, [supported]);
 
-  useEffect(() => { void loadAgents(); }, [loadAgents]);
+  useEffect(() => { void loadAgents({ restoreLatest: autoResume }); }, [autoResume, loadAgents]);
 
   /**
    * A Runtime notice can arrive without a user message (for example when an
@@ -83,10 +99,18 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
    * connected, so the landing list needs a low-frequency refresh to show the
    * new last-message preview. An open conversation is handled by its stream.
    */
+  const refreshRecent = useCallback(async () => {
+    if (!supported) return;
+    try {
+      const history = await listAgentChatConversations();
+      setRecent(history.conversations);
+    } catch {
+      // A history refresh is opportunistic: never surface it as a chat error.
+    }
+  }, [supported]);
+
   useVisiblePolling(
-    () => listAgentChatConversations()
-      .then((history) => setRecent(history.conversations))
-      .catch(() => undefined),
+    () => refreshRecent(),
     15_000,
     supported && conversation === null,
   );
@@ -119,12 +143,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       setConversation(created);
       setDraft('');
       setDetailsOpen(false);
+      void refreshRecent();
     } catch (cause) {
       setError(errorText(cause));
     } finally {
       setBusy(false);
     }
-  }, [busy, models, reasoningEffort, selectedAgentId, selectedModelReference, supported]);
+  }, [busy, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
     setConversation(null);
@@ -175,12 +200,13 @@ export function useAgentChat(runtime: RuntimeInfo | null) {
       });
       setDraft('');
       setConversation(await getAgentChatConversation(current.id));
+      void refreshRecent();
     } catch (cause) {
       setError(errorText(cause));
     } finally {
       setBusy(false);
     }
-  }, [busy, draft]);
+  }, [busy, draft, refreshRecent]);
 
   const decideApproval = useCallback(async (
     assistantMessageId: string,

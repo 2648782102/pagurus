@@ -1,4 +1,5 @@
 import type { RuntimeConnectionState } from '../features/runtime-status/useRuntimeStatus.js';
+import { agentSurfaceHref } from './surface.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '正在检查',
@@ -24,6 +25,7 @@ export function ConsoleTopbar({
           <span className="status-dot" aria-hidden="true" />
           {CONNECTION_LABELS[state]}
         </span>
+        <a className="topbar-surface-link" href={agentSurfaceHref()}>切换到 Agent 应用</a>
         <span className="profile-chip"><span className="avatar">F</span><span>本机配置</span></span>
       </div>
     </header>
