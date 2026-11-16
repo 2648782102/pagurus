@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasBlockStructure, parseAnswer } from '../src/agent/agent-answer-format.js';
+import { hasBlockStructure, parseAnswer, parseSpans } from '../src/agent/agent-answer-format.js';
 
 describe('answer parsing', () => {
   it('keeps a single paragraph as one paragraph', () => {
@@ -70,6 +70,30 @@ describe('answer parsing', () => {
   it('preserves Chinese punctuation inside paragraphs', () => {
     const blocks = parseAnswer('他说：“好。”\n然后离开了。');
     expect(blocks[0]).toEqual({ kind: 'paragraph', text: '他说：“好。”\n然后离开了。' });
+  });
+
+  describe('inline spans', () => {
+    it('reads bold and inline code', () => {
+      expect(parseSpans('前面 **加粗** 和 `代码` 结尾')).toEqual([
+        { kind: 'text', text: '前面 ' },
+        { kind: 'strong', text: '加粗' },
+        { kind: 'text', text: ' 和 ' },
+        { kind: 'code', text: '代码' },
+        { kind: 'text', text: ' 结尾' },
+      ]);
+    });
+
+    it('treats emphasis markers inside backticks as literal code', () => {
+      expect(parseSpans('`a**b**c`')).toEqual([{ kind: 'code', text: 'a**b**c' }]);
+    });
+
+    it('leaves a lone marker alone', () => {
+      expect(parseSpans('单个 * 星号')).toEqual([{ kind: 'text', text: '单个 * 星号' }]);
+    });
+
+    it('returns plain text when there is no markup', () => {
+      expect(parseSpans('发布已通过。')).toEqual([{ kind: 'text', text: '发布已通过。' }]);
+    });
   });
 
   it('finds a fenced block published mid-line', () => {

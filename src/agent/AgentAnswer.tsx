@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
-import { parseAnswer, hasBlockStructure } from './agent-answer-format.js';
+import {
+  hasBlockStructure,
+  parseAnswer,
+  parseSpans,
+  type AnswerSpan,
+} from './agent-answer-format.js';
 
 /**
  * The reading view of one answer.
@@ -7,12 +12,15 @@ import { parseAnswer, hasBlockStructure } from './agent-answer-format.js';
  * Plain prose stays plain. Only when the published text already contains a
  * fenced block, list, heading, or quote does this render structure — that keeps
  * a one-sentence reply visually identical to before while making a long answer
- * scannable. Every node is React text, so an answer cannot inject markup.
+ * scannable.
  *
- * While the answer is still arriving it is rendered as a single run of text.
- * Re-parsing a partial body renumbers lists and splits code fences that are not
- * closed yet, so the paragraph would visibly re-flow several times per second.
- * Structure appears once, when the body has stopped changing.
+ * While the answer is still arriving, blocks are not parsed: re-parsing a
+ * partial body renumbers lists and splits fences that are not closed yet, so the
+ * paragraph would visibly re-flow several times per second. Inline emphasis is
+ * stable per frame, so it is safe to render immediately.
+ *
+ * Every node is React text chosen by this file, so an answer cannot inject
+ * markup.
  */
 export function AgentAnswer({ body, streaming = false }: {
   readonly body: string;
@@ -21,7 +29,7 @@ export function AgentAnswer({ body, streaming = false }: {
   const blocks = useMemo(() => parseAnswer(body), [body]);
 
   if (streaming || !hasBlockStructure(blocks)) {
-    return <p>{body}</p>;
+    return <p>{parseSpans(body).map(renderSpan)}</p>;
   }
 
   return (
@@ -35,18 +43,27 @@ export function AgentAnswer({ body, streaming = false }: {
                 <pre><code>{block.text}</code></pre>
               </figure>
             );
-          case 'list':
-            return block.ordered
-              ? <ol key={index}>{block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ol>
-              : <ul key={index}>{block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>;
+          case 'list': {
+            const items = block.items.map((item, itemIndex) => (
+              <li key={itemIndex}>{parseSpans(item).map(renderSpan)}</li>
+            ));
+            return block.ordered ? <ol key={index}>{items}</ol> : <ul key={index}>{items}</ul>;
+          }
           case 'heading':
-            return <h4 key={index}>{block.text}</h4>;
+            return <h4 key={index}>{parseSpans(block.text).map(renderSpan)}</h4>;
           case 'quote':
-            return <blockquote key={index}>{block.text}</blockquote>;
+            return <blockquote key={index}>{parseSpans(block.text).map(renderSpan)}</blockquote>;
           default:
-            return <p key={index}>{block.text}</p>;
+            return <p key={index}>{parseSpans(block.text).map(renderSpan)}</p>;
         }
       })}
     </div>
   );
+}
+
+/** One inline span; the element is chosen here, never by the answer text. */
+function renderSpan(span: AnswerSpan, index: number) {
+  if (span.kind === 'strong') return <strong key={index}>{span.text}</strong>;
+  if (span.kind === 'code') return <code key={index}>{span.text}</code>;
+  return <span key={index}>{span.text}</span>;
 }

@@ -18,6 +18,40 @@ export type AnswerBlock =
   | { readonly kind: 'list'; readonly ordered: boolean; readonly items: readonly string[] }
   | { readonly kind: 'quote'; readonly text: string };
 
+/**
+ * An inline run of text.
+ *
+ * Models routinely emit `**bold**` and `` `code` `` inside a sentence. Rendering
+ * the markers literally is worse than not supporting them at all — the reader
+ * sees asterisks where an emphasis was intended — so the spans are recognised
+ * and rendered as elements. Only these two are supported: they are what plain
+ * model output actually contains, and every span is rendered as React text.
+ */
+export type AnswerSpan =
+  | { readonly kind: 'text'; readonly text: string }
+  | { readonly kind: 'strong'; readonly text: string }
+  | { readonly kind: 'code'; readonly text: string };
+
+/**
+ * Splits a line into text, bold, and inline-code spans.
+ *
+ * Code is matched first: a `**` inside backticks is literal code, not bold.
+ */
+export function parseSpans(text: string): readonly AnswerSpan[] {
+  const spans: AnswerSpan[] = [];
+  const pattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*/g;
+  let scanned = 0;
+  for (const match of text.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    if (start > scanned) spans.push({ kind: 'text', text: text.slice(scanned, start) });
+    if (match[1] !== undefined) spans.push({ kind: 'code', text: match[1] });
+    else if (match[2] !== undefined) spans.push({ kind: 'strong', text: match[2] });
+    scanned = start + match[0].length;
+  }
+  if (scanned < text.length) spans.push({ kind: 'text', text: text.slice(scanned) });
+  return spans.length > 0 ? spans : [{ kind: 'text', text }];
+}
+
 const FENCE = /^```([\w+#.-]*)\s*$/;
 const ORDERED_ITEM = /^\s{0,3}(\d{1,3})[.)]\s+(.*)$/;
 const BULLET_ITEM = /^\s{0,3}[-*+]\s+(.*)$/;

@@ -135,6 +135,10 @@
   line-height: 1.75;
 }
 .agent-answer li::marker { color: var(--ag-tide); }
+/* A bold run inside a serif paragraph should read as emphasis, not as a weight
+   jump that breaks the line rhythm. */
+.agent-answer strong { color: var(--ag-ink); font-weight: 650; }
+.agent-answer p strong { font-family: var(--ag-sans); font-size: .95em; letter-spacing: -.005em; }
 .agent-answer blockquote {
   margin: 0;
   padding: 2px 0 2px 14px;
