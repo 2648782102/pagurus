@@ -159,6 +159,42 @@ export function useAgentChat(
   }, []);
 
   /**
+   * Start a conversation and immediately say the first thing.
+   *
+   * A product entry screen collects a message and then opens the thread, so
+   * separating "open" from "send" would leave an empty conversation on screen
+   * whenever the send failed. This keeps one user action to one outcome.
+   */
+  const startAndSend = useCallback(async () => {
+    const text = draft.trim();
+    if (!supported || !selectedAgentId || busy || text.length === 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const selectedModel = models.find((model) => model.reference === selectedModelReference);
+      const created = await createAgentChatConversation({
+        agentId: selectedAgentId,
+        reasoningEffort,
+        ...(selectedModel
+          ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
+          : {}),
+      });
+      await postAgentChatMessage(created.id, {
+        text,
+        idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
+      });
+      setConversation(await getAgentChatConversation(created.id));
+      setDraft('');
+      setDetailsOpen(false);
+      void refreshRecent();
+    } catch (cause) {
+      setError(errorText(cause));
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, draft, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
+
+  /**
    * Opens an existing conversation from the history list. Selecting history is
    * an explicit act, so this is the only place a previous conversation becomes
    * active after the landing panel has rendered.
@@ -256,6 +292,7 @@ export function useAgentChat(
     loadAgents,
     refreshConversation,
     startConversation,
+    startAndSend,
     resetConversation,
     resumeConversation,
     selectAgent,

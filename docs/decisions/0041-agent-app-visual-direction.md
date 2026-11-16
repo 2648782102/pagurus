@@ -84,3 +84,30 @@ styles, so the product cannot accidentally re-inherit instrument density.
 
 This decision does not cover dark mode, a desktop wrapper, animation, or any
 change to the console's appearance.
+
+## Revision: the shell was rebuilt, not restyled
+
+After the first pass the product still carried a permanent navigation rail and
+a settings-first landing screen. That survived every surface-level change
+because the *shape* was wrong, not the paint: a rail frames every visit as
+"manage your history", and a landing screen with three pickers asks a person to
+configure a tool before saying hello.
+
+The shell is now a page:
+
+1. **One bar.** Identity, the open thread's title, connection, and two actions:
+   history and new. There is no permanent navigation column.
+2. **The prompt comes first.** The entry state is one question — "和 X 说点什么"
+   — with Agent, model, and effort as small secondary picks underneath it.
+   Defaults are already chosen, so starting requires no configuration.
+3. **History is a drawer.** It slides over the reading column, traps focus,
+   restores focus to its trigger, and frees the body scroll behind it. Most
+   visits finish a thought; the library should not sit beside the page.
+4. **One action, one outcome.** A product entry screen collects a message, so
+   "open a conversation" and "say the first thing" are one controller call
+   (`startAndSend`). Separating them left an empty thread on screen whenever the
+   send failed.
+
+The rail component was deleted rather than left unused, and the product styles
+were re-cut into tokens, shell, entry, chat, drawer, and responsive layers, each
+still under the 300-line ceiling.

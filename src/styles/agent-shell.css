@@ -1,15 +1,19 @@
 /* ---------------------------------------------------------------------------
-   Shipped Agent app: the rail and the frame.
+   Shipped Agent app: the page and its one bar.
 
-   The rail is a rack of shells: the agent is the crab, each conversation is a
-   shell it occupies. Structure is carried by space and a single hairline,
-   never by cards. Labels are sentence case — the console already taught the
-   operator to read a schema, so the product does not need shouted micro-caps.
+   A page, not an application shell. There is no permanent navigation rail: the
+   chrome is a single hairline bar carrying identity and two actions, and the
+   page beneath it belongs to one thought at a time. History is a drawer, not a
+   column, because most visits are "finish something", not "browse a library".
+
+   Pagurus is a hermit crab: the agent is the crab, each conversation a shell it
+   occupies. That is why history is something you reach for, not scaffolding
+   that is always in front of you.
    --------------------------------------------------------------------------- */
 
 .agent-app {
-  display: grid;
-  grid-template-columns: var(--ag-rail-width) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   background: var(--ag-paper);
   color: var(--ag-ink);
@@ -17,174 +21,103 @@
 }
 .agent-app-blocked {
   display: block;
-  max-width: 640px;
-  margin: 12vh auto 0;
+  height: auto;
+  max-width: 620px;
+  margin: 14vh auto 0;
   padding: 0 24px;
   background: var(--ag-paper);
 }
-/* --- rail ---------------------------------------------------------------- */
 
-.agent-sidebar {
+/* --- chrome -------------------------------------------------------------- */
+
+.agent-chrome {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 18px 14px 14px;
-  overflow: hidden;
-  background: var(--ag-rail);
-  color: #dfe7e3;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 52px;
+  padding: 0 20px 0 18px;
+  border-bottom: 1px solid var(--ag-line);
+  background: var(--ag-paper);
 }
-.agent-sidebar.is-collapsed { padding: 18px 10px 14px; }
-
-.agent-sidebar-head { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 4px; }
-.agent-brand-mark {
+.agent-chrome-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.agent-chrome-mark {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--ag-rail-soft);
-  box-shadow: inset 0 0 0 1px var(--ag-rail-line);
+  background: var(--ag-rail);
   color: #e8d3c2;
   font: 600 11px var(--ag-serif);
 }
-.agent-brand-copy { display: grid; gap: 0; min-width: 0; }
-.agent-brand-copy strong {
-  color: #f0f4f1;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: .01em;
-}
-.agent-brand-copy small { color: #8a9a93; font-size: 10px; letter-spacing: .08em; }
-.agent-rail-toggle {
-  display: grid;
-  place-items: center;
-  margin-left: auto;
-  width: 22px;
-  height: 22px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #8a9a93;
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
-}
-.agent-rail-toggle:hover { background: var(--ag-rail-soft); color: #f0f4f1; }
-
-/* The one primary action. Rust is inherited from the console so the two
-   surfaces still read as one product, but here it is a quiet solid. */
-.agent-new-chat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0 4px;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: var(--ag-radius);
-  background: var(--rust);
-  color: #fdf8f5;
-  cursor: pointer;
-  font: 600 12.5px var(--ag-sans);
-  letter-spacing: .01em;
-}
-.agent-new-chat:hover { background: var(--rust-strong); }
-.agent-new-chat > span { font-size: 13px; opacity: .85; }
-.agent-sidebar.is-collapsed .agent-new-chat { justify-content: center; padding: 9px 0; }
-
-.agent-rail-search { display: block; margin: 10px 0 2px; }
-.agent-rail-search input {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1px solid transparent;
-  border-radius: var(--ag-radius);
-  background: var(--ag-rail-soft);
-  color: #e8efec;
-  font: 11.5px var(--ag-sans);
-}
-.agent-rail-search input::placeholder { color: #7d8d86; }
-.agent-rail-search input:focus-visible { outline: none; box-shadow: inset 0 0 0 1px #5d8e84; }
-
-.agent-rail-section { display: grid; gap: 1px; margin-top: 16px; min-height: 0; }
-.agent-rail-section h2 {
-  margin: 0 0 4px;
-  padding: 0 6px;
-  color: #7d8d86;
-  font: 500 10.5px var(--ag-sans);
-  letter-spacing: .04em;
-}
-.agent-rail-list { display: grid; gap: 1px; margin: 0; padding: 0; overflow: auto; list-style: none; }
-.agent-rail-empty { margin: 0; padding: 4px 6px 8px; color: #7d8d86; font-size: 11px; line-height: 1.6; }
-
-.agent-rail-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 8px 8px;
-  border: 0;
-  border-radius: var(--ag-radius);
-  background: transparent;
-  color: #c9d5cf;
-  cursor: pointer;
-  font-family: var(--ag-sans);
-  text-align: left;
-  transition: background-color .12s ease, color .12s ease;
-}
-.agent-rail-item:hover { background: var(--ag-rail-soft); color: #eef3f0; }
-.agent-rail-item.is-active { background: #2b3f38; color: #ffffff; box-shadow: inset 2px 0 0 var(--tide); }
-
-.agent-rail-avatar {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--ag-rail-line);
-  color: #e3cdbb;
-  font: 600 10.5px var(--ag-serif);
-}
-.agent-rail-copy { display: grid; gap: 1px; min-width: 0; }
-.agent-rail-copy strong { overflow: hidden; font-size: 12px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
-.agent-rail-copy small { overflow: hidden; color: #82938c; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
-
-.agent-rail-sessions { min-height: 0; overflow: auto; }
-.agent-rail-thread { padding: 7px 8px; }
-.agent-rail-sessions .agent-rail-copy strong {
-  display: -webkit-box;
+.agent-chrome-name { flex: 0 0 auto; color: var(--ag-ink); font-size: 13px; font-weight: 600; letter-spacing: -.005em; }
+.agent-chrome-divider { flex: 0 0 auto; width: 1px; height: 13px; background: var(--ag-line-strong); }
+.agent-chrome-thread {
   overflow: hidden;
-  font-size: 11.5px;
-  font-weight: 450;
-  line-height: 1.45;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  max-width: 42ch;
+  color: var(--ag-muted);
+  font-size: 12px;
   text-overflow: ellipsis;
-  white-space: normal;
-}
-.agent-rail-thread .agent-rail-copy small { margin-top: 1px; }
-
-.agent-rail-group { display: grid; gap: 1px; margin-bottom: 8px; }
-.agent-rail-group h3 {
-  margin: 8px 0 2px;
-  padding: 0 8px;
-  color: #6e7f78;
-  font: 500 10px var(--ag-sans);
-  letter-spacing: .03em;
+  white-space: nowrap;
 }
 
-.agent-sidebar-foot {
+.agent-chrome-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.agent-chrome-status { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--ag-muted); font-size: 11px; }
+.agent-chrome-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ag-faint); }
+.agent-chrome-status.status-connected .agent-chrome-dot { background: var(--ag-signal); }
+.agent-chrome-status.status-disconnected .agent-chrome-dot { background: var(--ag-danger); }
+.agent-chrome-status.status-incompatible .agent-chrome-dot { background: #b08b3a; }
+
+.agent-chrome-button {
+  padding: 6px 13px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ag-ink-soft);
+  cursor: pointer;
+  font: 500 11.5px var(--ag-sans);
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+.agent-chrome-button:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); background: var(--ag-tide-wash); }
+.agent-chrome-button:focus-visible { outline: 2px solid var(--ag-tide); outline-offset: 2px; }
+.agent-chrome-button.is-primary {
+  border-color: var(--ag-rail);
+  background: var(--ag-rail);
+  color: #f4f7f4;
+}
+.agent-chrome-button.is-primary:hover { border-color: #101a16; background: #101a16; color: #ffffff; }
+
+/* --- page ---------------------------------------------------------------- */
+
+.agent-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+.agent-page-center {
   display: grid;
-  gap: 6px;
-  margin-top: auto;
-  padding: 12px 4px 0;
-  border-top: 1px solid var(--ag-rail-line);
+  flex: 1 1 auto;
+  place-items: center;
+  padding: 24px;
 }
-.agent-connection { display: flex; align-items: center; gap: 6px; color: #82938c; font-size: 10px; }
-.agent-connection-dot { width: 5px; height: 5px; border-radius: 50%; background: #6a7a73; }
-.agent-connection.status-connected .agent-connection-dot { background: #6fbf92; }
-.agent-connection.status-disconnected .agent-connection-dot { background: #d98a72; }
-.agent-connection.status-incompatible .agent-connection-dot { background: #d8b169; }
-.agent-console-link { color: #82938c; font-size: 10px; text-decoration: none; }
-.agent-console-link:hover { color: #eef3f0; text-decoration: underline; }
+.agent-page-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
+}
+.agent-page-note { color: var(--ag-muted); font-size: 11px; }
+.agent-inline-error {
+  margin: 10px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
+  padding: 9px 12px;
+  border-radius: var(--ag-radius);
+  background: var(--ag-danger-wash);
+  color: #743528;
+  font-size: 11.5px;
+}

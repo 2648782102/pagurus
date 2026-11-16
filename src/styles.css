@@ -22,5 +22,6 @@
 @import "./styles/agent-shell.css";
 @import "./styles/agent-entry.css";
 @import "./styles/agent-chat.css";
+@import "./styles/agent-drawer.css";
 @import "./styles/responsive.css";
 @import "./styles/agent-responsive.css";

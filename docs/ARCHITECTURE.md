@@ -76,6 +76,12 @@ fonts. Rust still marks the primary action and the wordmark is shared, so both
 surfaces read as one product. See
 [ADR 0041](decisions/0041-agent-app-visual-direction.md).
 
+Structurally the product is a page: one bar (`AgentChrome`), one entry prompt
+(`AgentPrompt`), one reading column, and history behind a focus-trapping drawer
+(`AgentThreadDrawer`). There is no permanent navigation column. The entry prompt
+collects the first message, so opening a conversation and sending it are one
+controller call.
+
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
 
 ## Transport and validation

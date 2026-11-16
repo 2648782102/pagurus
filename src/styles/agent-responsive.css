@@ -1,17 +1,20 @@
 /* ---------------------------------------------------------------------------
    Shipped Agent app: narrow viewports.
 
-   The rail collapses to an icon column first, because identity and history stay
-   useful; the reading column then narrows to the viewport with its margins
-   intact so the measure never collapses against the edge.
+   The chrome drops its thread title and status text before it drops an action,
+   because both actions remain useful at any width. The reading column keeps its
+   gutter so text never sits against the edge.
    --------------------------------------------------------------------------- */
 
-@media (max-width: 860px) {
-  .agent-app { grid-template-columns: 68px minmax(0, 1fr); }
-  .agent-sidebar:not(.is-collapsed) { width: var(--ag-rail-width); }
-  .agent-main-scroll { padding: 32px 18px 40px; }
-  .agent-main-header { padding: 13px 18px; }
-  .agent-conversation .agent-chat-thread { padding: 6px 18px 20px; }
-  .agent-conversation .agent-chat-composer { margin: 0 18px 16px; }
-  .agent-conversation .agent-chat-message-assistant p { font-size: 15px; }
+@media (max-width: 720px) {
+  .agent-chrome { gap: 10px; padding: 0 12px; }
+  .agent-chrome-thread, .agent-chrome-divider { display: none; }
+  .agent-chrome-status { display: none; }
+  .agent-chrome-button { padding: 6px 11px; font-size: 11px; }
+  .agent-page-head { padding: 10px 16px 0; }
+  .agent-page-note { display: none; }
+  .agent-thread-area .agent-chat-thread { padding: 6px 16px 18px; }
+  .agent-thread-area .agent-chat-composer { margin: 0 16px 14px; }
+  .agent-thread-area .agent-chat-message-assistant p { font-size: 15.5px; }
+  .agent-inline-error { margin: 10px 16px 0; }
 }

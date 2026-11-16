@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AgentApp } from '../src/agent/AgentApp.js';
 
@@ -119,49 +119,57 @@ describe('shipped Agent surface', () => {
   it('resumes the latest conversation instead of asking again', async () => {
     render(<AgentApp />);
 
-    await waitFor(() => expect(screen.getAllByText('帮我看一下发布状态').length).toBeGreaterThan(0));
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '研究助手' })).toBeTruthy();
+    // The bar states which Agent owns the open thread.
+    const chrome = screen.getByRole('banner');
+    expect(within(chrome).getByText('研究助手')).toBeTruthy();
   });
 
   it('skips an abandoned empty conversation when resuming', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    // The empty thread is neither resumed nor offered in the rail.
-    expect(screen.queryByText('（空会话）')).toBeNull();
-    expect(screen.getAllByText('帮我看一下发布状态').length).toBeGreaterThan(0);
+    // The empty thread is neither resumed nor offered in history.
+    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
+    const drawer = screen.getByRole('dialog', { name: '对话记录' });
+    expect(within(drawer).queryByText('（空会话）')).toBeNull();
+    expect(within(drawer).getByText(/帮我看一下发布状态/)).toBeTruthy();
   });
 
   it('does not expose operator-only surfaces', async () => {
     render(<AgentApp />);
-    await waitFor(() => expect(screen.getAllByText('帮我看一下发布状态').length).toBeGreaterThan(0));
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
     // The product app has no runtime policy, capability, or secret entry points.
     expect(screen.queryByRole('link', { name: /运行时设置/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /能力目录/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /敏感信息/ })).toBeNull();
     expect(screen.queryByRole('heading', { name: /配置版本/ })).toBeNull();
-    // It does keep a route back to the console for operators.
+    // It does keep a route back to the console, behind history.
+    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
     expect(screen.getByRole('link', { name: '打开控制台' })).toBeTruthy();
   });
 
-  it('stays on the picker after starting a new conversation', async () => {
+  it('returns to the prompt after starting a new conversation', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '开始新对话' }));
+    fireEvent.click(screen.getByRole('button', { name: '新对话' }));
 
     // Resuming is a launch-time behaviour only. Pressing "new" must not be
     // undone by the next catalog poll re-entering the old thread.
-    expect(await screen.findByRole('heading', { name: '选择 Agent' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
+    expect(screen.getByLabelText('输入消息')).toBeTruthy();
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(screen.queryByText('发布已通过。')).toBeNull();
   });
 
-  it('groups the session rail by recency and filters it by search', async () => {
+  it('groups history by recency and filters it by search', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
+    expect(screen.getByRole('dialog', { name: '对话记录' })).toBeTruthy();
 
     // The resumed thread appears under a recency group, not as a flat list.
     // Which group depends on how old the fixture is relative to the real clock,
@@ -188,7 +196,7 @@ describe('shipped Agent surface', () => {
 
     // The only honest model change starts a new conversation.
     fireEvent.click(screen.getByRole('button', { name: '用新模型开新对话' }));
-    expect(await screen.findByRole('heading', { name: '选择 Agent' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
   });
 
   it('offers copy on a settled assistant reply only', async () => {
@@ -201,5 +209,20 @@ describe('shipped Agent surface', () => {
     expect(screen.getAllByRole('button', { name: '复制回复' }).length).toBeLessThan(
       screen.getAllByRole('article').length,
     );
+  });
+
+  it('moves focus into the history sheet and back to its trigger', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const opener = screen.getByRole('button', { name: '对话记录' });
+    fireEvent.click(opener);
+
+    // A modal sheet must take focus, or a keyboard user is stuck behind it.
+    const search = screen.getByPlaceholderText('搜索对话');
+    expect(document.activeElement).toBe(search);
+
+    fireEvent.click(screen.getByRole('button', { name: '关闭对话记录' }));
+    expect(document.activeElement).toBe(opener);
   });
 });
