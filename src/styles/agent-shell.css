@@ -133,6 +133,40 @@
 .agent-rail-thread { padding: 6px 8px; }
 .agent-rail-thread .agent-rail-copy strong { font-weight: 550; }
 
+.agent-rail-search { display: block; margin: 4px 0 2px; }
+.agent-rail-search input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #2a4147;
+  border-radius: 2px;
+  background: #142128;
+  color: #e7eeef;
+  font-size: 11px;
+}
+.agent-rail-search input::placeholder { color: #6f8589; }
+.agent-rail-search input:focus-visible { border-color: #4d7280; outline: none; }
+
+.agent-rail-sessions { min-height: 0; overflow: auto; }
+.agent-rail-sessions .agent-rail-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.35;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+.agent-rail-group { display: grid; gap: 1px; margin-bottom: 6px; }
+.agent-rail-group h3 {
+  margin: 6px 0 1px;
+  padding: 0 6px;
+  color: #6f8589;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
 .agent-sidebar-foot {
   display: grid;
   gap: 5px;
@@ -148,104 +182,3 @@
 .agent-console-link { color: #8fa3a7; font-size: 9.5px; text-decoration: none; }
 .agent-console-link:hover { color: #f2f6f5; text-decoration: underline; }
 
-/* --- conversation -------------------------------------------------------- */
-
-.agent-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--paper-raised); }
-.agent-main-scroll { flex: 1 1 auto; overflow: auto; padding: 40px 24px 48px; }
-
-/* The product's entry screen is a page, not an instrument panel: one column,
-   generous width, and no panel chrome borrowed from the console. */
-.agent-main-scroll > .agent-landing {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 0;
-  gap: 20px;
-}
-.agent-main-scroll .agent-landing-heading h2 { font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
-.agent-main-scroll .agent-chat-intro { max-width: 560px; font-size: 13px; }
-.agent-main-scroll .agent-landing-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-.agent-main-scroll .agent-picker,
-.agent-main-scroll .agent-launcher,
-.agent-main-scroll .agent-history { border-color: var(--line); background: var(--paper); }
-.agent-main-scroll .agent-picker-heading,
-.agent-main-scroll .agent-launcher-heading { padding: 11px 14px; }
-.agent-main-scroll .agent-picker-list { max-height: 220px; }
-.agent-main-scroll .agent-picker-item { padding: 9px 14px; }
-.agent-main-scroll .agent-launcher-options { padding: 0 14px 14px; gap: 11px; }
-.agent-main-scroll .agent-launcher-options > .ui-button { justify-self: start; }
-.agent-main-scroll .agent-history { margin-top: 2px; }
-.agent-main-scroll .agent-history-list { max-height: none; }
-.agent-main-header {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--line);
-}
-.agent-main-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.agent-main-avatar {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--steel-wash);
-  color: var(--steel-ink);
-  font: 650 12px var(--font-mono);
-}
-.agent-main-header h1 {
-  overflow: hidden;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -.01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-main-header p { margin: 1px 0 0; color: var(--muted); font: 10px var(--font-mono); }
-.agent-main-status {
-  flex: 0 0 auto;
-  color: var(--muted);
-  font: 600 10px var(--font-mono);
-}
-
-.agent-boss-note {
-  margin: 0;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--line);
-  background: var(--amber-wash);
-  color: #62501f;
-  font-size: 10.5px;
-  line-height: 1.6;
-}
-.agent-inline-error {
-  margin: 10px 24px 0;
-  padding: 8px 10px;
-  border-left: 2px solid var(--danger);
-  background: var(--danger-wash);
-  color: #76392d;
-  font-size: 11px;
-}
-
-.agent-conversation {
-  display: grid;
-  flex: 1 1 auto;
-  grid-template-rows: minmax(0, 1fr) auto;
-  min-height: 0;
-}
-/* The thread paints inside the product width, not the console panel width. */
-.agent-conversation .agent-chat-thread { padding: 0 max(24px, calc((100% - 780px) / 2)); }
-.agent-conversation .agent-chat-message { border-left: 0; padding: 14px 0; }
-.agent-conversation .agent-chat-composer { margin: 0 max(24px, calc((100% - 780px) / 2)) 20px; }
-
-@media (max-width: 860px) {
-  .agent-app { grid-template-columns: 76px minmax(0, 1fr); }
-  .agent-sidebar:not(.is-collapsed) { width: 268px; }
-  .agent-main-scroll { padding: 26px 16px 34px; }
-  .agent-main-header { padding: 12px 16px; }
-  .agent-conversation .agent-chat-thread { padding: 0 16px; }
-  .agent-conversation .agent-chat-composer { margin: 0 16px 14px; }
-}

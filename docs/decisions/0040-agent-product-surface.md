@@ -90,3 +90,31 @@ of Runtime truth.
 
 This decision does not accept desktop packaging, remote pairing, a second
 provider path, or any change to the published Agent Chat contract.
+
+## Learning from existing agent products
+
+The product shell deliberately follows interaction patterns that users of
+terminal and desktop agent apps already know: a collapsible session rail with a
+single primary action, sessions grouped by recency, a searchable history, a
+composer that stays at the bottom of one continuous stream, a model indicator
+next to the conversation title, and copy on a settled reply.
+
+What this decision accepts is **interaction structure and layout**: where a
+control sits, what it does, and what a user expects when they press it. Those
+patterns are functional and are shared across the whole class of chat products.
+
+What this decision does **not** accept:
+
+- another product's name, logo, wordmark, icons, illustrations, or copy;
+- their source code, component implementations, or stylesheet values;
+- their fonts, when a licence does not permit redistribution;
+- their agent loop, tool protocol, or data model. Conchbase stays the only
+  execution authority, and Pagurus keeps consuming the published
+  `agentChatContract` routes.
+
+Concretely: the rail groups sessions by local calendar day, searches by the
+published message preview, and starts a new conversation from one primary
+button. Those are behaviours, implemented here against this repository's own
+primitives and tokens. Every colour, type ramp, and spacing value still comes
+from `styles/tokens.css`, so the product remains recognisably Pagurus rather
+than a pixel copy of another app.

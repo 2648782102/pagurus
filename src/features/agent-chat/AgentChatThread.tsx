@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { AgentChatMessage, AgentChatMessageState } from '../../shared/api/agent-chat.js';
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
 
@@ -7,6 +7,14 @@ interface AgentChatThreadProps {
   readonly agentName: string;
   readonly busy: boolean;
   readonly onDecision: (assistantMessageId: string, decision: 'approved' | 'rejected') => void;
+  /**
+   * Optional trailing actions for a settled assistant message.
+   *
+   * The console has no use for these, and the product wants copy/retry next to
+   * a reply. Passing a slot instead of a flag keeps the operator surface
+   * unchanged and avoids two message renderers drifting apart.
+   */
+  readonly renderMessageActions?: (message: AgentChatMessage) => ReactNode;
 }
 
 const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
@@ -78,7 +86,13 @@ function closeOutSections(body: string): readonly { readonly title: string; read
   return sections.length > 0 ? sections : null;
 }
 
-export function AgentChatThread({ messages, agentName, busy, onDecision }: AgentChatThreadProps) {
+export function AgentChatThread({
+  messages,
+  agentName,
+  busy,
+  onDecision,
+  renderMessageActions,
+}: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
 
@@ -171,6 +185,7 @@ export function AgentChatThread({ messages, agentName, busy, onDecision }: Agent
             </div>
           )}
           {message.error && <small>{message.error}</small>}
+          {renderMessageActions?.(message)}
         </article>
       ))}
     </div>

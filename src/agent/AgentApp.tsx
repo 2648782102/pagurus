@@ -7,6 +7,9 @@ import { AgentPanelLanding } from '../features/agent-chat/AgentPanelLanding.js';
 import { Notice } from '../shared/ui/primitives.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentSidebar } from './AgentSidebar.js';
+import { AgentMessageActions } from './AgentMessageActions.js';
+import { AgentModelMenu } from './AgentModelMenu.js';
+import { useAgentCapabilities } from './useAgentCapabilities.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '正在连接',
@@ -26,6 +29,7 @@ const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
 export function AgentApp() {
   const runtimeStatus = useRuntimeStatus();
   const chat = useAgentSurface(runtimeStatus.runtime);
+  const agentCapabilities = useAgentCapabilities();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const conversationEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -95,12 +99,19 @@ export function AgentApp() {
               <div className="agent-main-identity">
                 <span className="agent-main-avatar" aria-hidden="true">{chat.title.slice(0, 1)}</span>
                 <div>
-                  <h1>{chat.title}</h1>
-                  <p>
-                    {chat.pinSummary?.provider}:{chat.pinSummary?.model}
-                    <span aria-hidden="true"> · </span>
-                    思考强度 {chat.pinSummary?.effort}
-                  </p>
+                  <div className="agent-title-row">
+                    <h1>{chat.title}</h1>
+                    <AgentModelMenu
+                      pinned={chat.pinSummary}
+                      models={chat.models}
+                      onStartNew={chat.restart}
+                      capabilities={agentCapabilities.capabilities}
+                      onInspect={() => void agentCapabilities.load(
+                        chat.conversation?.agentId,
+                        chat.conversation?.agentRevisionId,
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="agent-main-status" role="status">
@@ -125,6 +136,7 @@ export function AgentApp() {
                 agentName={chat.title}
                 busy={chat.busy}
                 onDecision={chat.decideApproval}
+                renderMessageActions={(message) => <AgentMessageActions message={message} />}
               />
               <div ref={conversationEndRef} />
               <AgentChatComposer

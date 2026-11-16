@@ -84,6 +84,24 @@ describe('shipped Agent surface', () => {
       if (path === `/v1/agent-chat/conversations/${conversationId}`) {
         return Promise.resolve(json(conversation()));
       }
+      if (path === '/v1/agents/agt_alpha') {
+        return Promise.resolve(json({ agent: {
+          id: 'agt_alpha',
+          currentRevisionId: 'agr_alpha',
+          archived: false,
+          isDefault: true,
+          current: {
+            id: 'agr_alpha', name: '研究助手', instructions: '', providerId: 'magpie',
+            modelId: 'fixture/chat-model', createdAt: '2026-11-16T00:00:00.000Z',
+            grantedCapabilities: [{ kind: 'tool', name: 'read_file' }],
+          },
+          revisions: [{
+            id: 'agr_alpha', name: '研究助手', instructions: '', providerId: 'magpie',
+            modelId: 'fixture/chat-model', createdAt: '2026-11-16T00:00:00.000Z',
+            grantedCapabilities: [{ kind: 'tool', name: 'read_file' }],
+          }],
+        } }));
+      }
       return Promise.resolve(json({ error: 'not found' }, 404));
     }));
     class SilentEventSource {
@@ -139,5 +157,47 @@ describe('shipped Agent surface', () => {
     expect(await screen.findByRole('heading', { name: '选择 Agent' })).toBeTruthy();
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(screen.queryByText('发布已通过。')).toBeNull();
+  });
+
+  it('groups the session rail by recency and filters it by search', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    // The resumed thread appears under its day group, not as a flat list.
+    expect(screen.getByRole('heading', { name: '今天' })).toBeTruthy();
+
+    const search = screen.getByPlaceholderText('搜索对话');
+    fireEvent.change(search, { target: { value: '不存在的关键词' } });
+    expect(screen.getByText('没有匹配的对话。')).toBeTruthy();
+
+    fireEvent.change(search, { target: { value: '发布状态' } });
+    expect(screen.queryByText('没有匹配的对话。')).toBeNull();
+  });
+
+  it('states the pinned model and offers a new conversation instead of a fake switch', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '对话模型：fixture/chat-model' }));
+    expect(screen.getByText('本次对话固定使用')).toBeTruthy();
+    expect(screen.getByText(/换模型需要新开一段对话/)).toBeTruthy();
+    // Capability boundary is stated in plain language, not as a permission table.
+    expect(await screen.findByText(/1 个工具/)).toBeTruthy();
+
+    // The only honest model change starts a new conversation.
+    fireEvent.click(screen.getByRole('button', { name: '用新模型开新对话' }));
+    expect(await screen.findByRole('heading', { name: '选择 Agent' })).toBeTruthy();
+  });
+
+  it('offers copy on a settled assistant reply only', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    // One reply exists, so exactly one copy affordance exists.
+    expect(screen.getAllByRole('button', { name: '复制回复' })).toHaveLength(1);
+    // The user message has no copy action.
+    expect(screen.getAllByRole('button', { name: '复制回复' }).length).toBeLessThan(
+      screen.getAllByRole('article').length,
+    );
   });
 });

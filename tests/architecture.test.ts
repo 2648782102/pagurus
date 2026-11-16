@@ -82,4 +82,16 @@ describe('front-end architecture boundaries', () => {
     expect(panel).toMatch(/runtimeEndpointLabel\(\)/);
     expect(panel).not.toMatch(/<code>127\.0\.0\.1:4318<\/code>/);
   });
+
+  it('keeps the product surface free of borrowed third-party assets', () => {
+    // ADR 0040 accepts interaction patterns, not another product's identity.
+    // A vendor name in the shipped shell would mean we copied branding.
+    const product = sourceFiles('src/agent').map((file) => ({ file, source: read(file) }));
+    const borrowedIdentity = /\b(?:codex|dsh|deepseek\s*harness|workbuddy|cursor|claude)\b/i;
+    const offenders = product
+      .filter(({ source }) => borrowedIdentity.test(source))
+      .map(({ file }) => file);
+    expect(offenders, `product modules must not carry another vendor's identity:\n${offenders.join('\n')}`)
+      .toEqual([]);
+  });
 });

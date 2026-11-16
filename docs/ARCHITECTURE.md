@@ -62,6 +62,12 @@ Keep operator diagnostics in the console and user-facing behaviour in
 `src/agent/`. Anything both need belongs in `features/` or `shared/`; the
 product must never grow a second path to Runtime truth.
 
+The product shell adopts interaction patterns common to agent apps — a
+collapsible session rail, recency grouping, history search, a fixed composer, a
+model indicator, and copy on a reply — while using only this repository's
+primitives and design tokens. It copies no other product's brand, copy, code,
+or stylesheet values, and it adds no second agent loop or schema.
+
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
 
 ## Transport and validation

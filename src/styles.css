@@ -18,5 +18,6 @@
 @import "./styles/conversation.css";
 @import "./styles/configuration.css";
 @import "./styles/footer.css";
-@import "./styles/agent-app.css";
+@import "./styles/agent-shell.css";
+@import "./styles/agent-chat.css";
 @import "./styles/responsive.css";
