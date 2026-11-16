@@ -245,4 +245,41 @@ describe('shipped Agent surface', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(await screen.findByText('正在发送…')).toBeTruthy();
   });
+
+  it('shows the pinned revisions in the context panel', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+
+    const panel = screen.getByRole('complementary', { name: '对话上下文' });
+    expect(within(panel).getByText('固定版本')).toBeTruthy();
+    expect(within(panel).getByText('magpie:fixture/chat-model')).toBeTruthy();
+    // Long ids are shortened; the distinguishing tail must still be visible.
+    expect(within(panel).getAllByText(/agr_alpha/).length).toBeGreaterThan(0);
+  });
+
+  it('reads the capability boundary into the panel on demand', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+    const panel = screen.getByRole('complementary', { name: '对话上下文' });
+    expect(await within(panel).findByText(/read_file/)).toBeTruthy();
+  });
+
+  it('closes the context panel and reports it as collapsed', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const toggle = screen.getByRole('button', { name: '上下文' });
+    fireEvent.click(toggle);
+    // A disclosure, not a toggle button: the panel is a region the control owns.
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.getAttribute('aria-controls')).toBe('agent-context');
+
+    fireEvent.click(screen.getByRole('button', { name: '收起上下文' }));
+    expect(screen.queryByRole('complementary', { name: '对话上下文' })).toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
 });

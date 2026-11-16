@@ -17,6 +17,8 @@ export function AgentChrome({
   threadsButtonRef,
   onOpenThreads,
   onNewThread,
+  contextOpen,
+  onToggleContext,
 }: {
   readonly agentName: string;
   readonly threadTitle: string | null;
@@ -27,6 +29,9 @@ export function AgentChrome({
   readonly threadsButtonRef: RefObject<HTMLButtonElement | null>;
   readonly onOpenThreads: () => void;
   readonly onNewThread: () => void;
+  /** Whether the context panel is showing; the action stays pressed while it is. */
+  readonly contextOpen: boolean;
+  readonly onToggleContext: () => void;
 }) {
   return (
     <header className="agent-chrome">
@@ -53,6 +58,15 @@ export function AgentChrome({
           onClick={onOpenThreads}
         >
           对话记录
+        </button>
+        <button
+          type="button"
+          className={`agent-chrome-button${contextOpen ? ' is-on' : ''}`}
+          onClick={onToggleContext}
+          aria-expanded={contextOpen}
+          aria-controls="agent-context"
+        >
+          上下文
         </button>
         <button type="button" className="agent-chrome-button is-primary" onClick={onNewThread}>
           新对话

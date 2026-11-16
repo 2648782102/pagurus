@@ -90,6 +90,13 @@ line with inline fences and numbering. Failures are translated by
 `agent-error-text.ts` into guidance rather than HTTP jargon, which the console
 keeps for diagnosis. See [ADR 0042](decisions/0042-agent-app-answer-and-failure-handling.md).
 
+`AgentContextPanel` is the extendable right side: pinned revisions, the Agent
+revision's capability boundary, and published execution activity, all read-only.
+It opens on demand and takes a grid column above 900px (so the reading column
+re-centres) or overlays and dims the page below that. A new capability belongs
+here as a new section backed by a published field. See
+[ADR 0043](decisions/0043-agent-context-panel.md).
+
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
 
 ## Transport and validation

@@ -23,6 +23,7 @@ const styleLayers = [
   'agent-entry.css',
   'agent-chat.css',
   'agent-drawer.css',
+  'agent-context.css',
   'responsive.css',
   'agent-responsive.css',
 ];

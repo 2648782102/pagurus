@@ -110,6 +110,13 @@ function CapabilityLine({ capabilities }: { readonly capabilities: CapabilitySum
   if (capabilities.phase === 'idle' || capabilities.phase === 'loading') {
     return <p className="agent-model-note agent-model-capability">正在读取能力授权…</p>;
   }
+  if (capabilities.phase === 'builtin') {
+    return (
+      <p className="agent-model-note agent-model-capability">
+        Runtime 内建的老板 Agent：只能提议组织动作，由 Runtime 校验后执行。
+      </p>
+    );
+  }
   if (capabilities.phase === 'error') {
     return <p className="agent-model-note agent-model-capability">能力授权暂不可读：{capabilities.message}</p>;
   }

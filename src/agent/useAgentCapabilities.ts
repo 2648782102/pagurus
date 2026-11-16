@@ -1,9 +1,12 @@
 import { useCallback, useRef, useState } from 'react';
 import { getAgent, type CapabilityGrant } from '../shared/api/agents.js';
+import { BOSS_AGENT_ID } from '../shared/api/agent-chat.js';
 
 export type CapabilitySummary =
   | { readonly phase: 'idle' }
   | { readonly phase: 'loading' }
+  /** Runtime-owned adapter with no Agent revision to read. */
+  | { readonly phase: 'builtin' }
   | { readonly phase: 'ready'; readonly grants: readonly CapabilityGrant[] }
   | { readonly phase: 'error'; readonly message: string };
 
@@ -22,6 +25,13 @@ export function useAgentCapabilities() {
   const load = useCallback(async (agentId: string | undefined, revisionId: string | undefined) => {
     if (!agentId || !revisionId) {
       setState({ phase: 'idle' });
+      return;
+    }
+    // The Boss Agent is a Runtime-owned adapter, not an Agent resource, so it
+    // has no /v1/agents/{id} record to read. Asking would 404 and surface as a
+    // failure even though nothing is wrong.
+    if (agentId === BOSS_AGENT_ID) {
+      setState({ phase: 'builtin' });
       return;
     }
     // One read per Agent per mount: the popover can be reopened freely.
