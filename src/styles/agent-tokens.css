@@ -1,0 +1,51 @@
+/*
+ * Shipped Agent app: a reading room, not an operations desk.
+ *
+ * The console is an instrument panel — cool grey, ruled, dense, built for an
+ * operator scanning state. The product is where one person reads and writes,
+ * so the same brand turns quieter and more editorial: a mineral paper ground,
+ * a deep tide-pool rail, and one sea-glass accent for identity.
+ *
+ * Pagurus is a hermit crab: the agent is the crab, each conversation is a
+ * shell it occupies. That is why the rail reads as a rack of shells rather
+ * than a list of navigation entries.
+ *
+ * Deliberate omissions: no warm-cream ground with a clay accent, no gradient
+ * washes, no soft shadows on content, no ALL-CAPS micro-labels. Rust stays
+ * reserved for the single primary action, inherited from the console so the
+ * two surfaces still read as one product.
+ */
+.agent-app,
+.agent-app-blocked {
+  --ag-paper: #f3f4f1;
+  --ag-paper-raised: #fbfbf9;
+  --ag-paper-sunk: #e9ebe6;
+  --ag-rail: #1a2622;
+  --ag-rail-soft: #24332e;
+  --ag-rail-line: #2f423b;
+  --ag-ink: #141c19;
+  --ag-ink-soft: #45524d;
+  --ag-muted: #6b7772;
+  --ag-faint: #8b958f;
+  --ag-line: #d9ddd5;
+  --ag-line-strong: #c2c8be;
+  --ag-tide: #2f6b63;
+  --ag-tide-ink: #24544e;
+  --ag-tide-wash: #e4edea;
+  --ag-signal: #3c7a5c;
+  --ag-danger: #9c3c2c;
+  --ag-danger-wash: #f7e9e5;
+  --ag-amber-wash: #f4eeda;
+
+  --ag-sans: 'Avenir Next', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  /* Reading face for the answer body only.
+     Chinese is listed first: a Latin serif has no CJK glyphs, so putting it
+     ahead of the Chinese face makes the browser substitute per character and
+     mixes two fonts inside one sentence. Listing Songti first keeps a reply
+     typographically uniform, with the Latin serif catching Latin words. */
+  --ag-serif: 'Songti SC', 'Noto Serif SC', 'Iowan Old Style', 'Charter', Palatino, Georgia, serif;
+
+  --ag-measure: 66ch;
+  --ag-rail-width: 272px;
+  --ag-radius: 3px;
+}

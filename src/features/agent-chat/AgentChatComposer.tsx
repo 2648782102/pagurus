@@ -33,7 +33,7 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
               submit();
             }
           }}
-          placeholder="输入消息，Enter 发送，Shift + Enter 换行"
+          placeholder="说点什么…"
           disabled={busy}
         />
         <Button
@@ -47,7 +47,11 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
         </Button>
       </div>
       <p className="agent-chat-composer-hint" role="status">
-        {busy ? '正在提交…' : waiting ? '正在等待回复…' : 'Runtime 发布事实后消息才会显示'}
+        {busy
+          ? '正在发送…'
+          : waiting
+            ? '正在等待回复…'
+            : 'Enter 发送，Shift + Enter 换行'}
       </p>
     </form>
   );

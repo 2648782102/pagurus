@@ -18,9 +18,12 @@ const styleLayers = [
   'conversation.css',
   'configuration.css',
   'footer.css',
+  'agent-tokens.css',
   'agent-shell.css',
+  'agent-entry.css',
   'agent-chat.css',
   'responsive.css',
+  'agent-responsive.css',
 ];
 const styleEntry = readFileSync(path.join(repositoryRoot, 'src/styles.css'), 'utf8');
 /**

@@ -1,184 +1,190 @@
 /* ---------------------------------------------------------------------------
-   Shipped Agent app surface.
+   Shipped Agent app: the rail and the frame.
 
-   Same product, different job: the console is an operations desk, this is a
-   quiet workspace for one conversation. It reuses the design tokens so both
-   surfaces stay recognisably Pagurus, but drops the instrument rules, the
-   masthead, and the status palette that only makes sense to an operator.
+   The rail is a rack of shells: the agent is the crab, each conversation is a
+   shell it occupies. Structure is carried by space and a single hairline,
+   never by cards. Labels are sentence case — the console already taught the
+   operator to read a schema, so the product does not need shouted micro-caps.
    --------------------------------------------------------------------------- */
 
 .agent-app {
   display: grid;
-  grid-template-columns: 268px minmax(0, 1fr);
+  grid-template-columns: var(--ag-rail-width) minmax(0, 1fr);
   height: 100vh;
-  background: var(--paper-raised);
-  color: var(--ink);
+  background: var(--ag-paper);
+  color: var(--ag-ink);
+  font-family: var(--ag-sans);
 }
 .agent-app-blocked {
   display: block;
   max-width: 640px;
   margin: 12vh auto 0;
   padding: 0 24px;
-  background: transparent;
+  background: var(--ag-paper);
 }
-
 /* --- rail ---------------------------------------------------------------- */
 
 .agent-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   min-width: 0;
-  padding: 14px 12px 12px;
+  padding: 18px 14px 14px;
   overflow: hidden;
-  background: var(--navy);
-  color: #e7eeef;
+  background: var(--ag-rail);
+  color: #dfe7e3;
 }
-.agent-sidebar.is-collapsed { padding: 14px 8px 12px; }
-.agent-sidebar-head { display: flex; align-items: center; gap: 9px; min-height: 32px; }
+.agent-sidebar.is-collapsed { padding: 18px 10px 14px; }
+
+.agent-sidebar-head { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 4px; }
 .agent-brand-mark {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
-  border: 1px solid #3c565d;
-  color: #f4f8f8;
-  font: 700 12px var(--font-mono);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ag-rail-soft);
+  box-shadow: inset 0 0 0 1px var(--ag-rail-line);
+  color: #e8d3c2;
+  font: 600 11px var(--ag-serif);
 }
-.agent-brand-copy { display: grid; gap: 1px; min-width: 0; }
-.agent-brand-copy strong { color: #f2f6f5; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
-.agent-brand-copy small { color: #8fa3a7; font-size: 9.5px; }
+.agent-brand-copy { display: grid; gap: 0; min-width: 0; }
+.agent-brand-copy strong {
+  color: #f0f4f1;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.agent-brand-copy small { color: #8a9a93; font-size: 10px; letter-spacing: .08em; }
 .agent-rail-toggle {
+  display: grid;
+  place-items: center;
   margin-left: auto;
-  padding: 2px 6px;
+  width: 22px;
+  height: 22px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 50%;
   background: transparent;
-  color: #8fa3a7;
+  color: #8a9a93;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
 }
-.agent-rail-toggle:hover { background: #20353b; color: #f2f6f5; }
+.agent-rail-toggle:hover { background: var(--ag-rail-soft); color: #f0f4f1; }
 
+/* The one primary action. Rust is inherited from the console so the two
+   surfaces still read as one product, but here it is a quiet solid. */
 .agent-new-chat {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 10px 0 4px;
-  padding: 8px 10px;
-  border: 1px solid #3c565d;
-  border-radius: 2px;
-  background: transparent;
-  color: #e9f1f1;
+  gap: 8px;
+  margin: 16px 0 4px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: var(--ag-radius);
+  background: var(--rust);
+  color: #fdf8f5;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font: 600 12.5px var(--ag-sans);
+  letter-spacing: .01em;
 }
-.agent-new-chat:hover { background: #20353b; }
-.agent-sidebar.is-collapsed .agent-new-chat { justify-content: center; padding: 8px 0; }
+.agent-new-chat:hover { background: var(--rust-strong); }
+.agent-new-chat > span { font-size: 13px; opacity: .85; }
+.agent-sidebar.is-collapsed .agent-new-chat { justify-content: center; padding: 9px 0; }
 
-.agent-rail-section { display: grid; gap: 3px; margin-top: 8px; min-height: 0; }
+.agent-rail-search { display: block; margin: 10px 0 2px; }
+.agent-rail-search input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--ag-radius);
+  background: var(--ag-rail-soft);
+  color: #e8efec;
+  font: 11.5px var(--ag-sans);
+}
+.agent-rail-search input::placeholder { color: #7d8d86; }
+.agent-rail-search input:focus-visible { outline: none; box-shadow: inset 0 0 0 1px #5d8e84; }
+
+.agent-rail-section { display: grid; gap: 1px; margin-top: 16px; min-height: 0; }
 .agent-rail-section h2 {
-  margin: 0 0 2px;
+  margin: 0 0 4px;
   padding: 0 6px;
-  color: #7e9498;
-  font: 600 9.5px var(--font-mono);
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  color: #7d8d86;
+  font: 500 10.5px var(--ag-sans);
+  letter-spacing: .04em;
 }
 .agent-rail-list { display: grid; gap: 1px; margin: 0; padding: 0; overflow: auto; list-style: none; }
-.agent-rail-empty { margin: 0; padding: 2px 6px 6px; color: #7e9498; font-size: 10.5px; line-height: 1.55; }
+.agent-rail-empty { margin: 0; padding: 4px 6px 8px; color: #7d8d86; font-size: 11px; line-height: 1.6; }
+
 .agent-rail-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
-  padding: 7px 8px;
+  padding: 8px 8px;
   border: 0;
-  border-radius: 2px;
+  border-radius: var(--ag-radius);
   background: transparent;
-  color: #cfdde0;
+  color: #c9d5cf;
   cursor: pointer;
+  font-family: var(--ag-sans);
   text-align: left;
+  transition: background-color .12s ease, color .12s ease;
 }
-.agent-rail-item:hover { background: #20353b; }
-.agent-rail-item.is-active { background: #264249; color: #ffffff; }
+.agent-rail-item:hover { background: var(--ag-rail-soft); color: #eef3f0; }
+.agent-rail-item.is-active { background: #2b3f38; color: #ffffff; box-shadow: inset 2px 0 0 var(--tide); }
+
 .agent-rail-avatar {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #3c565d;
-  color: #dfa184;
-  font: 650 10px var(--font-mono);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ag-rail-line);
+  color: #e3cdbb;
+  font: 600 10.5px var(--ag-serif);
 }
 .agent-rail-copy { display: grid; gap: 1px; min-width: 0; }
-.agent-rail-copy strong {
-  overflow: hidden;
-  font-size: 11.5px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-rail-copy small {
-  overflow: hidden;
-  color: #8fa3a7;
-  font-size: 9.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-rail-thread { padding: 6px 8px; }
-.agent-rail-thread .agent-rail-copy strong { font-weight: 550; }
-
-.agent-rail-search { display: block; margin: 4px 0 2px; }
-.agent-rail-search input {
-  width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #2a4147;
-  border-radius: 2px;
-  background: #142128;
-  color: #e7eeef;
-  font-size: 11px;
-}
-.agent-rail-search input::placeholder { color: #6f8589; }
-.agent-rail-search input:focus-visible { border-color: #4d7280; outline: none; }
+.agent-rail-copy strong { overflow: hidden; font-size: 12px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.agent-rail-copy small { overflow: hidden; color: #82938c; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 
 .agent-rail-sessions { min-height: 0; overflow: auto; }
+.agent-rail-thread { padding: 7px 8px; }
 .agent-rail-sessions .agent-rail-copy strong {
   display: -webkit-box;
   overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 450;
+  line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  line-height: 1.35;
-  font-size: 11px;
   text-overflow: ellipsis;
   white-space: normal;
 }
-.agent-rail-group { display: grid; gap: 1px; margin-bottom: 6px; }
+.agent-rail-thread .agent-rail-copy small { margin-top: 1px; }
+
+.agent-rail-group { display: grid; gap: 1px; margin-bottom: 8px; }
 .agent-rail-group h3 {
-  margin: 6px 0 1px;
-  padding: 0 6px;
-  color: #6f8589;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: .02em;
+  margin: 8px 0 2px;
+  padding: 0 8px;
+  color: #6e7f78;
+  font: 500 10px var(--ag-sans);
+  letter-spacing: .03em;
 }
 
 .agent-sidebar-foot {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   margin-top: auto;
-  padding-top: 9px;
-  border-top: 1px solid #2a4147;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--ag-rail-line);
 }
-.agent-connection { display: flex; align-items: center; gap: 6px; color: #8fa3a7; font-size: 9.5px; }
-.agent-connection-dot { width: 5px; height: 5px; border-radius: 50%; background: #6a7f83; }
+.agent-connection { display: flex; align-items: center; gap: 6px; color: #82938c; font-size: 10px; }
+.agent-connection-dot { width: 5px; height: 5px; border-radius: 50%; background: #6a7a73; }
 .agent-connection.status-connected .agent-connection-dot { background: #6fbf92; }
 .agent-connection.status-disconnected .agent-connection-dot { background: #d98a72; }
 .agent-connection.status-incompatible .agent-connection-dot { background: #d8b169; }
-.agent-console-link { color: #8fa3a7; font-size: 9.5px; text-decoration: none; }
-.agent-console-link:hover { color: #f2f6f5; text-decoration: underline; }
-
+.agent-console-link { color: #82938c; font-size: 10px; text-decoration: none; }
+.agent-console-link:hover { color: #eef3f0; text-decoration: underline; }
