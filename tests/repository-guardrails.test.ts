@@ -520,6 +520,7 @@ describe('AI-first entry documents', () => {
       '0036-frontend-modular-architecture.md',
       '0037-operations-desk-visual-theme.md',
       '0038-shared-runtime-transport.md',
+      '0039-domain-module-layering.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);
@@ -728,19 +729,32 @@ describe('client boundaries', () => {
       );
     }
 
+    // ADR 0039 splits the durable-work client by layer. The accepted writes and
+    // the capability names still belong to this domain, so assert across the
+    // whole domain rather than one file's incidental layout.
     const workClient = read('src/shared/api/work.ts');
     assertAcceptedFinalWrites(workClient, 'src/shared/api/work.ts', acceptedWorkPostRoutes);
-    expect(workClient).toMatch(/durable-work-contract/);
-    expect(workClient).toMatch(/asynchronous-work-control/);
-    expect(workClient).toMatch(/local-source-policy/);
+    const workDomain = ['src/shared/api/work.ts', 'src/shared/api/work-contract.ts']
+      .map(read)
+      .join('\n');
+    expect(workDomain).toMatch(/durable-work-contract/);
+    expect(workDomain).toMatch(/asynchronous-work-control/);
+    expect(workDomain).toMatch(/local-source-policy/);
     expect(workClient).toMatch(/'\/v1\/work\/items'/);
     expect(workClient).toMatch(/'\/v1\/work\/delivery-receipts'/);
     expect(workClient).not.toMatch(/\/v1\/work\/triggers/);
 
-    const platformClient = read('src/shared/api/platform.ts');
+    // ADR 0039 splits the platform surface into capability, local-source, and
+    // SecretHandle modules. The accepted writes must still appear exactly once
+    // across the domain, so assert against the composed client layer.
+    const platformClient = [
+      read('src/shared/api/capabilities.ts'),
+      read('src/shared/api/local-source.ts'),
+      read('src/shared/api/secret-handles.ts'),
+    ].join('\n');
     assertAcceptedFinalWrites(
       platformClient,
-      'src/shared/api/platform.ts',
+      'src/shared/api/{capabilities,local-source,secret-handles}.ts',
       acceptedPlatformPostRoutes,
       /from '\.\/work\.js'|requestWorkJson/,
     );
@@ -751,16 +765,23 @@ describe('client boundaries', () => {
       /SecretHandleRecord[\s\S]{0,500}value:\s*string[\s\S]{0,500}valueDigest:/,
     );
 
-    const organizationClient = read('src/shared/api/organization.ts');
+    // ADR 0039 splits the organization client by layer; the facade re-exports
+    // the contract, client, and selectors, so assert the accepted writes on the
+    // module that owns them and the contract facts on the module that declares
+    // them.
+    const organizationClient = read('src/shared/api/organization-client.ts');
     assertAcceptedFinalWrites(
       organizationClient,
-      'src/shared/api/organization.ts',
+      'src/shared/api/organization-client.ts',
       acceptedOrganizationPostRoutes,
       /export async function requestJson</,
     );
-    expect(organizationClient).toMatch(/ORGANIZATION_CONTRACT_VERSION = '1\.1\.0'/);
+    const organizationContract = read('src/shared/api/organization-contract.ts');
+    expect(organizationContract).toMatch(/ORGANIZATION_CONTRACT_VERSION = '1\.1\.0'/);
     expect(organizationClient).toMatch(/supportsOrganizationContract/);
-    expect(organizationClient).not.toMatch(/\/v1\/work\/triggers|\/v1\/tool-requests/);
+    const organizationDomain = ['src/shared/api/organization.ts', organizationClient, organizationContract]
+      .join('\n');
+    expect(organizationDomain).not.toMatch(/\/v1\/work\/triggers|\/v1\/tool-requests/);
 
     const workFeature = read('src/features/work/useAttentionWorkbench.ts');
     expect(workFeature).toMatch(/supportsDurableWorkContract/);
@@ -788,7 +809,12 @@ describe('client boundaries', () => {
       'src/features/task-history/TaskHistoryPanel.tsx',
     );
 
-    const configurationSource = read('src/shared/api/configuration.ts');
+    // ADR 0039 splits the configuration client; the document union and its
+    // composition section live in the contract module, the writes in the client.
+    const configurationSource = [
+      read('src/shared/api/configuration.ts'),
+      read('src/shared/api/configuration-contract.ts'),
+    ].join('\n');
     expect(configurationSource).toMatch(/schemaVersion: 2/);
     expect(configurationSource).toMatch(/ConfigurationComposition/);
     expect(configurationSource).not.toMatch(/planner|researcher|reviewer|orchestrator|three[- ]layer|layer[_-]?[123]/i);

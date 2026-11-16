@@ -17,6 +17,7 @@ import {
   type ProviderModel,
 } from '../../shared/api/agents.js';
 import { errorMessage } from '../../shared/ui/errors.js';
+import { isActiveTaskState } from '../../shared/ui/task-status.js';
 
 interface TaskModel extends ProviderModel {
   legacyId?: string;
@@ -42,8 +43,6 @@ export interface OperationsState {
   taskAgentName: string | null;
   error: string | null;
 }
-
-const ACTIVE_STATES: readonly string[] = ['queued', 'running', 'cancelling'];
 
 export function useTaskOperations(refreshToken = 0) {
   const [state, setState] = useState<OperationsState>({
@@ -116,10 +115,10 @@ export function useTaskOperations(refreshToken = 0) {
         setState((current) => ({
           ...current,
           task,
-          phase: ACTIVE_STATES.includes(task.state) ? 'active' : 'finished',
+          phase: isActiveTaskState(task.state) ? 'active' : 'finished',
           error: task.state === 'failed' && task.error ? task.error : null,
         }));
-        if (!ACTIVE_STATES.includes(task.state)) return;
+        if (!isActiveTaskState(task.state)) return;
       } catch (cause) {
         if (signal.aborted) return;
         setState((current) => ({
@@ -147,7 +146,7 @@ export function useTaskOperations(refreshToken = 0) {
       ...current,
       task,
       taskAgentName: null,
-      phase: ACTIVE_STATES.includes(task.state) ? 'active' : 'finished',
+      phase: isActiveTaskState(task.state) ? 'active' : 'finished',
       error: null,
     }));
     if (task.agentId && task.agentRevisionId) {
@@ -158,7 +157,7 @@ export function useTaskOperations(refreshToken = 0) {
           : current);
       }).catch(() => undefined);
     }
-    if (ACTIVE_STATES.includes(task.state)) void watchTask(task.id, controller.signal);
+    if (isActiveTaskState(task.state)) void watchTask(task.id, controller.signal);
   }, [watchTask]);
 
   const startTask = useCallback(async () => {

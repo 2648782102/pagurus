@@ -61,6 +61,26 @@ its user-facing status copy. `runtime.ts`, `agents.ts`, `tasks.ts`,
 tests, and Conchbase's paired Runtime acceptance do not change. See
 [ADR 0038](decisions/0038-shared-runtime-transport.md).
 
+Three domains that outgrew one reviewable unit are layered behind an unchanged
+facade. `organization.ts`, `work.ts`, and `configuration.ts` remain the
+documented import paths and re-export:
+
+- `<domain>-contract.ts` — versioned records, published paths, constants, and
+  payload validators; no transport.
+- `<domain>-client.ts` — typed reads and accepted writes over `http.ts`.
+- `<domain>-selectors.ts` — pure projections of an already-published payload,
+  used by `organization` only; these never perform a request.
+
+Validators were moved verbatim. A list route and a detail route describe the
+same record differently, and those differences are contract facts rather than
+style. See [ADR 0039](decisions/0039-domain-module-layering.md).
+
+`platform.ts` was three domains in one file, so it now re-exports
+`capabilities.ts`, `local-source.ts`, and `secret-handles.ts`. Capability
+records, local Source events, and write-only SecretHandles share the version-2
+wire rules but not a lifecycle; keeping them apart means a SecretHandle change
+has no path to a capability write.
+
 `src/shared/api/guards.ts` owns the primitive payload predicates
 (`isRecord`, bounded strings, string arrays, nullable values, `hasOnlyKeys`,
 versioned records). Contract-shaped validators stay in their domain module

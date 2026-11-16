@@ -4,13 +4,7 @@ import {
   getOrganizationEvents,
   getOrganizationProjectThreads,
   getOrganizationSession,
-  listOrganizationAttentionFrom,
-  listOrganizationDelegationsFrom,
-  listOrganizationReportsFrom,
   listOrganizationWorkItems,
-  organizationAttentionDetail,
-  organizationWorkerProposals,
-  organizationWorkItems as organizationWorkItemsFrom,
   submitOrganizationIntent,
   supportsOrganizationContract,
   type OrganizationAttentionRecord,
@@ -22,6 +16,13 @@ import {
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 import { errorMessage } from '../../shared/ui/errors.js';
+import {
+  deriveOrganizationView,
+  firstOpenAttentionId,
+  latestEventCursor,
+  mergeOrganizationEvents,
+  resolveSelectedProjectId,
+} from './organization-view.js';
 
 export type OrganizationConsolePhase =
   | 'checking'
@@ -72,10 +73,6 @@ function errorText(cause: unknown): string {
   return errorMessage(cause, '组织状态读取失败');
 }
 
-function latestEventCursor(events: readonly OrganizationEventRecord[]): string | null {
-  return events.length === 0 ? null : events[events.length - 1]!.id;
-}
-
 export function useOrganizationConsole(runtime: RuntimeInfo | null) {
   const [state, setState] = useState<OrganizationConsoleState>(initialState);
   const supported = supportsOrganizationContract(runtime);
@@ -105,31 +102,25 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
         listOrganizationWorkItems(signal),
       ]);
       if (signal?.aborted) return;
-      const openAttention = session.attentionRequests.find((request) => request.state === 'open');
-      const selectedProjectId = session.projects.some((project) => project.id === current.selectedProjectId)
-        ? current.selectedProjectId
-        : session.projects[0]?.id ?? '';
+      const openAttentionId = firstOpenAttentionId(session);
+      const selectedProjectId = resolveSelectedProjectId(session, current.selectedProjectId);
       const projectThreads = selectedProjectId
         ? await getOrganizationProjectThreads(selectedProjectId, signal)
         : null;
       if (signal?.aborted) return;
       setState((value) => {
-        const merged = mode === 'incremental'
-          ? [...value.events, ...eventPage.events].filter((event, index, all) =>
-            all.findIndex((candidate) => candidate.id === event.id) === index)
-          : eventPage.events;
-        const ordered = [...merged].sort((left, right) => left.sequence - right.sequence);
-        const nextCursor = latestEventCursor(ordered) ?? eventPage.nextCursor ?? value.eventCursor;
+        const events = mergeOrganizationEvents(value.events, eventPage.events, mode);
+        const nextCursor = latestEventCursor(events) ?? eventPage.nextCursor ?? value.eventCursor;
         return {
           ...value,
           phase: 'ready',
           session,
-          events: Object.freeze(ordered),
+          events,
           eventCursor: nextCursor,
           eventHasMore: eventPage.hasMore,
           projectThreads,
           workItemViews: workItems.workItems,
-          selectedAttentionId: openAttention?.id ?? value.selectedAttentionId,
+          selectedAttentionId: openAttentionId ?? value.selectedAttentionId,
           selectedProjectId,
           error: null,
           refreshing: false,
@@ -233,34 +224,17 @@ export function useOrganizationConsole(runtime: RuntimeInfo | null) {
     void decidePublishedAttention(record.id, record.expectedVersion, kind);
   }, [decidePublishedAttention]);
 
-  const selectedAttention = state.session
-    ? organizationAttentionDetail(state.session, state.selectedAttentionId)
-    : undefined;
-  const orderedAttention = state.session
-    ? listOrganizationAttentionFrom(state.session).attentionRequests
-    : [];
-  const reports = state.session ? listOrganizationReportsFrom(state.session).reports : [];
-  const delegations = state.session ? listOrganizationDelegationsFrom(state.session).delegations : [];
-  const proposals = state.session ? organizationWorkerProposals(state.session) : [];
-  const workItems = state.workItemViews.length > 0
-    ? state.workItemViews
-    : state.session
-      ? organizationWorkItemsFrom(state.session).workItems
-      : [];
-  const recentEvents = [...state.events].slice(-24).reverse();
+  const view = deriveOrganizationView(
+    state.session,
+    state.events,
+    state.selectedAttentionId,
+    state.workItemViews,
+  );
 
   return {
     ...state,
     supported,
-    selectedAttention,
-    orderedAttention,
-    projects: state.session?.projects ?? [],
-    proposals,
-    delegations,
-    workItems,
-    reports,
-    recentEvents,
-    timeline: [...state.events].sort((left, right) => left.sequence - right.sequence),
+    ...view,
     setIntentText,
     selectAttention,
     selectProject: (projectId: string) => void selectProject(projectId),
