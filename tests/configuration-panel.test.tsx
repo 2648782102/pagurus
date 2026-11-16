@@ -75,17 +75,19 @@ describe('ConfigurationPanel', () => {
       .mockImplementationOnce(async () => connectedResponses()[2]!);
 
     render(<ConfigurationPanel />);
-    expect(await screen.findByText(REVISION.id)).toBeTruthy();
-    expect(screen.getByLabelText('配置文档 JSON')).toHaveProperty('value');
-    expect(screen.getByText('2')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '校验并应用' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '当前生效' })).toBeTruthy();
+    expect(screen.getAllByText(REVISION.id).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/配置文档/)).toHaveProperty('value');
+    expect(screen.getByText(/共 2 个版本/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: '只校验' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '应用到运行时' })).toBeTruthy();
   });
 
   it('shows an explicit unsupported-runtime state without editing', async () => {
     fetchMock.mockResolvedValueOnce(runtimeResponse('0.3.0', []));
     render(<ConfigurationPanel />);
-    expect(await screen.findByText(/未提供配置版本能力/)).toBeTruthy();
-    expect((screen.getByLabelText('配置文档 JSON') as HTMLTextAreaElement).disabled).toBe(true);
+    expect((await screen.findAllByText(/未提供配置版本能力/)).length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText(/配置文档/)).toBeNull();
   });
 
   it('shows field-level validation issues without applying a document', async () => {
@@ -96,11 +98,11 @@ describe('ConfigurationPanel', () => {
     }, 400));
 
     render(<ConfigurationPanel />);
-    await screen.findByText(REVISION.id);
-    fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
+    await screen.findByRole('heading', { name: '当前生效' });
+    fireEvent.change(screen.getByLabelText(/配置文档/), {
       target: { value: JSON.stringify({ ...DOCUMENT, schemaVersion: 4 }) },
     });
-    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+    fireEvent.click(screen.getByRole('button', { name: '只校验' }));
 
     expect(await screen.findByText(/配置校验未通过/)).toBeTruthy();
     expect(screen.getByRole('list', { name: '配置校验问题' }).textContent).toContain('schemaVersion');
@@ -110,17 +112,28 @@ describe('ConfigurationPanel', () => {
   it('validates, applies, and reports a no-op revision', async () => {
     for (const response of connectedResponses()) fetchMock.mockResolvedValueOnce(response);
     fetchMock
-      .mockResolvedValueOnce(json({ valid: true, activeRevisionId: REVISION.id, document: DOCUMENT }))
+      .mockResolvedValueOnce(json({
+        valid: true,
+        activeRevisionId: REVISION.id,
+        document: { ...DOCUMENT, metadata: { fixture: 'two' } },
+      }))
       .mockResolvedValueOnce(json({ ...APPLY_RESULT, changed: false }));
 
     render(<ConfigurationPanel />);
-    await screen.findByText(REVISION.id);
-    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+    await screen.findByRole('heading', { name: '当前生效' });
+    fireEvent.change(screen.getByLabelText(/配置文档/), {
+      target: { value: JSON.stringify({ ...DOCUMENT, metadata: { fixture: 'two' } }) },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '只校验' }));
+    await screen.findByText('校验通过。还没有写入运行时。');
+    fireEvent.click(screen.getByRole('button', { name: '应用到运行时' }));
 
     expect(await screen.findByText(/没有创建新版本/)).toBeTruthy();
     const applyCall = fetchMock.mock.calls.find((call) => call[0] === '/v1/configuration/apply');
     expect(applyCall).toBeTruthy();
-    expect(JSON.parse(String((applyCall?.[1] as RequestInit).body))).toEqual({ document: DOCUMENT });
+    expect(JSON.parse(String((applyCall?.[1] as RequestInit).body))).toEqual({
+      document: { ...DOCUMENT, metadata: { fixture: 'two' } },
+    });
   });
 
   it('validates and applies a v2 composition document without a visual builder', async () => {
@@ -149,11 +162,13 @@ describe('ConfigurationPanel', () => {
       }));
 
     render(<ConfigurationPanel />);
-    await screen.findByText(REVISION.id);
-    fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
+    await screen.findByRole('heading', { name: '当前生效' });
+    fireEvent.change(screen.getByLabelText(/配置文档/), {
       target: { value: JSON.stringify(v2Document) },
     });
-    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+    fireEvent.click(screen.getByRole('button', { name: '只校验' }));
+    await screen.findByText('校验通过。还没有写入运行时。');
+    fireEvent.click(screen.getByRole('button', { name: '应用到运行时' }));
 
     expect(await screen.findByText(/已应用新的配置版本/)).toBeTruthy();
     expect(screen.queryByLabelText('可视化组合编辑器')).toBeNull();
@@ -179,11 +194,11 @@ describe('ConfigurationPanel', () => {
     };
 
     render(<ConfigurationPanel />);
-    await screen.findByText(REVISION.id);
-    fireEvent.change(screen.getByLabelText('配置文档 JSON'), {
+    await screen.findByRole('heading', { name: '当前生效' });
+    fireEvent.change(screen.getByLabelText(/配置文档/), {
       target: { value: JSON.stringify(v2Document) },
     });
-    fireEvent.click(screen.getByRole('button', { name: '校验并应用' }));
+    fireEvent.click(screen.getByRole('button', { name: '只校验' }));
 
     expect(await screen.findByText(/当前 Conchbase 未提供 composition-execution 能力/)).toBeTruthy();
     expect(fetchMock.mock.calls.some((call) => call[0] === '/v1/configuration/apply')).toBe(false);
@@ -194,11 +209,8 @@ describe('ConfigurationPanel', () => {
     fetchMock.mockResolvedValueOnce(json(APPLY_RESULT));
 
     render(<ConfigurationPanel />);
-    await screen.findByText(REVISION.id);
-    fireEvent.change(screen.getByLabelText('切换到历史版本'), {
-      target: { value: HISTORY[1]!.id },
-    });
-    fireEvent.click(screen.getByRole('button', { name: '回滚到所选版本' }));
+    await screen.findByRole('heading', { name: '当前生效' });
+    fireEvent.click(screen.getByRole('button', { name: '恢复此版本' }));
 
     await waitFor(() => expect(screen.getByText(/已切换到所选配置版本/)).toBeTruthy());
     const rollbackCall = fetchMock.mock.calls.find((call) => call[0] === '/v1/configuration/apply');
@@ -210,7 +222,7 @@ describe('ConfigurationPanel', () => {
   it('offers a recoverable disconnected state', async () => {
     fetchMock.mockResolvedValueOnce(json({ error: 'offline' }, 503));
     render(<ConfigurationPanel />);
-    expect(await screen.findByRole('button', { name: '重新加载配置' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: '重新加载' })).toBeTruthy();
     expect(screen.getByRole('alert')).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ConfigurationValidationError,
   applyConfiguration,
@@ -16,6 +16,7 @@ export type ConfigurationPhase =
   | 'unsupported'
   | 'disconnected'
   | 'validating'
+  | 'validated'
   | 'applying';
 
 export interface ConfigurationViewState {
@@ -24,7 +25,7 @@ export interface ConfigurationViewState {
   revisions: readonly ConfigurationRevisionSummary[];
   supportsComposition: boolean;
   draft: string;
-  rollbackId: string;
+  validatedDraft: string | null;
   message: string | null;
   issues: readonly { path: string; reason: string }[];
 }
@@ -35,7 +36,7 @@ const initialState: ConfigurationViewState = {
   revisions: [],
   supportsComposition: false,
   draft: '',
-  rollbackId: '',
+  validatedDraft: null,
   message: null,
   issues: [],
 };
@@ -46,6 +47,8 @@ function toDraft(revision: ConfigurationRevision | null): string {
 
 export function useConfiguration() {
   const [state, setState] = useState<ConfigurationViewState>(initialState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setState((current) => ({
@@ -74,7 +77,7 @@ export function useConfiguration() {
         revisions: result.revisions,
         supportsComposition: runtime.capabilities.includes('composition-execution'),
         draft: toDraft(result.revision),
-        rollbackId: '',
+        validatedDraft: null,
         message: null,
         issues: [],
       });
@@ -89,15 +92,12 @@ export function useConfiguration() {
   }, []);
 
   const setDraft = useCallback((draft: string) => {
-    setState((current) => ({ ...current, draft, message: null, issues: [] }));
-  }, []);
-
-  const setRollbackId = useCallback((rollbackId: string) => {
-    setState((current) => ({ ...current, rollbackId, message: null }));
+    setState((current) => ({ ...current, draft, validatedDraft: null, message: null, issues: [] }));
   }, []);
 
   const apply = useCallback(async () => {
-    if (!state.draft.trim()) {
+    const current = stateRef.current;
+    if (!current.draft.trim()) {
       setState((current) => ({
         ...current,
         phase: 'ready',
@@ -108,7 +108,7 @@ export function useConfiguration() {
     }
     let parsed: unknown;
     try {
-      parsed = JSON.parse(state.draft) as unknown;
+      parsed = JSON.parse(current.draft) as unknown;
     } catch {
       setState((current) => ({
         ...current,
@@ -119,12 +119,12 @@ export function useConfiguration() {
       return;
     }
 
-    setState((current) => ({ ...current, phase: 'validating', message: null, issues: [] }));
+    setState((current) => ({ ...current, phase: 'applying', message: null, issues: [] }));
     try {
       if (
         isRecord(parsed)
         && parsed.schemaVersion === 2
-        && !state.supportsComposition
+        && !current.supportsComposition
       ) {
         setState((current) => ({
           ...current,
@@ -134,16 +134,17 @@ export function useConfiguration() {
         }));
         return;
       }
-      const document = await validateConfiguration(parsed);
-      setState((current) => ({ ...current, phase: 'applying' }));
-      const result = await applyConfiguration(document);
+      // Validation is an explicit earlier step. Apply submits the draft; the
+      // Runtime validates it again inside the write path, so it never needs a
+      // second client-side validate round trip.
+      const result = await applyConfiguration(parsed);
       setState({
         phase: 'ready',
         revision: result.revision,
         revisions: result.revisions,
-        supportsComposition: state.supportsComposition,
+        supportsComposition: current.supportsComposition,
         draft: toDraft(result.revision),
-        rollbackId: '',
+        validatedDraft: null,
         message: result.changed ? '已应用新的配置版本。' : '内容与当前版本一致，没有创建新版本。',
         issues: [],
       });
@@ -163,14 +164,70 @@ export function useConfiguration() {
         message: cause instanceof Error ? cause.message : '应用配置失败',
       }));
     }
-  }, [state.draft, state.supportsComposition]);
+  }, []);
 
-  const rollback = useCallback(async () => {
-    const revisionId = state.rollbackId;
-    if (!revisionId) {
-      setState((current) => ({ ...current, message: '请选择要回滚的版本。' }));
+  const validate = useCallback(async () => {
+    const current = stateRef.current;
+    if (!current.draft.trim()) {
+      setState((value) => ({
+        ...value,
+        phase: 'ready',
+        message: '请输入完整的配置文档。',
+        issues: [{ path: '$', reason: '文档不能为空' }],
+      }));
       return;
     }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(current.draft) as unknown;
+    } catch {
+      setState((value) => ({
+        ...value,
+        phase: 'ready',
+        message: '配置文档不是有效的 JSON。',
+        issues: [{ path: '$', reason: '必须是有效的 JSON' }],
+      }));
+      return;
+    }
+    if (isRecord(parsed) && parsed.schemaVersion === 2 && !current.supportsComposition) {
+      setState((value) => ({
+        ...value,
+        phase: 'ready',
+        message: '当前 Conchbase 未提供 composition-execution 能力，无法应用 schemaVersion 2。',
+        issues: [{ path: 'schemaVersion', reason: '需要 Conchbase 0.5.0 或更新版本' }],
+      }));
+      return;
+    }
+    setState((value) => ({ ...value, phase: 'validating', message: null, issues: [] }));
+    try {
+      await validateConfiguration(parsed);
+      setState((value) => ({
+        ...value,
+        phase: 'ready',
+        validatedDraft: current.draft,
+        message: '校验通过。还没有写入运行时。',
+        issues: [],
+      }));
+    } catch (cause) {
+      if (cause instanceof ConfigurationValidationError) {
+        setState((value) => ({
+          ...value,
+          phase: 'ready',
+          message: '配置校验未通过，运行时状态没有改变。',
+          issues: cause.details,
+        }));
+        return;
+      }
+      setState((value) => ({
+        ...value,
+        phase: 'disconnected',
+        message: cause instanceof Error ? cause.message : '校验配置失败',
+      }));
+    }
+  }, []);
+
+  const rollbackTo = useCallback(async (revisionId: string) => {
+    const current = stateRef.current;
     setState((current) => ({ ...current, phase: 'applying', message: null, issues: [] }));
     try {
       const result = await rollbackConfiguration(revisionId);
@@ -178,9 +235,9 @@ export function useConfiguration() {
         phase: 'ready',
         revision: result.revision,
         revisions: result.revisions,
-        supportsComposition: state.supportsComposition,
+        supportsComposition: current.supportsComposition,
         draft: toDraft(result.revision),
-        rollbackId: '',
+        validatedDraft: null,
         message: result.changed ? '已切换到所选配置版本。' : '所选版本已经是当前版本。',
         issues: [],
       });
@@ -191,7 +248,7 @@ export function useConfiguration() {
         message: cause instanceof Error ? cause.message : '回滚失败',
       }));
     }
-  }, [state.rollbackId, state.supportsComposition]);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -202,10 +259,11 @@ export function useConfiguration() {
   return {
     ...state,
     setDraft,
-    setRollbackId,
+    liveDraft: toDraft(state.revision),
     load: () => void load(),
     apply: () => void apply(),
-    rollback: () => void rollback(),
+    validate: () => void validate(),
+    rollbackTo: (revisionId: string) => void rollbackTo(revisionId),
   };
 }
 
