@@ -8,11 +8,19 @@ import { parseAnswer, hasBlockStructure } from './agent-answer-format.js';
  * fenced block, list, heading, or quote does this render structure — that keeps
  * a one-sentence reply visually identical to before while making a long answer
  * scannable. Every node is React text, so an answer cannot inject markup.
+ *
+ * While the answer is still arriving it is rendered as a single run of text.
+ * Re-parsing a partial body renumbers lists and splits code fences that are not
+ * closed yet, so the paragraph would visibly re-flow several times per second.
+ * Structure appears once, when the body has stopped changing.
  */
-export function AgentAnswer({ body }: { readonly body: string }) {
+export function AgentAnswer({ body, streaming = false }: {
+  readonly body: string;
+  readonly streaming?: boolean;
+}) {
   const blocks = useMemo(() => parseAnswer(body), [body]);
 
-  if (!hasBlockStructure(blocks)) {
+  if (streaming || !hasBlockStructure(blocks)) {
     return <p>{body}</p>;
   }
 

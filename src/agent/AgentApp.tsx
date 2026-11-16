@@ -23,6 +23,9 @@ const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   incompatible: '版本不兼容',
 };
 
+/** Message states in which the reply body is still being appended. */
+const STREAMING = new Set(['pending', 'thinking', 'streaming', 'organizing']);
+
 /**
  * The shipped Agent product.
  *
@@ -173,7 +176,9 @@ export function AgentApp() {
                   onDecision={chat.decideApproval}
                   renderMessageActions={(message) => <AgentMessageActions message={message} />}
                   renderBody={(message, body) =>
-                    message.author === 'assistant' ? <AgentAnswer body={body} /> : <p>{body}</p>}
+                  message.author === 'assistant'
+                    ? <AgentAnswer body={body} streaming={STREAMING.has(message.state)} />
+                    : <p>{body}</p>}
                   onPinnedChange={setPinnedToBottom}
                 />
                 {!pinnedToBottom && (

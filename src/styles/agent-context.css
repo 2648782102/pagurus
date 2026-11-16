@@ -108,8 +108,15 @@
 .agent-context-activity li.is-failed { border-left-color: var(--ag-danger); }
 .agent-context-activity li.is-waiting_approval { border-left-color: #b08b3a; }
 .agent-context-activity-label { color: var(--ag-ink); font-size: 11px; }
+.agent-context-activity-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.agent-context-activity-state { flex: 0 0 auto; color: var(--ag-faint); font-size: 9.5px; }
+.agent-context-activity li.is-running .agent-context-activity-state { color: var(--ag-tide-ink); }
+.agent-context-activity li.is-succeeded .agent-context-activity-state { color: var(--ag-signal); }
+.agent-context-activity li.is-failed .agent-context-activity-state { color: var(--ag-danger); }
+.agent-context-activity li.is-waiting_approval .agent-context-activity-state { color: #8a6a1e; font-weight: 600; }
 .agent-context-activity-kind { color: var(--ag-faint); font-size: 9.5px; }
 .agent-context-activity code { color: var(--ag-muted); font: 9.5px var(--font-mono); overflow-wrap: anywhere; }
+.agent-context-count { color: var(--ag-faint); font-size: 10px; }
 
 .agent-context-note {
   flex: 0 0 auto;

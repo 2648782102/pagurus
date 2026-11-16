@@ -45,6 +45,16 @@ function isWorking(state: AgentChatMessageState): boolean {
     || state === 'pending';
 }
 
+/**
+ * States where the caret belongs at the end of the text.
+ *
+ * Only once there is text to sit after: during preparation the typing dots are
+ * the right signal, and a caret next to nothing just looks broken.
+ */
+function isStreamingText(state: AgentChatMessageState): boolean {
+  return state === 'streaming' || state === 'thinking' || state === 'organizing';
+}
+
 function statusTone(state: AgentChatMessageState): 'neutral' | 'success' | 'warning' | 'danger' | 'info' {
   if (state === 'failed' || state === 'cancelled' || state === 'unavailable') return 'danger';
   if (state === 'waiting_approval' || state === 'waiting_attention') return 'warning';
@@ -116,7 +126,12 @@ export function AgentChatThread({
     <div
       className="agent-chat-thread"
       ref={containerRef}
-      aria-live="polite"
+      /*
+       * `off`, not `polite`: a streaming body changes on every frame, and a live
+       * region would queue an announcement per frame, which is unusable with a
+       * screen reader. New turns are announced by the state label instead.
+       */
+      aria-live="off"
       aria-label="Agent 对话消息"
       onScroll={() => {
         const container = containerRef.current;
@@ -157,7 +172,7 @@ export function AgentChatThread({
                 return (
                   <>
                     {renderBody(message, body)}
-                    {message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}
+                    {isStreamingText(message.state) && <span className="agent-chat-caret" aria-hidden="true" />}
                   </>
                 );
               }

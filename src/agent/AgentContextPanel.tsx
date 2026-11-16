@@ -74,14 +74,22 @@ export function AgentContextPanel({
             </section>
 
             <section className="agent-context-section" aria-labelledby="ctx-activity">
-              <h3 id="ctx-activity">执行记录</h3>
+              <div className="agent-context-section-head">
+                <h3 id="ctx-activity">执行记录</h3>
+                {activity.length > 0 && (
+                  <span className="agent-context-count">{activitySummary(activity)}</span>
+                )}
+              </div>
               {activity.length === 0 ? (
                 <p className="agent-context-empty">这段对话还没有工具或审批活动。</p>
               ) : (
                 <ol className="agent-context-activity">
                   {activity.map((entry) => (
                     <li key={entry.id} className={`is-${entry.state}`}>
-                      <span className="agent-context-activity-label">{entry.label}</span>
+                      <span className="agent-context-activity-row">
+                        <span className="agent-context-activity-label">{entry.label}</span>
+                        <span className="agent-context-activity-state">{STATE[entry.state] ?? entry.state}</span>
+                      </span>
                       <span className="agent-context-activity-kind">{KIND[entry.kind] ?? entry.kind}</span>
                       {entry.detail && <code>{entry.detail}</code>}
                     </li>
@@ -107,6 +115,28 @@ const KIND: Readonly<Record<string, string>> = {
   approval: '审批',
   output: '输出',
 };
+
+/**
+ * The published activity states, in the reader's words.
+ *
+ * `waiting_approval` matters most: the run is stopped until the person acts,
+ * which a bare "running" label would hide.
+ */
+const STATE: Readonly<Record<string, string>> = {
+  running: '进行中',
+  succeeded: '完成',
+  failed: '失败',
+  waiting_approval: '等待你批准',
+};
+
+/** One short line above the list; a count alone hides a blocking approval. */
+function activitySummary(activity: readonly AgentChatActivity[]): string {
+  const waiting = activity.filter((entry) => entry.state === 'waiting_approval').length;
+  if (waiting > 0) return `${waiting} 项等待你批准`;
+  const running = activity.filter((entry) => entry.state === 'running').length;
+  if (running > 0) return `${running} 项进行中`;
+  return `${activity.length} 项`;
+}
 
 /**
  * Shortens a published id without losing what distinguishes it.

@@ -35,7 +35,12 @@
 .agent-thread-area .agent-chat-thread {
   flex: 1 1 auto;
   padding: 10px max(24px, calc((100% - var(--ag-measure)) / 2)) 24px;
-  scroll-behavior: smooth;
+  /*
+   * No smooth scrolling while text is streaming: each appended frame triggers a
+   * programmatic scroll, and smooth animation makes the whole column slide on
+   * every character. The "jump to latest" control animates explicitly instead.
+   */
+  scroll-behavior: auto;
 }
 .agent-thread-area .agent-chat-message {
   max-width: none;
