@@ -28,6 +28,10 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
           rows={2}
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
+            // A Chinese or Japanese IME fires Enter to commit a candidate.
+            // Sending then would truncate the sentence the person is still
+            // composing, so Enter only sends once composition has ended.
+            if (event.nativeEvent.isComposing || event.keyCode === 229) return;
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault();
               submit();

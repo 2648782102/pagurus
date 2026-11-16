@@ -15,6 +15,14 @@ interface AgentChatThreadProps {
    * unchanged and avoids two message renderers drifting apart.
    */
   readonly renderMessageActions?: (message: AgentChatMessage) => ReactNode;
+  /**
+   * Optional body renderer, used by the product surface to render structure
+   * (fenced code, lists) that the console deliberately leaves as plain text.
+   * The default keeps every existing caller byte-for-byte unchanged.
+   */
+  readonly renderBody?: (message: AgentChatMessage, body: string) => ReactNode;
+  /** Reports whether the reader is still following the newest turn. */
+  readonly onPinnedChange?: (pinned: boolean) => void;
 }
 
 const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
@@ -92,6 +100,8 @@ export function AgentChatThread({
   busy,
   onDecision,
   renderMessageActions,
+  renderBody,
+  onPinnedChange,
 }: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
@@ -111,7 +121,9 @@ export function AgentChatThread({
       onScroll={() => {
         const container = containerRef.current;
         if (!container) return;
-        nearBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight < 96;
+        const pinned = container.scrollHeight - container.scrollTop - container.clientHeight < 96;
+        nearBottomRef.current = pinned;
+        onPinnedChange?.(pinned);
       }}
     >
       {messages.length === 0 && (
@@ -141,6 +153,14 @@ export function AgentChatThread({
           {messageBody(message).length > 0 && (
             (() => {
               const body = messageBody(message);
+              if (renderBody) {
+                return (
+                  <>
+                    {renderBody(message, body)}
+                    {message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}
+                  </>
+                );
+              }
               const sections = closeOutSections(body);
               if (!sections) {
                 return <p>{body}{message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}</p>;

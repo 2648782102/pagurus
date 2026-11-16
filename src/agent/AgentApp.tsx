@@ -6,12 +6,14 @@ import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
 import { Notice } from '../shared/ui/primitives.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentChrome } from './AgentChrome.js';
+import { AgentAnswer } from './AgentAnswer.js';
 import { AgentMessageActions } from './AgentMessageActions.js';
 import { AgentModelMenu } from './AgentModelMenu.js';
 import { AgentPrompt } from './AgentPrompt.js';
 import { AgentThreadDrawer } from './AgentThreadDrawer.js';
 import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
+import { agentErrorText } from './agent-error-text.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -38,6 +40,7 @@ export function AgentApp() {
   const agentCapabilities = useAgentCapabilities();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [pinnedToBottom, setPinnedToBottom] = useState(true);
 
   const threadTitle = useMemo(() => {
     const messages = chat.conversation?.messages ?? [];
@@ -54,6 +57,18 @@ export function AgentApp() {
     setDrawerOpen(false);
     // Return focus to the control that opened the sheet.
     threadsButtonRef.current?.focus();
+  }, []);
+
+  /**
+   * Long threads need a way back to the newest turn.
+   *
+   * The thread owns its own scroll box and already follows the newest turn
+   * while the reader is at the bottom. Once they scroll up to re-read,
+   * following would fight them, so this shows one explicit control instead.
+   */
+  const jumpToLatest = useCallback(() => {
+    const node = document.querySelector<HTMLElement>('.agent-chat-thread');
+    node?.scrollTo({ top: node.scrollHeight, behavior: 'smooth' });
   }, []);
 
   // A sheet over the page must not let the page scroll behind it.
@@ -124,7 +139,11 @@ export function AgentApp() {
               {chat.isBoss && <span className="agent-page-note">老板 Agent · 组织变更由 Runtime 校验后执行</span>}
             </div>
 
-            {chat.error && <div className="agent-inline-error" role="alert">{chat.error}</div>}
+            {chat.error && (
+              <div className="agent-inline-error" role="alert">
+                {agentErrorText(new Error(chat.error), '这条消息没有发出去，请再试一次。')}
+              </div>
+            )}
 
             <div className="agent-thread-area">
               <AgentChatThread
@@ -133,7 +152,19 @@ export function AgentApp() {
                 busy={chat.busy}
                 onDecision={chat.decideApproval}
                 renderMessageActions={(message) => <AgentMessageActions message={message} />}
+                renderBody={(message, body) =>
+                  message.author === 'assistant' ? <AgentAnswer body={body} /> : <p>{body}</p>}
+                onPinnedChange={setPinnedToBottom}
               />
+              {!pinnedToBottom && (
+                <button
+                  type="button"
+                  className="agent-jump-latest"
+                  onClick={jumpToLatest}
+                >
+                  跳到最新
+                </button>
+              )}
               <AgentChatComposer
                 draft={chat.draft}
                 busy={chat.busy}

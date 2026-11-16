@@ -82,6 +82,14 @@ Structurally the product is a page: one bar (`AgentChrome`), one entry prompt
 collects the first message, so opening a conversation and sending it are one
 controller call.
 
+Answers are read, not dumped: `agent-answer-format.ts` recognises the structure a
+plain-text reply already contains (fenced code, lists, headings, quotes) and
+`AgentAnswer.tsx` renders it as React text, so a reply cannot inject markup. The
+parser also handles the shape models actually publish — a whole answer on one
+line with inline fences and numbering. Failures are translated by
+`agent-error-text.ts` into guidance rather than HTTP jargon, which the console
+keeps for diagnosis. See [ADR 0042](decisions/0042-agent-app-answer-and-failure-handling.md).
+
 Keep a feature's UI and state together. Put only genuinely reused, runtime-independent UI in a shared area. A component receives explicit typed view fields and actions rather than a whole controller. A panel performs writes through its feature controller, not by importing a transport client directly. Keep HTTP parsing at the API boundary. Add feature folders when implementing real behavior; do not pre-create placeholder packages or layers. Conchbase remains the only owner of API schemas and runtime state.
 
 ## Transport and validation

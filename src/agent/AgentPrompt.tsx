@@ -4,6 +4,7 @@ import type {
   AgentChatModel,
   AgentChatReasoningEffort,
 } from '../shared/api/agent-chat.js';
+import { agentErrorText } from './agent-error-text.js';
 
 export interface AgentPromptProps {
   readonly agents: readonly AgentChatAgent[];
@@ -61,12 +62,12 @@ export function AgentPrompt({
   return (
     <div className="agent-prompt">
       <h1 className="agent-prompt-title">
-        {selectedAgent ? `和 ${selectedAgent.name} 说点什么` : '先创建一个 Agent'}
+        {selectedAgent ? `和 ${selectedAgent.name} 说点什么` : '这里还没有可对话的 Agent'}
       </h1>
       <p className="agent-prompt-sub">
         {selectedAgent
           ? '说出你的问题或目标。回答会固定记录所用的模型版本。'
-          : '这个 Runtime 上还没有可对话的 Agent；去控制台创建一个，再回到这里。'}
+          : 'Agent 由 Runtime 定义。在控制台的「Agent 配置」里创建之后，回到这里就能对话。'}
       </p>
 
       <form
@@ -85,6 +86,9 @@ export function AgentPrompt({
           disabled={busy || !selectedAgent}
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
+            // Committing an IME candidate also fires Enter; sending here would
+            // cut off a sentence that is still being composed.
+            if (event.nativeEvent.isComposing || event.keyCode === 229) return;
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault();
               submit();
@@ -140,7 +144,11 @@ export function AgentPrompt({
       </form>
 
       <p className="agent-prompt-hint">Enter 发送，Shift + Enter 换行</p>
-      {error && <p className="agent-prompt-error" role="alert">{error}</p>}
+      {error && (
+        <p className="agent-prompt-error" role="alert">
+          {agentErrorText(new Error(error), '没有发出去，请再试一次。')}
+        </p>
+      )}
     </div>
   );
 }

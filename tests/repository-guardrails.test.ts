@@ -523,6 +523,7 @@ describe('AI-first entry documents', () => {
       '0039-domain-module-layering.md',
       '0040-agent-product-surface.md',
       '0041-agent-app-visual-direction.md',
+      '0042-agent-app-answer-and-failure-handling.md',
     ]);
 
     const first = read(`${recordsDir}/0001-ai-development-guardrails.md`);

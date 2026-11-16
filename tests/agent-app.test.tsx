@@ -225,4 +225,24 @@ describe('shipped Agent surface', () => {
     fireEvent.click(screen.getByRole('button', { name: '关闭对话记录' }));
     expect(document.activeElement).toBe(opener);
   });
+
+  it('does not send while an IME is still composing', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const input = screen.getByLabelText('输入消息');
+    fireEvent.change(input, { target: { value: '帮我' } });
+
+    // Commit-candidate Enter carries isComposing; sending then would truncate
+    // the sentence the person is still typing.
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(screen.getByText('帮我')).toBeTruthy();
+    // Still in the same thread, not a new message.
+    expect(screen.queryByText('正在等待回复…')).toBeNull();
+
+    // A plain Enter sends.
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(await screen.findByText('正在发送…')).toBeTruthy();
+  });
 });
