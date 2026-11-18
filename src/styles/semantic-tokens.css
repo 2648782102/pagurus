@@ -1,0 +1,118 @@
+/*
+ * Semantic design tokens.
+ *
+ * Components reference these names, never a palette (`--*`, `--ag-*`). Values
+ * are resolved per surface by the root class: `.agent-app` is the product and
+ * therefore the default; `.shell` (the developer console) overrides only the
+ * values that genuinely differ. Adding a third surface means adding one alias
+ * block here, not editing components.
+ *
+ * See pagurus/docs/DESIGN_LANGUAGE.zh-CN.md.
+ */
+
+/* Agent defaults: `--ag-*` is scoped to `.agent-app`, so the alias block is
+ * scoped there too. Components inside inherit these names unchanged. */
+.agent-app,
+.agent-app-blocked {
+  --surface-canvas: var(--ag-paper);
+  --surface-canvas-deep: var(--ag-paper-sunk);
+  --surface-raised: var(--ag-paper-raised);
+  --surface-sunk: var(--ag-paper-sunk);
+
+  --text-strong: var(--ag-ink);
+  --text: var(--ag-ink-soft);
+  --text-muted: var(--ag-muted);
+  --text-faint: var(--ag-faint);
+
+  --border: var(--ag-line);
+  --border-strong: var(--ag-line-strong);
+  --border-rule: var(--ag-line-strong);
+
+  --state-signal: var(--ag-signal);
+  --state-signal-wash: var(--ag-tide-wash);
+  --state-caution: var(--ag-amber-wash);
+  --state-danger: var(--ag-danger);
+  --state-danger-wash: var(--ag-danger-wash);
+
+  --accent: var(--ag-tide);
+  --accent-ink: var(--ag-tide-ink);
+  --accent-wash: var(--ag-tide-wash);
+  --accent-rail: var(--ag-rail);
+  --accent-rail-ink: #f4f7f4;
+  --accent-rail-strong: #101a16;
+
+  --action-primary: var(--rust);
+  --action-primary-strong: var(--rust-strong);
+  --action-primary-wash: var(--rust-wash);
+  --action-primary-contrast: #ffffff;
+  --action-danger-border: var(--ag-danger);
+  --action-danger-hover: var(--ag-danger-wash);
+  --action-danger-border-strong: var(--ag-danger);
+  --state-danger-ink: var(--ag-danger);
+  --state-signal-border: var(--ag-line-strong);
+  --state-caution-strong: var(--ag-amber-wash);
+  --state-caution-border: var(--ag-line-strong);
+  --state-danger-border: var(--ag-danger);
+  --accent-border: var(--ag-line-strong);
+
+  --font-body: var(--ag-sans);
+  --font-reading: var(--ag-serif);
+  --font-code: var(--font-mono);
+
+  --radius-control: var(--ag-radius);
+  --measure-reading: var(--ag-measure);
+  --interaction-hover: rgba(20, 28, 25, .06);
+}
+
+/* Developer console: the same semantics, instrument-panel values. Its palette
+ * (`--*`) lives on :root, so this override works on `.shell` directly. */
+.shell {
+  --surface-canvas: var(--canvas);
+  --surface-canvas-deep: var(--canvas-deep);
+  --surface-raised: var(--paper-raised);
+  --surface-sunk: var(--paper-inset);
+
+  --text-strong: var(--ink);
+  --text: var(--ink-soft);
+  --text-muted: var(--muted);
+  --text-faint: var(--faint);
+
+  --border: var(--line);
+  --border-strong: var(--line-strong);
+  --border-rule: var(--rule);
+
+  --state-signal: var(--signal);
+  --state-signal-wash: var(--signal-wash);
+  --state-caution: var(--amber-wash);
+  --state-danger: var(--danger);
+  --state-danger-wash: var(--danger-wash);
+
+  --accent: var(--steel);
+  --accent-ink: var(--steel-ink);
+  --accent-wash: var(--steel-wash);
+  --accent-rail: var(--navy);
+  --accent-rail-ink: #f4f7f4;
+  --accent-rail-strong: var(--navy-soft);
+
+  --action-primary: var(--rust);
+  --action-primary-strong: var(--rust-strong);
+  --action-primary-wash: var(--rust-wash);
+  --action-primary-contrast: #ffffff;
+  --action-danger-border: #dcb7ab;
+  --action-danger-hover: #f3dcd4;
+  --action-danger-border-strong: #c99c8d;
+  --state-danger-ink: #71352a;
+  --state-signal-border: #b8d4c3;
+  --state-caution-strong: #ddc999;
+  --state-caution-border: #ddc999;
+  --state-danger-border: #ddb8ac;
+  --accent-border: #b8cdd2;
+
+  --font-body: var(--font-sans);
+  --font-reading: var(--font-sans);
+  --font-code: var(--font-mono);
+
+  --radius-control: var(--radius-sm);
+  --measure-reading: var(--content-width);
+  --interaction-hover: rgba(23, 33, 36, .06);
+}

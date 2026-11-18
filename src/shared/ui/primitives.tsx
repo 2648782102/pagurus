@@ -3,6 +3,7 @@ import type {
   HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  Ref,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react';
@@ -22,21 +23,32 @@ const cx = (...names: (string | false | undefined | null)[]) => names.filter(Boo
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md';
+/** `pill` is the Agent chrome shape; `square` is the instrument default. */
+export type ButtonShape = 'square' | 'pill';
 
 export function Button({
   variant = 'secondary',
   size = 'md',
+  shape = 'square',
+  pressed,
+  buttonRef,
   className,
   type = 'button',
   ...rest
 }: {
   readonly variant?: ButtonVariant;
   readonly size?: ButtonSize;
+  readonly shape?: ButtonShape;
+  readonly pressed?: boolean;
+  /** Explicit ref; avoids turning every caller into a forwardRef consumer. */
+  readonly buttonRef?: Ref<HTMLButtonElement>;
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type={type}
-      className={cx('ui-button', `ui-button-${variant}`, `ui-button-${size}`, className)}
+      ref={buttonRef}
+      className={cx('ui-button', `ui-button-${variant}`, `ui-button-${size}`,
+        shape === 'pill' && 'ui-button-pill', pressed && 'is-on', className)}
       {...rest}
     />
   );

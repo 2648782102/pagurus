@@ -132,6 +132,26 @@ describe('Controlled execution console', () => {
     expect(screen.getByRole('button', { name: '创建显式授权' })).toBeTruthy();
   });
 
+  it('does not claim nothing was published while the first read is still in flight', async () => {
+    let release: (() => void) | undefined;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const base = vi.mocked(globalThis.fetch).getMockImplementation()!;
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
+      if (String(input) === '/v1/execution/grants') await held;
+      return base(input, init);
+    });
+
+    render(<App />);
+
+    expect(await screen.findByText('正在读取显式授权…')).toBeTruthy();
+    expect(screen.queryByText('Runtime 尚未发布授权。')).toBeNull();
+    expect(screen.queryByText('正在读取执行请求…')).toBeTruthy();
+
+    release?.();
+    expect(await screen.findByText('Runtime 尚未发布授权。')).toBeTruthy();
+    expect(screen.queryByText('正在读取显式授权…')).toBeNull();
+  });
+
   it('surfaces a failed run creation instead of silently ignoring it', async () => {
     const grant = {
       version: '1.2.0', id: 'grant_alpha', capabilityId: capability.id,

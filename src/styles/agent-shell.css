@@ -71,25 +71,6 @@
 .agent-chrome-status.status-disconnected .agent-chrome-dot { background: var(--ag-danger); }
 .agent-chrome-status.status-incompatible .agent-chrome-dot { background: #b08b3a; }
 
-.agent-chrome-button {
-  padding: 6px 13px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ag-ink-soft);
-  cursor: pointer;
-  font: 500 11.5px var(--ag-sans);
-  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
-}
-.agent-chrome-button:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); background: var(--ag-tide-wash); }
-.agent-chrome-button:focus-visible { outline: 2px solid var(--ag-tide); outline-offset: 2px; }
-.agent-chrome-button.is-primary {
-  border-color: var(--ag-rail);
-  background: var(--ag-rail);
-  color: #f4f7f4;
-}
-.agent-chrome-button.is-primary:hover { border-color: #101a16; background: #101a16; color: #ffffff; }
-
 /* --- page ---------------------------------------------------------------- */
 
 .agent-page {

@@ -128,12 +128,6 @@
   line-height: 1.6;
 }
 
-/* The chrome action stays visibly engaged while the panel is open. */
-.agent-chrome-button.is-on {
-  border-color: var(--ag-tide);
-  background: var(--ag-tide-wash);
-  color: var(--ag-tide-ink);
-}
 
 @media (max-width: 900px) {
   /* Below this width two columns would squeeze the reading measure, so the

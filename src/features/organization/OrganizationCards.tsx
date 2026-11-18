@@ -13,17 +13,26 @@ import { eventLabel, projectStateLabel } from './organization-labels.js';
 export function OrganizationTimeline({
   events,
   hasMore,
+  loading,
 }: {
   readonly events: readonly OrganizationEventRecord[];
   readonly hasMore: boolean;
+  readonly loading: boolean;
 }) {
   return (
     <article className="organization-card organization-card-timeline" aria-labelledby="organization-timeline-title">
       <div className="section-heading">
         <h3 id="organization-timeline-title">主会话时间线</h3>
-        <span className="muted-label">{hasMore ? '可继续分页' : '已到最新'}</span>
+        <span className="muted-label">{loading ? '读取中' : hasMore ? '可继续分页' : '已到最新'}</span>
       </div>
-      {events.length === 0 && <p className="task-hint">Runtime 尚未发布组织事件。</p>}
+      {/*
+       * An empty list has two very different meanings: Runtime published
+       * nothing, or this view has not read it yet. Saying "尚未发布" while the
+       * first read is still in flight reports a fact we do not have, and the
+       * operator has no way to tell the two apart.
+       */}
+      {loading && events.length === 0 && <p className="task-hint" role="status">正在读取组织事件…</p>}
+      {!loading && events.length === 0 && <p className="task-hint">Runtime 尚未发布组织事件。</p>}
       <ol className="organization-timeline">
         {events.map((event) => (
           <li key={event.id}>
@@ -88,16 +97,19 @@ export function ProjectDirectory({
   selectedProjectId,
   threads,
   onSelect,
+  loading,
 }: {
   readonly projects: readonly { readonly id: string; readonly state: string }[];
   readonly selectedProjectId: string;
   readonly threads: OrganizationProjectThreadList | null;
   readonly onSelect: (id: string) => void;
+  readonly loading: boolean;
 }) {
   return (
     <article className="organization-card organization-card-projects" aria-labelledby="organization-project-title">
       <h3 id="organization-project-title">项目与归档</h3>
-      {projects.length === 0 && <p className="task-hint">Runtime 尚未发布项目。</p>}
+      {loading && projects.length === 0 && <p className="task-hint" role="status">正在读取项目…</p>}
+      {!loading && projects.length === 0 && <p className="task-hint">Runtime 尚未发布项目。</p>}
       <div className="organization-project-list">
         {projects.map((project) => (
           <button
@@ -127,14 +139,17 @@ export function ProjectDirectory({
 export function ProposalAudit({
   proposals,
   delegations,
+  loading,
 }: {
   readonly proposals: OrganizationAgentProposalList['proposals'];
   readonly delegations: readonly OrganizationDelegationRecord[];
+  readonly loading: boolean;
 }) {
   return (
     <article className="organization-card" aria-labelledby="organization-proposal-title">
       <h3 id="organization-proposal-title">动态提案与委派审计</h3>
-      {proposals.length === 0 && <p className="task-hint">Runtime 尚未发布员工提案。</p>}
+      {loading && proposals.length === 0 && <p className="task-hint" role="status">正在读取员工提案…</p>}
+      {!loading && proposals.length === 0 && <p className="task-hint">Runtime 尚未发布员工提案。</p>}
       {proposals.map((proposal) => (
         <p className="organization-fact" key={proposal.workerId}>
           <code>{proposal.workerId}</code><Tag>{proposal.state}</Tag>
@@ -151,11 +166,15 @@ export function ProposalAudit({
   );
 }
 
-export function ReportList({ reports }: { readonly reports: readonly OrganizationReportRecord[] }) {
+export function ReportList({ reports, loading }: {
+  readonly reports: readonly OrganizationReportRecord[];
+  readonly loading: boolean;
+}) {
   return (
     <article className="organization-card" aria-labelledby="organization-report-title">
       <h3 id="organization-report-title">结构化汇报</h3>
-      {reports.length === 0 && <p className="task-hint">Runtime 尚未发布报告。</p>}
+      {loading && reports.length === 0 && <p className="task-hint" role="status">正在读取结构化汇报…</p>}
+      {!loading && reports.length === 0 && <p className="task-hint">Runtime 尚未发布报告。</p>}
       {[...reports].reverse().map((report) => (
         <p className="organization-fact" key={report.id}>
           <span>#{report.sequence}</span>
@@ -167,11 +186,18 @@ export function ReportList({ reports }: { readonly reports: readonly Organizatio
   );
 }
 
-export function OrganizationWorkItems({ workItems }: { readonly workItems: readonly OrganizationWorkItemRecord[] }) {
+export function OrganizationWorkItems({
+  workItems,
+  loading,
+}: {
+  readonly workItems: readonly OrganizationWorkItemRecord[];
+  readonly loading: boolean;
+}) {
   return (
     <article className="organization-card" aria-labelledby="organization-work-title">
       <h3 id="organization-work-title">组织工作项</h3>
-      {workItems.length === 0 && <p className="task-hint">Runtime 尚未发布工作项视图。</p>}
+      {loading && workItems.length === 0 && <p className="task-hint" role="status">正在读取工作项…</p>}
+      {!loading && workItems.length === 0 && <p className="task-hint">Runtime 尚未发布工作项视图。</p>}
       {workItems.map((workItem) => (
         <p className="organization-fact" key={workItem.workItemId}>
           <code>{workItem.workItemId}</code><Tag>{workItem.state}</Tag>

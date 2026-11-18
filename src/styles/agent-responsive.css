@@ -14,7 +14,7 @@
      keeps a text label; the primary action is already visually distinct by
      fill, so it can tighten before either label is truncated. */
   .agent-chrome-actions { gap: 6px; }
-  .agent-chrome-button { padding: 6px 10px; font-size: 11px; }
+  .agent-chrome-actions .ui-button-pill { padding: 6px 10px; font-size: 11px; }
   .agent-page-head { padding: 10px 16px 0; }
   .agent-page-note { display: none; }
   .agent-thread-area .agent-chat-thread { padding: 6px 16px 18px; }

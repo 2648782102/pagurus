@@ -102,4 +102,28 @@ describe('Organization Console', () => {
     expect(screen.queryByText(/归档项目/)).toBeNull();
     expect(screen.queryByText(/创建 Agent revision/)).toBeNull();
   });
+
+  it('reports a first read as loading instead of claiming nothing was published', async () => {
+    // Hold the session read open so the panel stays in its first-read state.
+    let release: (() => void) | undefined;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const base = vi.mocked(globalThis.fetch).getMockImplementation()!;
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
+      if (String(input) === '/v1/organization/session') await held;
+      return base(input, init);
+    });
+
+    render(<App />);
+
+    // While the read is in flight the page must not assert emptiness.
+    expect(await screen.findByText('正在读取项目…')).toBeTruthy();
+    expect(screen.queryByText('Runtime 尚未发布项目。')).toBeNull();
+    expect(screen.queryByText('Runtime 尚未发布组织事件。')).toBeNull();
+
+    release?.();
+    // Once the read lands, the loading copy is replaced by real published facts.
+    expect(await screen.findByText('项目创建')).toBeTruthy();
+    expect(screen.queryByText('正在读取项目…')).toBeNull();
+    expect(screen.queryByText('Runtime 尚未发布项目。')).toBeNull();
+  });
 });

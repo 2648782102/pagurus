@@ -1,6 +1,7 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useExecutionConsole } from './useExecutionConsole.js';
 import { Button, Field, Notice, Section, Tag, TextInput } from '../../shared/ui/primitives.js';
+import { emptyCollectionCopy } from '../../shared/ui/async-state.js';
 
 const STATE_LABELS: Readonly<Record<string, string>> = {
   recorded: '已记录',
@@ -73,7 +74,9 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
 
           <article className="organization-card" aria-labelledby="execution-grant-title">
             <h3 id="execution-grant-title">显式授权</h3>
-            {consoleState.grants.length === 0 && <p className="task-hint">Runtime 尚未发布授权。</p>}
+            {consoleState.grants.length === 0 && <p className="task-hint" role={consoleState.phase === 'loading' ? 'status' : undefined}>
+              {emptyCollectionCopy({ phase: consoleState.phase, empty: 'Runtime 尚未发布授权。', loading: '正在读取显式授权…' })}
+            </p>}
             {consoleState.grants.map((grant) => (
               <div className="organization-fact" key={grant.id}>
                 <Tag tone={grant.state === 'revoked' ? 'danger' : grant.state === 'granted' ? 'success' : 'neutral'}>{stateLabel(grant.state)}</Tag><code>{grant.id}</code>
@@ -90,7 +93,9 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
 
           <article className="organization-card" aria-labelledby="execution-request-title">
             <h3 id="execution-request-title">请求与结果</h3>
-            {consoleState.requests.length === 0 && <p className="task-hint">尚未在本会话提交请求。</p>}
+            {consoleState.requests.length === 0 && <p className="task-hint" role={consoleState.phase === 'loading' ? 'status' : undefined}>
+              {emptyCollectionCopy({ phase: consoleState.phase, empty: '尚未在本会话提交请求。', loading: '正在读取执行请求…' })}
+            </p>}
             {[...consoleState.requests].reverse().map((request) => (
               <div className="organization-fact" key={request.id}>
                 <Tag tone={request.state === 'rejected' ? 'danger' : request.state === 'succeeded' ? 'success' : 'neutral'}>{stateLabel(request.state)}</Tag><code>{request.id}</code>
@@ -113,7 +118,9 @@ export function ExecutionConsolePanel({ runtime }: { runtime: RuntimeInfo | null
           <article className="organization-card" aria-labelledby="execution-run-title">
             <h3 id="execution-run-title">隔离执行 Runs</h3>
             {!consoleState.runsSupported && <p className="task-hint">当前 Runtime 未发布 executionRunContract: 1.3.0。</p>}
-            {consoleState.runsSupported && consoleState.runs.length === 0 && <p className="task-hint">尚未发布隔离执行 run。</p>}
+            {consoleState.runsSupported && consoleState.runs.length === 0 && <p className="task-hint" role={consoleState.phase === 'loading' ? 'status' : undefined}>
+              {emptyCollectionCopy({ phase: consoleState.phase, empty: '尚未发布隔离执行 run。', loading: '正在读取隔离执行 run…' })}
+            </p>}
             {[...consoleState.runs].reverse().map((run) => (
               <div className="organization-fact" key={run.id}>
                 <Tag tone={run.state === 'failed' ? 'danger' : run.state === 'succeeded' ? 'success' : 'neutral'}>{stateLabel(run.state)}</Tag><code>{run.id}</code>

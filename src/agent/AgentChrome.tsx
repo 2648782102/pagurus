@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { Button } from '../shared/ui/primitives.js';
 
 /**
  * The product's only persistent chrome: one thin bar.
@@ -51,26 +52,21 @@ export function AgentChrome({
           <span className="agent-chrome-dot" aria-hidden="true" />
           {pending ? '回复中' : connection}
         </span>
-        <button
-          ref={threadsButtonRef}
-          type="button"
-          className="agent-chrome-button"
-          onClick={onOpenThreads}
-        >
+        <Button buttonRef={threadsButtonRef} shape="pill" onClick={onOpenThreads}>
           对话记录
-        </button>
-        <button
-          type="button"
-          className={`agent-chrome-button${contextOpen ? ' is-on' : ''}`}
+        </Button>
+        <Button
+          shape="pill"
+          pressed={contextOpen}
           onClick={onToggleContext}
           aria-expanded={contextOpen}
           aria-controls="agent-context"
         >
           上下文
-        </button>
-        <button type="button" className="agent-chrome-button is-primary" onClick={onNewThread}>
+        </Button>
+        <Button shape="pill" variant="primary" onClick={onNewThread}>
           新对话
-        </button>
+        </Button>
       </div>
     </header>
   );

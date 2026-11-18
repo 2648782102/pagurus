@@ -13,6 +13,13 @@ import {
 
 export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | null }) {
   const consoleState = useOrganizationConsole(runtime);
+  /*
+   * `session === null` only while the first read is in flight (or on error).
+   * Rendering `0` there claims "this Runtime has no projects", which is a fact
+   * we do not have yet; the counts appear a moment later and read as data loss.
+   */
+  const loading = consoleState.phase === 'checking' || consoleState.phase === 'loading';
+  const count = (value: number) => (loading ? '—' : value);
 
   return (
     <Section
@@ -63,11 +70,11 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
 
         <div className="organization-rail" aria-label="组织状态摘要">
           <div className="organization-summary">
-            <div><strong>{consoleState.projects.length}</strong><span>项目</span></div>
-            <div><strong>{consoleState.orderedAttention.filter((item) => item.state === 'open').length}</strong><span>待处理 Attention</span></div>
-            <div><strong>{consoleState.proposals.length}</strong><span>员工提案</span></div>
-            <div><strong>{consoleState.reports.length}</strong><span>结构化汇报</span></div>
-            <div><strong>{consoleState.timeline.length}</strong><span>已发布事实</span></div>
+            <div><strong>{count(consoleState.projects.length)}</strong><span>项目</span></div>
+            <div><strong>{count(consoleState.orderedAttention.filter((item) => item.state === 'open').length)}</strong><span>待处理 Attention</span></div>
+            <div><strong>{count(consoleState.proposals.length)}</strong><span>员工提案</span></div>
+            <div><strong>{count(consoleState.reports.length)}</strong><span>结构化汇报</span></div>
+            <div><strong>{count(consoleState.timeline.length)}</strong><span>已发布事实</span></div>
           </div>
         </div>
 
@@ -78,7 +85,7 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
         />
 
         <div className="organization-layout">
-          <OrganizationTimeline events={consoleState.timeline} hasMore={consoleState.eventHasMore} />
+          <OrganizationTimeline events={consoleState.timeline} hasMore={consoleState.eventHasMore} loading={loading} />
           <AttentionQueue
             records={consoleState.orderedAttention}
             selected={consoleState.selectedAttention}
@@ -92,10 +99,11 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
             selectedProjectId={consoleState.selectedProjectId}
             threads={consoleState.projectThreads}
             onSelect={consoleState.selectProject}
+            loading={loading}
           />
-          <ProposalAudit proposals={consoleState.proposals} delegations={consoleState.delegations} />
-          <ReportList reports={consoleState.reports} />
-          <OrganizationWorkItems workItems={consoleState.workItems} />
+          <ProposalAudit proposals={consoleState.proposals} delegations={consoleState.delegations} loading={loading} />
+          <ReportList reports={consoleState.reports} loading={loading} />
+          <OrganizationWorkItems workItems={consoleState.workItems} loading={loading} />
         </div>
       </>}
 
