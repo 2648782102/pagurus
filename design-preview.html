@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagurus · 设计样张（矿物纸 + 潮池）</title>
+<style>
+  /* ---------------------------------------------------------------
+     Static design specimen. NOT part of the app build.
+     Same markup, two palettes (light / warm-charcoal), two densities
+     (Reading / Inspect). Colours mirror docs/DESIGN_LANGUAGE.zh-CN.md.
+     --------------------------------------------------------------- */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Avenir Next', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    font-synthesis: none;
+    background: #0b0d13;
+    color: #c9d0de;
+    padding: 28px;
+  }
+  .specimen-head { max-width: 1500px; margin: 0 auto 18px; display: flex; align-items: baseline; gap: 14px; }
+  .specimen-head h1 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .specimen-head span { font-size: 10.5px; color: #8a857b; }
+  .stage { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .stage > section { min-width: 0; }
+  .stage-label { font-size: 10px; letter-spacing: .08em; color: #8a857b; margin: 0 0 8px 2px; }
+
+  /* ---- palette: light (default) ---- */
+  .surface {
+    --canvas: #f3f4f1;
+    --raised: #fbfbf9;
+    --sunk: #e9ebe6;
+    --ink: #141c19;
+    --ink-soft: #45524d;
+    --muted: #6b7772;
+    --faint: #8b958f;
+    --line: #d9ddd5;
+    --line-strong: #c2c8be;
+    --tide: #2f6b63;
+    --tide-ink: #24544e;
+    --tide-wash: #e4edea;
+    --signal: #3c7a5b;
+    --rust: #9f4522;
+    --rust-strong: #843719;
+    --hairline: rgba(20, 28, 25, .06);
+  }
+  /* ---- palette: warm charcoal ---- */
+  .surface[data-theme="dark"] {
+    --canvas: #2b2622;
+    --raised: #332e28;
+    --sunk: #241f1b;
+    --ink: #f2f0ea;
+    --ink-soft: #d2cec4;
+    --muted: #a49f94;
+    --faint: #7d786e;
+    --line: #433d35;
+    --line-strong: #585046;
+    --tide: #6fb0a4;
+    --tide-ink: #8fd0c1;
+    --tide-wash: #243b36;
+    --signal: #6fbf8f;
+    --rust: #e08b5e;
+    --rust-strong: #f0a377;
+    --hairline: rgba(242, 240, 234, .08);
+  }
+
+  /* Dark variants. Key 1/2/3 or ?dark=a|b|c. Shared structure, palette only. */
+  /* A — deep mineral green-grey: tide is the same colour family, not a contrast */
+  .surface[data-theme="dark"][data-dark="a"] {
+    --canvas: #1e2422; --raised: #262d2a; --sunk: #181d1b;
+    --ink: #eef1ec; --ink-soft: #ccd3cd; --muted: #9fa9a2; --faint: #778078;
+    --line: #39423d; --line-strong: #4d5751;
+    --tide: #6fb0a4; --tide-ink: #8fd0c1; --tide-wash: #23352f;
+    --signal: #6fbf8f; --rust: #d98a60; --rust-strong: #eda079;
+  }
+  /* B — neutral near-black (Linear-like): cold, restrained, no warm cast */
+  .surface[data-theme="dark"][data-dark="b"] {
+    --canvas: #1b1d1c; --raised: #232625; --sunk: #151716;
+    --ink: #f0f1ee; --ink-soft: #cfd2cd; --muted: #a1a59f; --faint: #7a7e78;
+    --line: #363a37; --line-strong: #4a4f4b;
+    --tide: #79b7ab; --tide-ink: #9bd4c8; --tide-wash: #21302c;
+    --signal: #72bd90; --rust: #d98a60; --rust-strong: #eda079;
+  }
+  /* C — keep warm charcoal but calm the tide and drop its filled button */
+  .surface[data-theme="dark"][data-dark="c"] {
+    --canvas: #262421; --raised: #2e2b27; --sunk: #1f1d1a;
+    --ink: #f2f0ea; --ink-soft: #d2cec4; --muted: #a49f94; --faint: #7d786e;
+    --line: #3e3933; --line-strong: #544d44;
+    --tide: #5a9b90; --tide-ink: #83bdb1; --tide-wash: #22302c;
+    --signal: #6bb587; --rust: #d98a60; --rust-strong: #eda079;
+  }
+  .surface[data-theme="dark"][data-dark="c"] .btn.primary {
+    border-color: var(--line-strong); background: transparent; color: var(--ink);
+  }
+  .surface[data-theme="dark"][data-dark="c"] .btn.primary:hover { background: var(--hairline); }
+  /* D — blue-black: a real navy cast, not grey. B's restraint + a cold identity. */
+  .surface[data-theme="dark"][data-dark="d"] {
+    --canvas: #121a20; --raised: #19232b; --sunk: #0e151a;
+    --ink: #f1f5f7; --ink-soft: #ccd7de; --muted: #9dadb8; --faint: #71828e;
+    --line: #2a3943; --line-strong: #3c505c;
+    --tide: #7fc4b6; --tide-ink: #a5ded1; --tide-wash: #1b3332;
+    --signal: #74c797; --rust: #de936c; --rust-strong: #f0ac86;
+  }
+  /* E — blue-violet black: the common dark-theme family (Linear / Vercel).
+     A truly cold near-black with a violet cast; tide stays the one green mark. */
+  .surface[data-theme="dark"][data-dark="e"] {
+    --canvas: #10121a; --raised: #171a25; --sunk: #0b0d13;
+    --ink: #f2f4fa; --ink-soft: #d2d8e6; --muted: #a2aec2; --faint: #76839a;
+    --line: #262b39; --line-strong: #394155;
+    --tide: #7cc9ba; --tide-ink: #a2e0d2; --tide-wash: #1a2c2c;
+    --signal: #75c795; --rust: #e09770; --rust-strong: #f0ad87;
+  }
+
+  .surface {
+    background: var(--canvas);
+    color: var(--ink-soft);
+    border: 1px solid #00000018;
+    min-height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- chrome: one thin bar ---- */
+  .chrome { height: 52px; flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--tide); color: var(--canvas); font: 700 11px/1 Georgia, serif; }
+  .brand { color: var(--ink); font-size: 12.5px; font-weight: 650; }
+  .divider { width: 1px; height: 15px; background: var(--line-strong); }
+  .thread-name { color: var(--muted); font-size: 11px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chrome-spacer { flex: 1; }
+  .status { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10.5px; margin-right: 4px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+
+  .btn {
+    font: 500 11.5px inherit; font-family: inherit;
+    padding: 6px 13px; border-radius: 999px;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--ink-soft);
+    cursor: pointer; transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .btn:hover { border-color: var(--tide); color: var(--tide-ink); background: var(--tide-wash); }
+  .btn.on { border-color: var(--tide); color: var(--tide-ink); background: var(--tide-wash); }
+  .btn.primary { border-color: var(--tide); background: var(--tide); color: var(--canvas); }
+  .btn.primary:hover { opacity: .9; }
+  .btn.square { border-radius: 3px; }
+  .btn.rust { border-color: var(--rust); background: var(--rust); color: #fff; }
+  .surface[data-theme="dark"] .btn.primary { border-color: var(--tide); background: var(--tide); color: #14211d; }
+
+  /* ---- body: reading column + optional inspect rail ---- */
+  .body { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 0; transition: grid-template-columns .12s ease; }
+  .surface[data-inspect="on"] .body { grid-template-columns: minmax(0, 1fr) 300px; }
+  .read { min-width: 0; padding: 40px 28px; display: flex; flex-direction: column; align-items: center; }
+  .measure { width: 100%; max-width: 44rem; }
+
+  .turn { display: grid; gap: 8px; margin-bottom: 26px; align-content: start; }
+  .turn .who { font-size: 10px; letter-spacing: .04em; color: var(--faint); }
+  .turn.user .bubble { padding: 10px 13px; border: 1px solid var(--line); background: var(--raised); color: var(--ink); font-size: 13px; line-height: 1.6; border-radius: 3px; }
+  .answer { color: var(--ink); font-family: 'Songti SC', 'Noto Serif SC', 'Iowan Old Style', Charter, Palatino, Georgia, serif; font-size: 16px; line-height: 1.75; }
+  .answer strong { font-family: 'Avenir Next', 'Segoe UI', 'PingFang SC', sans-serif; font-size: .95em; }
+  .answer code { font-family: 'SFMono-Regular', Menlo, Consolas, monospace; font-size: .82em; padding: 1px 4px; background: var(--sunk); border-radius: 2px; }
+  .answer p { margin: 0 0 12px; }
+  .answer ol { padding-left: 20px; margin: 4px 0 12px; }
+  .answer li { margin-bottom: 5px; }
+  .meta { display: flex; align-items: center; gap: 8px; font: 10px 'SFMono-Regular', Menlo, monospace; color: var(--faint); }
+  .chip { padding: 2px 6px; border: 1px solid var(--line); color: var(--muted); border-radius: 2px; }
+  .chip.ok { color: var(--signal); border-color: var(--line-strong); }
+
+  /* ---- composer ---- */
+  .composer { margin-top: auto; padding-top: 18px; }
+  .prompt { border: 1px solid var(--line-strong); border-radius: 3px; background: var(--raised); padding: 12px 13px 9px; }
+  .prompt:focus-within { border-color: var(--tide); box-shadow: 0 0 0 3px var(--tide-wash); }
+  .prompt textarea { width: 100%; border: 0; outline: 0; resize: none; background: transparent; color: var(--ink); font: inherit; font-size: 13px; line-height: 1.6; min-height: 34px; }
+  .prompt textarea::placeholder { color: var(--faint); }
+  .prompt-foot { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+  .selects { display: flex; gap: 12px; }
+  .sel { font-size: 10.5px; color: var(--muted); }
+  .sel b { color: var(--ink-soft); font-weight: 600; }
+  .send { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--tide); color: var(--canvas); font-size: 13px; cursor: pointer; }
+  .hint { text-align: center; color: var(--faint); font-size: 10px; margin-top: 8px; }
+
+  /* ---- inspect rail: same palette, dense typography ---- */
+  .rail { border-left: 1px solid var(--line); background: var(--raised); overflow: hidden; display: none; }
+  .surface[data-inspect="on"] .rail { display: block; }
+  .rail-inner { padding: 14px; font: 10.5px/1.55 'SFMono-Regular', Menlo, Consolas, monospace; }
+  .rail h4 { margin: 0 0 10px; font: 600 10px/1.4 inherit; font-family: 'Avenir Next', 'PingFang SC', sans-serif; letter-spacing: .03em; color: var(--ink); }
+  .rail .group { margin-bottom: 16px; }
+  .rail .label { color: var(--faint); font-size: 9px; letter-spacing: .06em; margin-bottom: 5px; }
+  .rail .row { display: flex; gap: 6px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+  .rail .row code { color: var(--ink-soft); font-size: 10px; }
+  .rail .row .tag { margin-left: auto; color: var(--tide-ink); }
+  .rail .row .tag.warn { color: var(--rust); }
+  .rail .row .tag.ok { color: var(--signal); }
+
+  /* ---- specimen controls ---- */
+  .legend { max-width: 1500px; margin: 16px auto 0; display: flex; gap: 18px; flex-wrap: wrap; font-size: 10.5px; color: #8a857b; }
+  .legend b { color: #d2cec4; font-weight: 600; }
+  kbd { font: 10px monospace; border: 1px solid #585046; border-radius: 2px; padding: 1px 4px; color: #d2cec4; }
+</style>
+</head>
+<body>
+  <div class="specimen-head">
+    <h1>Pagurus · 矿物纸 + 潮池</h1>
+    <span>静态样张 · 非构建产物 · 按 <b>1A + 1B / 2A / 3A</b> 绘制</span>
+  </div>
+
+  <div class="stage">
+    <section>
+      <p class="stage-label">LIGHT — 浅矿物纸（默认）</p>
+      <div class="surface" data-theme="light" data-inspect="off" id="light">
+        <header class="chrome">
+          <span class="mark">P</span>
+          <span class="brand">老板 Agent</span>
+          <span class="divider"></span>
+          <span class="thread-name">统计 docs 目录</span>
+          <span class="chrome-spacer"></span>
+          <span class="status"><span class="dot"></span>已连接</span>
+          <button class="btn">对话记录</button>
+          <button class="btn" id="light-toggle">上下文</button>
+          <button class="btn primary">新对话</button>
+        </header>
+        <div class="body">
+          <div class="read"><div class="measure" data-content></div></div>
+          <aside class="rail"><div class="rail-inner" data-rail></div></aside>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="stage-label">DARK — 暖炭（主题变体，tide 提亮为 #6fb0a4）</p>
+      <div class="surface" data-theme="dark" data-inspect="on" id="dark">
+        <header class="chrome">
+          <span class="mark">P</span>
+          <span class="brand">老板 Agent</span>
+          <span class="divider"></span>
+          <span class="thread-name">统计 docs 目录</span>
+          <span class="chrome-spacer"></span>
+          <span class="status"><span class="dot"></span>已连接</span>
+          <button class="btn">对话记录</button>
+          <button class="btn on" id="dark-toggle">上下文</button>
+          <button class="btn primary">新对话</button>
+        </header>
+        <div class="body">
+          <div class="read"><div class="measure" data-content></div></div>
+          <aside class="rail"><div class="rail-inner" data-rail></div></aside>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend">
+    <span><b>阅读态</b>：左，右侧栏收起 — 一屏一件事</span>
+    <span><b>Inspect 态</b>：右，展开 300px 等宽密集栏（3A）</span>
+    <span><b>tide</b> 只做身份 / 选中 / 焦点；<b>rust</b> 只做唯一动作</span>
+    <span>点 <kbd>上下文</kbd> 切换 Inspect；<kbd>D</kbd> 切两套主题同步</span>
+  </div>
+
+<template id="content-tpl">
+  <div class="turn user"><div class="who">你</div><div class="bubble">docs 目录下有多少个 Markdown 文件？只给结论和文件路径。</div></div>
+  <div class="turn">
+    <div class="who">老板 Agent · 回答</div>
+    <div class="answer">
+      <p><strong>docs 目录下共 100 个 Markdown 文件。</strong>统计已由员工完成并三次一致汇报。</p>
+      <ol>
+        <li>第 1 条路径清单已截断，完整列表可在 <code>rpt_cff3b94…</code> 查。</li>
+        <li>该项目已归档；如需恢复，告诉我项目 ID。</li>
+      </ol>
+      <p>下一步：恢复项目继续统计，或换个话题。</p>
+    </div>
+    <div class="meta"><span class="chip">模型 · workbuddy/blind-model-h</span><span class="chip ok">已固定版本</span><span>16:42</span></div>
+  </div>
+  <div class="composer">
+    <div class="prompt">
+      <textarea rows="1" placeholder="说出你的问题或目标。回答会固定记录所用的模型版本。"></textarea>
+      <div class="prompt-foot">
+        <div class="selects"><span class="sel">模型 <b>测试模型H ▾</b></span><span class="sel">思考 <b>均衡 ▾</b></span></div>
+        <button class="send" aria-label="发送">↑</button>
+      </div>
+    </div>
+    <div class="hint">Enter 发送，Shift + Enter 换行</div>
+  </div>
+</template>
+
+<template id="rail-tpl">
+  <div class="group"><h4>执行记录 · 3</h4>
+    <div class="label">DISPATCH ORDER</div>
+    <div class="row"><code>wrk_docs</code><span>reporting</span><span class="tag ok">ready</span></div>
+    <div class="row"><code>wrk_old_1</code><span>offboarded</span><span class="tag">archived</span></div>
+    <div class="row"><code>wrk_old_2</code><span>offboarded</span><span class="tag warn">402</span></div>
+  </div>
+  <div class="group"><h4>能力边界</h4>
+    <div class="row"><code>model</code><span>blind-model-h</span></div>
+    <div class="row"><code>revision</code><span>agr_4a12f…</span></div>
+    <div class="row"><code>mode</code><span>restricted</span></div>
+  </div>
+  <div class="group"><h4>固定版本</h4>
+    <div class="row"><code>configuration</code><span>cfg_7398…</span><span class="tag ok">pinned</span></div>
+  </div>
+</template>
+
+<script>
+  const content = document.getElementById('content-tpl').innerHTML;
+  document.querySelectorAll('[data-content]').forEach(el => el.innerHTML = content);
+  const rail = document.getElementById('rail-tpl').innerHTML;
+  document.querySelectorAll('[data-rail]').forEach(el => el.innerHTML = rail);
+
+  const surfaces = [...document.querySelectorAll('.surface')];
+  surfaces.forEach(s => {
+    const btn = s.querySelector('[id$="-toggle"]');
+    btn.addEventListener('click', () => {
+      const on = s.dataset.inspect !== 'on';
+      s.dataset.inspect = on ? 'on' : 'off';
+      btn.classList.toggle('on', on);
+    });
+  });
+  addEventListener('keydown', e => {
+    if (e.key.toLowerCase() !== 'd') return;
+    surfaces.forEach(s => {
+      const dark = s.dataset.theme === 'dark';
+      s.dataset.theme = dark ? 'light' : 'dark';
+    });
+  });
+  const initialDark = new URLSearchParams(location.search).get('dark');
+  surfaces.forEach(s => { if (s.dataset.theme === 'dark' && 'abcde'.includes(initialDark ?? '')) s.dataset.dark = initialDark; });
+  addEventListener('keydown', e => {
+    if (!'12345'.includes(e.key)) return;
+    surfaces.forEach(s => { if (s.dataset.theme === 'dark') s.dataset.dark = { '1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e' }[e.key]; });
+  });
+</script>
+</body>
+</html>
