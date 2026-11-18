@@ -20,6 +20,8 @@ export function AgentChrome({
   onNewThread,
   contextOpen,
   onToggleContext,
+  theme,
+  onToggleTheme,
 }: {
   readonly agentName: string;
   readonly threadTitle: string | null;
@@ -33,6 +35,8 @@ export function AgentChrome({
   /** Whether the context panel is showing; the action stays pressed while it is. */
   readonly contextOpen: boolean;
   readonly onToggleContext: () => void;
+  readonly theme: 'light' | 'dark';
+  readonly onToggleTheme: () => void;
 }) {
   return (
     <header className="agent-chrome">
@@ -52,6 +56,10 @@ export function AgentChrome({
           <span className="agent-chrome-dot" aria-hidden="true" />
           {pending ? '回复中' : connection}
         </span>
+        <Button shape="pill" onClick={onToggleTheme}
+          aria-label={theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'}>
+          {theme === 'dark' ? '浅色' : '深色'}
+        </Button>
         <Button buttonRef={threadsButtonRef} shape="pill" onClick={onOpenThreads}>
           对话记录
         </Button>

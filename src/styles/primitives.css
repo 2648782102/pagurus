@@ -49,13 +49,13 @@
   background: var(--accent-wash);
 }
 .ui-button-pill.ui-button-primary {
-  border-color: var(--accent-rail);
-  background: var(--accent-rail);
-  color: var(--accent-rail-ink);
+  border-color: var(--action-primary);
+  background: var(--action-primary);
+  color: var(--action-primary-contrast);
 }
 .ui-button-pill.ui-button-primary:hover:not(:disabled) {
-  border-color: var(--accent-rail-strong);
-  background: var(--accent-rail-strong);
+  border-color: var(--action-primary-strong);
+  background: var(--action-primary-strong);
 }
 .ui-button-pill.is-on,
 .ui-button-pill.is-on:hover:not(:disabled) {

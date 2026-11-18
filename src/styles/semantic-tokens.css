@@ -38,13 +38,16 @@
   --accent-ink: var(--ag-tide-ink);
   --accent-wash: var(--ag-tide-wash);
   --accent-rail: var(--ag-rail);
+  --accent-rail-soft: var(--ag-rail-soft);
+  --accent-rail-line: var(--ag-rail-line);
   --accent-rail-ink: #f4f7f4;
   --accent-rail-strong: #101a16;
+  --accent-rail-ink-soft: var(--ag-rail-ink-soft);
 
   --action-primary: var(--rust);
   --action-primary-strong: var(--rust-strong);
   --action-primary-wash: var(--rust-wash);
-  --action-primary-contrast: #ffffff;
+  --action-primary-contrast: var(--ag-action-contrast, #ffffff);
   --action-danger-border: var(--ag-danger);
   --action-danger-hover: var(--ag-danger-wash);
   --action-danger-border-strong: var(--ag-danger);
@@ -62,6 +65,10 @@
   --radius-control: var(--ag-radius);
   --measure-reading: var(--ag-measure);
   --interaction-hover: rgba(20, 28, 25, .06);
+  --on-accent: var(--ag-on-accent);
+  --state-caution-line: var(--ag-caution-line);
+  --state-caution-ink: var(--ag-caution-ink);
+  --state-danger-strong: var(--ag-danger-strong);
 }
 
 /* Developer console: the same semantics, instrument-panel values. Its palette
@@ -91,13 +98,15 @@
   --accent-ink: var(--steel-ink);
   --accent-wash: var(--steel-wash);
   --accent-rail: var(--navy);
+  --accent-rail-soft: var(--navy-soft);
+  --accent-rail-line: var(--rule);
   --accent-rail-ink: #f4f7f4;
   --accent-rail-strong: var(--navy-soft);
 
   --action-primary: var(--rust);
   --action-primary-strong: var(--rust-strong);
   --action-primary-wash: var(--rust-wash);
-  --action-primary-contrast: #ffffff;
+  --action-primary-contrast: var(--ag-action-contrast, #ffffff);
   --action-danger-border: #dcb7ab;
   --action-danger-hover: #f3dcd4;
   --action-danger-border-strong: #c99c8d;
@@ -115,4 +124,9 @@
   --radius-control: var(--radius-sm);
   --measure-reading: var(--content-width);
   --interaction-hover: rgba(23, 33, 36, .06);
+  --on-accent: #f7faf8;
+  --state-caution-line: var(--amber);
+  --state-caution-ink: var(--amber);
+  --state-danger-strong: var(--rust-strong);
+  --accent-rail-ink-soft: #e8d3c2;
 }

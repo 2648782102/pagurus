@@ -23,18 +23,18 @@
   z-index: 5;
   transform: translateX(-50%);
   padding: 5px 13px;
-  border: 1px solid var(--ag-line-strong);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: var(--ag-paper-raised);
-  color: var(--ag-ink-soft);
+  background: var(--surface-raised);
+  color: var(--text);
   cursor: pointer;
-  font: 500 11px var(--ag-sans);
+  font: 500 11px var(--font-body);
   box-shadow: 0 4px 14px rgba(20, 28, 25, .1);
 }
-.agent-jump-latest:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); }
+.agent-jump-latest:hover { border-color: var(--accent); color: var(--accent-ink); }
 .agent-thread-area .agent-chat-thread {
   flex: 1 1 auto;
-  padding: 10px max(24px, calc((100% - var(--ag-measure)) / 2)) 24px;
+  padding: 10px max(24px, calc((100% - var(--measure-reading)) / 2)) 24px;
   /*
    * No smooth scrolling while text is streaming: each appended frame triggers a
    * programmatic scroll, and smooth animation makes the whole column slide on
@@ -50,24 +50,24 @@
 }
 /* A rule opens a new reply; the person's own turn is a tinted block instead, so
    one boundary does not need both devices. */
-.agent-thread-area .agent-chat-message-assistant { border-bottom: 1px solid var(--ag-line); }
+.agent-thread-area .agent-chat-message-assistant { border-bottom: 1px solid var(--border); }
 .agent-thread-area .agent-chat-message-assistant:last-of-type { border-bottom: 0; }
 
 .agent-thread-area .agent-chat-message-meta { gap: 8px; margin-bottom: 7px; }
 .agent-thread-area .agent-chat-message-author {
-  color: var(--ag-muted);
-  font: 500 10.5px var(--ag-sans);
+  color: var(--text-muted);
+  font: 500 10.5px var(--font-body);
   letter-spacing: .03em;
 }
-.agent-thread-area .agent-chat-state-label { font: 500 10.5px var(--ag-sans); }
+.agent-thread-area .agent-chat-state-label { font: 500 10.5px var(--font-body); }
 
 .agent-thread-area .agent-chat-message-assistant .agent-chat-message-author {
-  color: var(--ag-tide-ink);
+  color: var(--accent-ink);
   font-weight: 600;
 }
 .agent-thread-area .agent-chat-message-assistant p {
-  color: var(--ag-ink);
-  font-family: var(--ag-serif);
+  color: var(--text-strong);
+  font-family: var(--font-reading);
   font-size: 16px;
   line-height: 1.82;
   letter-spacing: .006em;
@@ -77,28 +77,28 @@
   margin: 14px 0;
   padding: 12px 16px;
   border-radius: 6px;
-  background: var(--ag-paper-sunk);
+  background: var(--surface-sunk);
 }
 .agent-thread-area .agent-chat-message-user p {
-  color: var(--ag-ink);
-  font-family: var(--ag-sans);
+  color: var(--text-strong);
+  font-family: var(--font-body);
   font-size: 13.5px;
   line-height: 1.7;
 }
-.agent-thread-area .agent-chat-message-user .agent-chat-message-author { color: var(--ag-muted); }
+.agent-thread-area .agent-chat-message-user .agent-chat-message-author { color: var(--text-muted); }
 
-.agent-thread-area .agent-chat-report-headline { font: 600 15.5px/1.5 var(--ag-serif); }
-.agent-thread-area .agent-chat-report-section h3 { color: var(--ag-ink); font: 600 12px var(--ag-sans); }
-.agent-thread-area .agent-chat-report-section li { font-family: var(--ag-serif); font-size: 14.5px; line-height: 1.75; }
-.agent-thread-area .agent-chat-empty { color: var(--ag-muted); }
-.agent-thread-area .agent-chat-empty-title { color: var(--ag-ink); font: 400 20px var(--ag-serif); }
+.agent-thread-area .agent-chat-report-headline { font: 600 15.5px/1.5 var(--font-reading); }
+.agent-thread-area .agent-chat-report-section h3 { color: var(--text-strong); font: 600 12px var(--font-body); }
+.agent-thread-area .agent-chat-report-section li { font-family: var(--font-reading); font-size: 14.5px; line-height: 1.75; }
+.agent-thread-area .agent-chat-empty { color: var(--text-muted); }
+.agent-thread-area .agent-chat-empty-title { color: var(--text-strong); font: 400 20px var(--font-reading); }
 
 /* Inline code and fenced output stay monospace but shrink to the body's rhythm. */
 .agent-thread-area .agent-chat-message code {
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--ag-paper-sunk);
-  color: var(--ag-ink);
+  background: var(--surface-sunk);
+  color: var(--text-strong);
   font: 12.5px/1.6 var(--font-mono);
 }
 
@@ -107,8 +107,8 @@
 .agent-answer { display: grid; gap: 12px; }
 .agent-answer p {
   margin: 0;
-  color: var(--ag-ink);
-  font-family: var(--ag-serif);
+  color: var(--text-strong);
+  font-family: var(--font-reading);
   font-size: 16px;
   line-height: 1.82;
   letter-spacing: .006em;
@@ -117,8 +117,8 @@
 }
 .agent-answer h4 {
   margin: 6px 0 0;
-  color: var(--ag-ink);
-  font: 600 13px var(--ag-sans);
+  color: var(--text-strong);
+  font: 600 13px var(--font-body);
   letter-spacing: -.005em;
 }
 .agent-answer ul,
@@ -129,37 +129,37 @@
   padding-left: 20px;
 }
 .agent-answer li {
-  color: var(--ag-ink);
-  font-family: var(--ag-serif);
+  color: var(--text-strong);
+  font-family: var(--font-reading);
   font-size: 15.5px;
   line-height: 1.75;
 }
-.agent-answer li::marker { color: var(--ag-tide); }
+.agent-answer li::marker { color: var(--accent); }
 /* A bold run inside a serif paragraph should read as emphasis, not as a weight
    jump that breaks the line rhythm. */
-.agent-answer strong { color: var(--ag-ink); font-weight: 650; }
-.agent-answer p strong { font-family: var(--ag-sans); font-size: .95em; letter-spacing: -.005em; }
+.agent-answer strong { color: var(--text-strong); font-weight: 650; }
+.agent-answer p strong { font-family: var(--font-body); font-size: .95em; letter-spacing: -.005em; }
 .agent-answer blockquote {
   margin: 0;
   padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--ag-line-strong);
-  color: var(--ag-ink-soft);
-  font-family: var(--ag-serif);
+  border-left: 2px solid var(--border-strong);
+  color: var(--text);
+  font-family: var(--font-reading);
   font-size: 15.5px;
   line-height: 1.75;
 }
 .agent-answer-code {
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--ag-line);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--ag-paper-sunk);
+  background: var(--surface-sunk);
 }
 .agent-answer-code figcaption {
   padding: 6px 10px;
-  border-bottom: 1px solid var(--ag-line);
-  color: var(--ag-muted);
-  font: 500 10px var(--ag-sans);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font: 500 10px var(--font-body);
   letter-spacing: .03em;
 }
 .agent-answer-code pre {
@@ -170,7 +170,7 @@
 .agent-answer-code code {
   padding: 0;
   background: transparent;
-  color: var(--ag-ink);
+  color: var(--text-strong);
   font: 12.5px/1.7 var(--font-mono);
   white-space: pre;
 }
@@ -188,26 +188,26 @@
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  color: var(--ag-muted);
+  color: var(--text-muted);
   cursor: pointer;
-  font: 500 10.5px var(--ag-sans);
+  font: 500 10.5px var(--font-body);
 }
-.agent-message-action:hover { border-color: var(--ag-line); color: var(--ag-ink); }
-.agent-message-action.is-copied { color: var(--ag-signal); }
+.agent-message-action:hover { border-color: var(--border); color: var(--text-strong); }
+.agent-message-action.is-copied { color: var(--state-signal); }
 
 /* --- composer ------------------------------------------------------------ */
 
 .agent-thread-area .agent-chat-composer {
   flex: 0 0 auto;
-  margin: 0 max(24px, calc((100% - var(--ag-measure)) / 2)) 24px;
+  margin: 0 max(24px, calc((100% - var(--measure-reading)) / 2)) 24px;
   padding: 12px 14px 10px;
-  border: 1px solid var(--ag-line-strong);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
-  background: var(--ag-paper-raised);
+  background: var(--surface-raised);
   transition: border-color .12s ease, box-shadow .12s ease;
 }
 .agent-thread-area .agent-chat-composer:focus-within {
-  border-color: var(--ag-tide);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(47, 107, 99, .11);
 }
 .agent-thread-area .agent-chat-composer textarea {
@@ -215,8 +215,8 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ag-ink);
-  font: 14px/1.65 var(--ag-sans);
+  color: var(--text-strong);
+  font: 14px/1.65 var(--font-body);
   resize: none;
 }
 .agent-thread-area .agent-chat-composer textarea:focus-visible { outline: none; }
@@ -225,13 +225,13 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--ag-tide);
-  border-color: var(--ag-tide);
-  color: #f7faf8;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
   font-size: 14px;
 }
-.agent-thread-area .agent-chat-send:hover:not(:disabled) { background: var(--ag-tide-ink); border-color: var(--ag-tide-ink); }
-.agent-thread-area .agent-chat-composer-hint { color: var(--ag-faint); font-size: 10px; }
+.agent-thread-area .agent-chat-send:hover:not(:disabled) { background: var(--accent-ink); border-color: var(--accent-ink); }
+.agent-thread-area .agent-chat-composer-hint { color: var(--text-faint); font-size: 10px; }
 
 /* --- model indicator ----------------------------------------------------- */
 
@@ -241,18 +241,18 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  border: 1px solid var(--ag-line);
+  border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
-  color: var(--ag-ink-soft);
+  color: var(--text);
   cursor: pointer;
-  font: 500 10.5px var(--ag-sans);
+  font: 500 10.5px var(--font-body);
   transition: background-color .12s ease, border-color .12s ease;
 }
-.agent-model-trigger:hover { border-color: var(--ag-line-strong); background: var(--ag-paper-sunk); }
-.agent-model-trigger:focus-visible { outline: 2px solid var(--ag-tide); outline-offset: 2px; }
+.agent-model-trigger:hover { border-color: var(--border-strong); background: var(--surface-sunk); }
+.agent-model-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .agent-model-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.agent-model-effort { color: var(--ag-muted); }
+.agent-model-effort { color: var(--text-muted); }
 
 .agent-model-popover {
   position: absolute;
@@ -261,34 +261,34 @@
   left: 0;
   width: 320px;
   padding: 16px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: var(--ag-radius);
-  background: var(--ag-paper-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
   box-shadow: 0 10px 30px rgba(20, 28, 25, .13);
 }
-.agent-model-popover-title { margin: 0 0 10px; color: var(--ag-ink); font: 600 11.5px var(--ag-sans); }
+.agent-model-popover-title { margin: 0 0 10px; color: var(--text-strong); font: 600 11.5px var(--font-body); }
 .agent-model-facts { display: grid; gap: 5px; margin: 0 0 10px; }
 .agent-model-facts > div { display: flex; justify-content: space-between; gap: 12px; }
-.agent-model-facts dt { color: var(--ag-muted); font-size: 11px; }
-.agent-model-facts dd { margin: 0; color: var(--ag-ink); font: 11px var(--ag-sans); overflow-wrap: anywhere; }
-.agent-model-note { margin: 0 0 10px; color: var(--ag-muted); font-size: 10.5px; line-height: 1.65; }
+.agent-model-facts dt { color: var(--text-muted); font-size: 11px; }
+.agent-model-facts dd { margin: 0; color: var(--text-strong); font: 11px var(--font-body); overflow-wrap: anywhere; }
+.agent-model-note { margin: 0 0 10px; color: var(--text-muted); font-size: 10.5px; line-height: 1.65; }
 .agent-model-capability {
   margin: 0 0 12px;
   padding: 9px 10px;
-  border-radius: var(--ag-radius);
-  background: var(--ag-tide-wash);
-  color: var(--ag-tide-ink);
+  border-radius: var(--radius-control);
+  background: var(--accent-wash);
+  color: var(--accent-ink);
   font-size: 10.5px;
   line-height: 1.65;
 }
 .agent-model-new {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: var(--ag-radius);
-  background: var(--ag-paper-raised);
-  color: var(--ag-ink);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  color: var(--text-strong);
   cursor: pointer;
-  font: 600 11.5px var(--ag-sans);
+  font: 600 11.5px var(--font-body);
 }
-.agent-model-new:hover { border-color: var(--ag-tide); background: var(--ag-tide-wash); color: var(--ag-tide-ink); }
+.agent-model-new:hover { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-ink); }

@@ -6,6 +6,7 @@ import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
 import { Notice } from '../shared/ui/primitives.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentChrome } from './AgentChrome.js';
+import { useAgentTheme } from './useAgentTheme.js';
 import { AgentContextPanel } from './AgentContextPanel.js';
 import { AgentAnswer } from './AgentAnswer.js';
 import { AgentMessageActions } from './AgentMessageActions.js';
@@ -44,6 +45,7 @@ export function AgentApp() {
   const agentCapabilities = useAgentCapabilities();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const { theme, toggle: toggleTheme } = useAgentTheme();
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
 
@@ -124,6 +126,8 @@ export function AgentApp() {
         onNewThread={chat.restart}
         contextOpen={contextOpen}
         onToggleContext={toggleContext}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <div className={`agent-workspace${contextOpen ? ' has-context' : ''}`}>

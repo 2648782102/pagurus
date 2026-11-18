@@ -58,3 +58,56 @@
   --ag-rail-width: 272px;
   --ag-radius: 3px;
 }
+
+/*
+ * Dark theme: blue-violet near-black, not warm charcoal or neutral grey.
+ * Semantic tokens (`semantic-tokens.css`) need no changes: they alias `--ag-*`,
+ * so overriding the palette here switches the whole Agent surface at once.
+ * See docs/DESIGN_LANGUAGE.zh-CN.md, "暗色主题".
+ */
+:root[data-agent-theme='dark'] .agent-app,
+:root[data-agent-theme='dark'] .agent-app-blocked {
+  --ag-paper: #10121a;
+  --ag-paper-raised: #171a25;
+  --ag-paper-sunk: #0b0d13;
+  --ag-rail: #0b0d13;
+  --ag-rail-soft: #171a25;
+  --ag-rail-line: #262b39;
+  --ag-ink: #f2f4fa;
+  --ag-ink-soft: #d2d8e6;
+  --ag-muted: #a2aec2;
+  --ag-faint: #76839a;
+  --ag-line: #262b39;
+  --ag-line-strong: #394155;
+  --ag-tide: #7cc9ba;
+  --ag-tide-ink: #a2e0d2;
+  --ag-tide-wash: #1a2c2c;
+  --ag-signal: #75c795;
+  --ag-danger: #e09770;
+  --ag-danger-wash: #2a1d1a;
+  --ag-amber-wash: #2a2518;
+
+  /* Fixed light-on-rail values from the light palette must follow the dark rail. */
+  --ag-on-rail: #f2f4fa;
+  --ag-on-accent: #f2f4fa;
+  --ag-caution-line: #c99c4a;
+  --ag-caution-ink: #c99c4a;
+  --ag-danger-strong: var(--ag-danger);
+  --ag-rail-ink-soft: #d2d8e6;
+
+  /* Action colour: the dark-theme rust must stay legible on blue-black. */
+  --rust: #e09770;
+  --rust-strong: #f0ac86;
+  --ag-action-contrast: #241108;
+}
+
+/* The light palette's on-rail ink, named so dark can override it. */
+.agent-app,
+.agent-app-blocked {
+  --ag-on-rail: #f4f7f4;
+  --ag-on-accent: #f7faf8;
+  --ag-caution-line: #b08b3a;
+  --ag-caution-ink: #8a6a1e;
+  --ag-danger-strong: #743528;
+  --ag-rail-ink-soft: #e8d3c2;
+}

@@ -106,7 +106,7 @@ describe('front-end architecture boundaries', () => {
 
     const chat = read('src/styles/agent-chat.css');
     // Both the thread and the composer must use the same symmetric padding.
-    const symmetric = /max\(24px, calc\(\(100% - var\(--ag-measure\)\) \/ 2\)\)/g;
+    const symmetric = /max\(24px, calc\(\(100% - var\(--measure-reading\)\) \/ 2\)\)/g;
     expect((chat.match(symmetric) ?? []).length).toBeGreaterThanOrEqual(2);
   });
 });

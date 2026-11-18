@@ -15,9 +15,9 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--ag-paper);
-  color: var(--ag-ink);
-  font-family: var(--ag-sans);
+  background: var(--surface-canvas);
+  color: var(--text-strong);
+  font-family: var(--font-body);
 }
 .agent-app-blocked {
   display: block;
@@ -25,7 +25,7 @@
   max-width: 620px;
   margin: 14vh auto 0;
   padding: 0 24px;
-  background: var(--ag-paper);
+  background: var(--surface-canvas);
 }
 
 /* --- chrome -------------------------------------------------------------- */
@@ -38,8 +38,8 @@
   gap: 20px;
   height: 52px;
   padding: 0 20px 0 18px;
-  border-bottom: 1px solid var(--ag-line);
-  background: var(--ag-paper);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-canvas);
 }
 .agent-chrome-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .agent-chrome-mark {
@@ -49,27 +49,39 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--ag-rail);
-  color: #e8d3c2;
-  font: 600 11px var(--ag-serif);
+  position: relative;
+  background: var(--accent-rail);
+  color: var(--accent-rail-ink-soft);
+  font: 600 11px var(--font-reading);
 }
-.agent-chrome-name { flex: 0 0 auto; color: var(--ag-ink); font-size: 13px; font-weight: 600; letter-spacing: -.005em; }
-.agent-chrome-divider { flex: 0 0 auto; width: 1px; height: 13px; background: var(--ag-line-strong); }
+/* Brand signature: a shell's aperture. One tide arc on the identity mark;
+   no illustration, no repetition elsewhere. */
+.agent-chrome-mark::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  border-right-color: transparent;
+  transform: rotate(-35deg);
+}
+.agent-chrome-name { flex: 0 0 auto; color: var(--text-strong); font-size: 13px; font-weight: 600; letter-spacing: -.005em; }
+.agent-chrome-divider { flex: 0 0 auto; width: 1px; height: 13px; background: var(--border-strong); }
 .agent-chrome-thread {
   overflow: hidden;
   max-width: 42ch;
-  color: var(--ag-muted);
+  color: var(--text-muted);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .agent-chrome-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
-.agent-chrome-status { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--ag-muted); font-size: 11px; }
-.agent-chrome-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ag-faint); }
-.agent-chrome-status.status-connected .agent-chrome-dot { background: var(--ag-signal); }
-.agent-chrome-status.status-disconnected .agent-chrome-dot { background: var(--ag-danger); }
-.agent-chrome-status.status-incompatible .agent-chrome-dot { background: #b08b3a; }
+.agent-chrome-status { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--text-muted); font-size: 11px; }
+.agent-chrome-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-faint); }
+.agent-chrome-status.status-connected .agent-chrome-dot { background: var(--state-signal); }
+.agent-chrome-status.status-disconnected .agent-chrome-dot { background: var(--state-danger); }
+.agent-chrome-status.status-incompatible .agent-chrome-dot { background: var(--state-caution-line); }
 
 /* --- page ---------------------------------------------------------------- */
 
@@ -91,14 +103,14 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 12px;
-  padding: 12px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
+  padding: 12px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;
 }
-.agent-page-note { color: var(--ag-muted); font-size: 11px; }
+.agent-page-note { color: var(--text-muted); font-size: 11px; }
 .agent-inline-error {
-  margin: 10px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
+  margin: 10px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;
   padding: 9px 12px;
-  border-radius: var(--ag-radius);
-  background: var(--ag-danger-wash);
-  color: #743528;
+  border-radius: var(--radius-control);
+  background: var(--state-danger-wash);
+  color: var(--state-danger-strong);
   font-size: 11.5px;
 }

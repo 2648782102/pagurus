@@ -42,6 +42,7 @@ export function AgentContextPanel({
     >
       <div className="agent-context-head">
         <h2>对话上下文</h2>
+        <span className="agent-context-mode">Inspect</span>
         <button type="button" className="agent-context-close" onClick={onClose} aria-label="收起上下文">
           ✕
         </button>
