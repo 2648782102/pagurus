@@ -1,0 +1,20 @@
+/*
+ * Reduced motion, enforced once.
+ *
+ * Several layers used short colour transitions and two used looping animations
+ * (the typing dots and the streaming caret). Per-file opt-outs drifted, so the
+ * rule lives here and covers every layer imported above it.
+ *
+ * Motion is not load-bearing anywhere: nothing conveys state only through
+ * movement, so removing it loses no information.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

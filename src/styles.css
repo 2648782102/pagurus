@@ -1,11 +1,5 @@
-/*
- * Pagurus console stylesheet entry point.
- *
- * Layer order matters more than file size: tokens define both palettes, then
- * semantic-tokens maps them to surface-independent names, primitives define
- * reusable controls, and each workspace layer only composes them. Import order
- * below is the cascade order; append, do not reorder.
- */
+/* Pagurus stylesheet entry point. Layer order is the cascade order: palettes,
+ * then semantic tokens, then primitives, then surfaces. Append, don't reorder. */
 @import "./styles/tokens.css";
 @import "./styles/agent-tokens.css";
 @import "./styles/semantic-tokens.css";
@@ -28,3 +22,4 @@
 @import "./styles/agent-context.css";
 @import "./styles/responsive.css";
 @import "./styles/agent-responsive.css";
+@import "./styles/motion.css";

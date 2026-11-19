@@ -109,4 +109,18 @@ describe('front-end architecture boundaries', () => {
     const symmetric = /max\(24px, calc\(\(100% - var\(--measure-reading\)\) \/ 2\)\)/g;
     expect((chat.match(symmetric) ?? []).length).toBeGreaterThanOrEqual(2);
   });
+
+  it('disables motion centrally instead of per file', () => {
+    // Looping animations and colour transitions exist in several layers, and
+    // per-file opt-outs drifted. One reduced-motion block must cover them all.
+    const motion = read('src/styles/motion.css');
+    expect(motion).toMatch(/prefers-reduced-motion/);
+    expect(motion).toMatch(/animation-duration/);
+    expect(motion).toMatch(/transition-duration/);
+
+    // It has to be imported last, or later layers would win the cascade.
+    const entry = read('src/styles.css');
+    const imports = [...entry.matchAll(/@import\s+"([^"]+)"/g)].map((m) => m[1]);
+    expect(imports.at(-1)).toBe('./styles/motion.css');
+  });
 });
