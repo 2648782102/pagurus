@@ -281,6 +281,9 @@ describe('shipped Agent surface', () => {
     fireEvent.click(screen.getByRole('button', { name: '收起上下文' }));
     expect(screen.queryByRole('complementary', { name: '对话上下文' })).toBeNull();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    // The close button vanished with the panel: focus must land back on the
+    // control that owns it, not on <body>.
+    expect(document.activeElement).toBe(toggle);
   });
 
 });

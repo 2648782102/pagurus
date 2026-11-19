@@ -46,6 +46,7 @@ export function AgentApp() {
   const agentCapabilities = useAgentCapabilities();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const contextButtonRef = useRef<HTMLButtonElement | null>(null);
   const { theme, toggle: toggleTheme } = useAgentTheme();
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
@@ -87,12 +88,24 @@ export function AgentApp() {
     void agentCapabilities.load(chat.conversation?.agentId, chat.conversation?.agentRevisionId);
   }, [agentCapabilities, chat.conversation?.agentId, chat.conversation?.agentRevisionId]);
 
+  /**
+   * The context rail is a second column, not a modal, so it does not trap
+   * focus. It still has to hand focus back when it closes: the panel's own
+   * close button disappears with it, and focus would otherwise fall to <body>,
+   * putting the keyboard user back at the top of the page.
+   */
   const toggleContext = useCallback(() => {
     setContextOpen((open) => {
       if (!open) inspectCapabilities();
+      else contextButtonRef.current?.focus();
       return !open;
     });
   }, [inspectCapabilities]);
+
+  const closeContext = useCallback(() => {
+    setContextOpen(false);
+    contextButtonRef.current?.focus();
+  }, []);
 
   // A sheet over the page must not let the page scroll behind it.
   useEffect(() => {
@@ -149,6 +162,7 @@ export function AgentApp() {
         onNewThread={chat.restart}
         contextOpen={contextOpen}
         onToggleContext={toggleContext}
+        contextButtonRef={contextButtonRef}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -247,7 +261,7 @@ export function AgentApp() {
           conversation={chat.conversation}
           capabilities={agentCapabilities.capabilities}
           onRefreshCapabilities={inspectCapabilities}
-          onClose={() => setContextOpen(false)}
+          onClose={closeContext}
         />
       </div>
 

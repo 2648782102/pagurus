@@ -21,6 +21,7 @@ export function AgentChrome({
   onNewThread,
   contextOpen,
   onToggleContext,
+  contextButtonRef,
   theme,
   onToggleTheme,
 }: {
@@ -36,6 +37,8 @@ export function AgentChrome({
   /** Whether the context panel is showing; the action stays pressed while it is. */
   readonly contextOpen: boolean;
   readonly onToggleContext: () => void;
+  /** Focus returns here when the context rail closes. */
+  readonly contextButtonRef?: RefObject<HTMLButtonElement | null>;
   readonly theme: 'light' | 'dark';
   readonly onToggleTheme: () => void;
 }) {
@@ -70,6 +73,7 @@ export function AgentChrome({
           shape="pill"
           pressed={contextOpen}
           onClick={onToggleContext}
+          buttonRef={contextButtonRef}
           aria-expanded={contextOpen}
           aria-controls="agent-context"
         >
