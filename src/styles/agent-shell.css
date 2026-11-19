@@ -122,6 +122,11 @@
   color: var(--state-danger-strong);
   font-size: 11.5px;
 }
+.agent-stream-note {
+  margin: 8px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;
+  color: var(--text-muted);
+  font-size: 10.5px;
+}
 
 /* Blocked state: no Runtime, or a Runtime without the Agent contract. */
 .agent-blocked {

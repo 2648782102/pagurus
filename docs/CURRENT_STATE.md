@@ -13,6 +13,9 @@ Updated: 2026-11-19
   surfaces.
 - Agent surface with conversation history, model selection, streaming, copy,
   context panel, responsive layout, and inline approval state.
+- The Agent surface reports stream degradation while a reply is pending: a
+  stalled stream or an in-progress reconnect says so and notes that polling is
+  carrying the update. A healthy stream shows nothing.
 - Typed API modules with response validators and capability-based feature
   gating.
 - No browser storage for Runtime secrets or private state.

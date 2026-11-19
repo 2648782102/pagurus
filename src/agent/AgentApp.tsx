@@ -195,6 +195,19 @@ export function AgentApp() {
                 </div>
               )}
 
+              {/*
+               * Only while a reply is pending and the live stream is not
+               * carrying it. Silent otherwise: a healthy stream needs no
+               * banner, and a finished reply has nothing to reconnect.
+               */}
+              {chat.hasPending && (!chat.streamConnected || chat.streamStalled) && (
+                <p className="agent-stream-note" role="status">
+                  {chat.streamConnected
+                    ? '实时更新停了一会儿，已改用轮询同步。'
+                    : `正在重连实时更新（第 ${chat.streamAttempt} 次），期间用轮询同步。`}
+                </p>
+              )}
+
               <div className="agent-thread-area">
                 <AgentChatThread
                   messages={chat.conversation.messages}
