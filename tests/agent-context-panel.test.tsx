@@ -45,8 +45,8 @@ describe('context panel activity', () => {
     const panel = screen.getByRole('complementary', { name: '对话上下文' });
     expect(within(panel).getByText('写入文件')).toBeTruthy();
     expect(within(panel).getByText('等待你批准')).toBeTruthy();
-    // The count states the blocking condition, not just a total.
-    expect(within(panel).getByText('1 项等待你批准')).toBeTruthy();
+    // The header states the blocking condition, not just a total.
+    expect(within(panel).getByText(/1 待处理/)).toBeTruthy();
   });
 
   it('says so when a run has no activity', () => {
@@ -59,7 +59,9 @@ describe('context panel activity', () => {
         onClose={() => {}}
       />,
     );
-    expect(screen.getByText('这段对话还没有工具或审批活动。')).toBeTruthy();
+    // A message with no tool or approval still contributes one timeline entry;
+    // "nothing happened" only applies when there are no messages at all.
+    expect(screen.getByText('Agent 作出回复')).toBeTruthy();
   });
 
   it('keeps the pinned Agent revision readable', () => {

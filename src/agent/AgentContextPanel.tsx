@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
-import type {
-  AgentChatActivity,
-  AgentChatConversation,
-} from '../shared/api/agent-chat.js';
+import type { AgentChatConversation } from '../shared/api/agent-chat.js';
 import type { CapabilitySummary } from './useAgentCapabilities.js';
+import { buildTimeline, timelineSummary, type TimelineKind } from './conversation-timeline.js';
 
 /**
  * What the conversation is, in facts rather than prose.
@@ -29,7 +27,7 @@ export function AgentContextPanel({
   readonly onRefreshCapabilities: () => void;
   readonly onClose: () => void;
 }) {
-  const activity = useMemo(() => collectActivity(conversation), [conversation]);
+  const timeline = useMemo(() => buildTimeline(conversation), [conversation]);
 
   return (
     <aside
@@ -76,22 +74,22 @@ export function AgentContextPanel({
 
             <section className="agent-context-section" aria-labelledby="ctx-activity">
               <div className="agent-context-section-head">
-                <h3 id="ctx-activity">执行记录</h3>
-                {activity.length > 0 && (
-                  <span className="agent-context-count">{activitySummary(activity)}</span>
+                <h3 id="ctx-activity">时间线</h3>
+                {timeline.length > 0 && (
+                  <span className="agent-context-count">{timelineSummary(timeline)}</span>
                 )}
               </div>
-              {activity.length === 0 ? (
-                <p className="agent-context-empty">这段对话还没有工具或审批活动。</p>
+              {timeline.length === 0 ? (
+                <p className="agent-context-empty">这段对话还没有任何记录。</p>
               ) : (
                 <ol className="agent-context-activity">
-                  {activity.map((entry) => (
+                  {timeline.map((entry) => (
                     <li key={entry.id} className={`is-${entry.state}`}>
                       <span className="agent-context-activity-row">
                         <span className="agent-context-activity-label">{entry.label}</span>
                         <span className="agent-context-activity-state">{STATE[entry.state] ?? entry.state}</span>
                       </span>
-                      <span className="agent-context-activity-kind">{KIND[entry.kind] ?? entry.kind}</span>
+                      <span className="agent-context-activity-kind">{TIMELINE_KIND[entry.kind]}</span>
                       {entry.detail && <code>{entry.detail}</code>}
                     </li>
                   ))}
@@ -110,11 +108,12 @@ export function AgentContextPanel({
 }
 
 const EFFORT: Readonly<Record<string, string>> = { low: '低', medium: '中', high: '高' };
-const KIND: Readonly<Record<string, string>> = {
-  turn: '轮次',
+const TIMELINE_KIND: Readonly<Record<TimelineKind, string>> = {
+  user: '你的消息',
+  assistant: '回复',
   tool: '工具',
   approval: '审批',
-  output: '输出',
+  error: '错误',
 };
 
 /**
@@ -128,16 +127,11 @@ const STATE: Readonly<Record<string, string>> = {
   succeeded: '完成',
   failed: '失败',
   waiting_approval: '等待你批准',
+  // Timeline states: a turn happened, is blocked, or failed. `pending` comes
+  // only from a waiting approval or a still-running tool.
+  ok: '完成',
+  pending: '等待你批准',
 };
-
-/** One short line above the list; a count alone hides a blocking approval. */
-function activitySummary(activity: readonly AgentChatActivity[]): string {
-  const waiting = activity.filter((entry) => entry.state === 'waiting_approval').length;
-  if (waiting > 0) return `${waiting} 项等待你批准`;
-  const running = activity.filter((entry) => entry.state === 'running').length;
-  if (running > 0) return `${running} 项进行中`;
-  return `${activity.length} 项`;
-}
 
 /**
  * Shortens a published id without losing what distinguishes it.
@@ -150,27 +144,6 @@ function activitySummary(activity: readonly AgentChatActivity[]): string {
 function shortId(value: string): string {
   if (value.length <= 20) return value;
   return `${value.slice(0, 8)}…${value.slice(-6)}`;
-}
-
-/**
- * Flattens activity across messages, newest last.
- *
- * Activity belongs to a message, but the reader wants the run's shape: what the
- * Agent reached for and in which order. Message order already encodes that, so
- * this only flattens and de-duplicates by id.
- */
-function collectActivity(conversation: AgentChatConversation | null): readonly AgentChatActivity[] {
-  if (conversation === null) return [];
-  const seen = new Set<string>();
-  const out: AgentChatActivity[] = [];
-  for (const message of conversation.messages) {
-    for (const entry of message.activity) {
-      if (seen.has(entry.id)) continue;
-      seen.add(entry.id);
-      out.push(entry);
-    }
-  }
-  return out;
 }
 
 function CapabilityFacts({ capabilities }: { readonly capabilities: CapabilitySummary }) {
