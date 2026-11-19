@@ -26,6 +26,23 @@ describe('agent error copy', () => {
     expect(agentErrorText(new Error('Failed to fetch'), 'x')).toContain('连接不上');
   });
 
+  it('sends a provider authentication failure to the provider settings, not to retry', () => {
+    const text = agentErrorText(new Error('provider failure: authentication'), 'x');
+    expect(text).toContain('凭据');
+    expect(text).toContain('provider 配置');
+  });
+
+  it('tells the reader to shorten input when the context limit was hit', () => {
+    const text = agentErrorText(new Error('provider failure: context-limit'), 'x');
+    expect(text).toContain('上下文');
+    expect(text).toMatch(/缩短|新对话/);
+  });
+
+  it('keeps an upstream failure distinct from a local runtime outage', () => {
+    const text = agentErrorText(new Error('provider failure: upstream-failure'), 'x');
+    expect(text).toContain('上游');
+  });
+
   it('falls back for a non-error value', () => {
     expect(agentErrorText('nope', '默认提示')).toBe('默认提示');
   });

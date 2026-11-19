@@ -3,7 +3,8 @@ import type { RuntimeConnectionState } from '../features/runtime-status/useRunti
 import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
 import { AgentChatComposer } from '../features/agent-chat/AgentChatComposer.js';
 import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
-import { Notice } from '../shared/ui/primitives.js';
+import { Button } from '../shared/ui/primitives.js';
+import { consoleSurfaceHref } from '../app/surface.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentChrome } from './AgentChrome.js';
 import { useAgentTheme } from './useAgentTheme.js';
@@ -104,11 +105,33 @@ export function AgentApp() {
   if (!chat.supported) {
     return (
       <div className="agent-app agent-app-blocked">
-        <Notice tone={runtimeStatus.state === 'disconnected' ? 'danger' : 'warning'}>
-          {runtimeStatus.state === 'disconnected'
-            ? `无法连接到本机 Runtime：${runtimeStatus.error?.message ?? '连接失败'}`
-            : '这个 Runtime 还没有发布 Agent 对话能力，产品界面暂时用不了。控制台里的运行时状态页有详情。'}
-        </Notice>
+        <header className="agent-chrome">
+          <div className="agent-chrome-identity">
+            <span className="agent-chrome-mark" aria-hidden="true">P</span>
+            <span className="agent-chrome-name">Agent</span>
+          </div>
+          <div className="agent-chrome-actions">
+            <span className="agent-chrome-status" role="status">
+              <span className="agent-chrome-dot" aria-hidden="true" />
+              {CONNECTION_LABELS[runtimeStatus.state]}
+            </span>
+            <a className="agent-chrome-link" href={consoleSurfaceHref()}>控制台</a>
+          </div>
+        </header>
+        <div className="agent-blocked">
+          <h1>{runtimeStatus.state === 'disconnected' ? '连不上本机 Runtime' : '这个 Runtime 还不支持 Agent 对话'}</h1>
+          <p>
+            {runtimeStatus.state === 'disconnected'
+              ? 'Pagurus 只负责界面，对话需要本机 Runtime 在跑。确认它已启动后点下面的按钮。'
+              : 'Runtime 尚未发布 Agent 对话契约。升级 Runtime 之后这里会自动可用。'}
+          </p>
+          {runtimeStatus.state === 'disconnected' && (
+            <p className="agent-blocked-detail">{agentErrorText(runtimeStatus.error, '连接失败')}</p>
+          )}
+          <div className="agent-blocked-actions">
+            <Button variant="primary" onClick={() => void runtimeStatus.refresh()}>重新连接</Button>
+          </div>
+        </div>
       </div>
     );
   }
