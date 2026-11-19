@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
-import { getDiagnostics, getRuntimeData, type DiagnosticCheck, type RuntimeDataInfo } from '../../shared/api/operations.js';
+import {
+  createBackup, formatSupportBundle, getDiagnostics, getRuntimeData, getSupportBundle,
+  type BackupResult, type DiagnosticCheck, type RuntimeDataInfo, type SupportBundle,
+} from '../../shared/api/operations.js';
 import { Button, Section, StatusDot, Tag } from '../../shared/ui/primitives.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 
@@ -18,6 +21,13 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
   const [data, setData] = useState<RuntimeDataInfo | null>(null);
   const [checks, setChecks] = useState<readonly DiagnosticCheck[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [target, setTarget] = useState('');
+  const [backup, setBackup] = useState<BackupResult | null>(null);
+  const [bundle, setBundle] = useState<SupportBundle | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  /** Errors from backup/support actions; separate from the panel's load phase. */
+  const [notice, setNotice] = useState<string | null>(null);
 
   /*
    * The Runtime does not advertise these routes as a capability, so gating on
@@ -59,6 +69,46 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
     void load(controller.signal);
     return () => controller.abort();
   }, [load]);
+
+  const runBackup = async () => {
+    if (target.trim().length === 0) {
+      setNotice('请填写一个绝对路径，例如 /Users/你/Desktop/conchbase-backup.sqlite');
+      return;
+    }
+    setBusy(true);
+    setNotice(null);
+    try {
+      setBackup(await createBackup(target.trim()));
+      await load();
+    } catch (cause) {
+      setNotice(errorMessage(cause, '备份失败'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadBundle = async () => {
+    setBusy(true);
+    setNotice(null);
+    try {
+      setBundle(await getSupportBundle());
+    } catch (cause) {
+      setNotice(errorMessage(cause, '无法生成支持包'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copyBundle = async () => {
+    if (!bundle) return;
+    try {
+      await navigator.clipboard.writeText(formatSupportBundle(bundle));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setNotice('复制失败：浏览器未授予剪贴板权限，可手动选择文本复制。');
+    }
+  };
 
   return (
     <Section
@@ -105,6 +155,48 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
                 ))}
               </ul>
             )}
+
+          <h4 className="runtime-data-subhead">备份</h4>
+          <div className="runtime-data-actions">
+            <label className="runtime-data-target">
+              <span className="task-hint">备份到（绝对路径，文件不能已存在）</span>
+              <input
+                type="text"
+                value={target}
+                onChange={(event) => setTarget(event.target.value)}
+                placeholder="/Users/你/Desktop/conchbase-backup.sqlite"
+                aria-label="备份目标绝对路径"
+              />
+            </label>
+            <Button size="sm" type="button" disabled={busy} onClick={() => void runBackup()}>
+              {busy ? '处理中…' : '备份'}
+            </Button>
+          </div>
+          {backup && (
+            <p className="task-hint" role="status">
+              {backup.ok
+                ? `已备份到 ${backup.target}（${formatBytes(backup.sizeBytes)}，完整性 ${backup.integrity}）`
+                : `备份未通过校验：${backup.error ?? backup.integrity}`}
+            </p>
+          )}
+
+          <h4 className="runtime-data-subhead">支持包</h4>
+          <div className="runtime-data-actions">
+            <Button size="sm" type="button" disabled={busy} onClick={() => void loadBundle()}>生成支持包</Button>
+            {bundle && (
+              <Button size="sm" type="button" onClick={() => void copyBundle()}>
+                {copied ? '已复制' : '复制'}
+              </Button>
+            )}
+            {bundle && (
+              <span className="task-hint">
+                诊断 {bundle.summary.status}{bundle.summary.nextStep ? ` — ${bundle.summary.nextStep}` : ''}
+              </span>
+            )}
+          </div>
+          {bundle && <pre className="runtime-data-bundle" aria-label="支持包内容">{formatSupportBundle(bundle)}</pre>}
+          <p className="task-hint">支持包只含版本、数据位置和检查结果，不含提示词、对话内容或文件正文。</p>
+          {notice && <p className="task-hint" role="alert">{notice}</p>}
         </>
       )}
     </Section>
