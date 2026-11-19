@@ -35,6 +35,20 @@ capabilities, work recovery, and diagnostics remain available as advanced
 surfaces. The UI should make progress and consequential actions legible while
 keeping technical IDs, provider details, and raw payloads secondary.
 
+Three rules that are easy to lose and expensive to rediscover:
+
+- **An empty list has two meanings.** "Still reading" and "read, and it is
+  empty" must never share copy or a count. Show `—` while a read is in flight
+  and only claim "the Runtime published nothing" after it resolves. Collapsing
+  the two once produced a UI that told the user their data was gone.
+- **The reading face is a boundary, not decoration.** Serif is for Agent
+  answer bodies only; titles, inputs, buttons, and labels stay sans. It marks
+  what the model said versus what the system is handing you.
+- **Brand identity and success are different signals.** The deep teal marks
+  identity, selection, and focus; the lighter green means success or
+  availability. Never use one for the other, and never paint a background with
+  the identity colour.
+
 ## Security
 
 No browser storage for credentials or plaintext SecretHandle values. One-shot

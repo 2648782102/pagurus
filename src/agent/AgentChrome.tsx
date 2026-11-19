@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import { Button } from '../shared/ui/primitives.js';
+import { consoleSurfaceHref } from '../app/surface.js';
 
 /**
  * The product's only persistent chrome: one thin bar.
@@ -60,6 +61,8 @@ export function AgentChrome({
           aria-label={theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'}>
           {theme === 'dark' ? '浅色' : '深色'}
         </Button>
+        {/* Advanced surfaces stay one click away, never the default path. */}
+        <a className="agent-chrome-link" href={consoleSurfaceHref()}>控制台</a>
         <Button buttonRef={threadsButtonRef} shape="pill" onClick={onOpenThreads}>
           对话记录
         </Button>

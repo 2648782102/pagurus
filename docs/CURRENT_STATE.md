@@ -4,6 +4,8 @@ Updated: 2026-11-19
 
 ## Working today
 
+- `/` opens the Agent surface; the operator console is reached with
+  `?surface=console` or any existing `#workspace` bookmark.
 - React 19 + TypeScript + Vite application.
 - Same-origin development proxy to Conchbase loopback API.
 - Operator console with runtime status, Agent management, tasks, history,
@@ -17,7 +19,9 @@ Updated: 2026-11-19
 
 ## Product gaps
 
-- First-run setup is still spread across several operator-oriented surfaces.
+- First-run setup is still spread across several operator-oriented surfaces;
+  there is no guided setup yet, so a first-time user lands on an empty Agent
+  page that points at the console.
 - Boss conversation, Agent Chat, task operations, and organization views expose
   overlapping concepts that should be unified for a personal user.
 - A single cross-surface activity timeline is missing.
