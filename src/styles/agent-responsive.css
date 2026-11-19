@@ -10,11 +10,17 @@
   .agent-chrome { gap: 10px; padding: 0 12px; }
   .agent-chrome-thread, .agent-chrome-divider { display: none; }
   .agent-chrome-status { display: none; }
+  /* Except on the blocked screen, where the connection state is the subject. */
+  .agent-app-blocked .agent-chrome-status { display: inline-flex; }
   /* Two actions must stay distinguishable at 320–420px. The history action
      keeps a text label; the primary action is already visually distinct by
      fill, so it can tighten before either label is truncated. */
   .agent-chrome-actions { gap: 6px; }
   .agent-chrome-actions .ui-button-pill { padding: 6px 10px; font-size: 11px; }
+  /* The blocked screen is a short message, not a measured column: top-align it
+     so it is visible without scrolling on a phone-sized window. */
+  .agent-blocked { padding: 20px 16px; margin: 0; align-self: start; }
+  .agent-blocked h1 { font-size: 22px; }
   .agent-page-head { padding: 10px 16px 0; }
   .agent-page-note { display: none; }
   .agent-thread-area .agent-chat-thread { padding: 6px 16px 18px; }
