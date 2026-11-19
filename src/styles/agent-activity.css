@@ -1,0 +1,50 @@
+/* ---------------------------------------------------------------------------
+   Activity and in-conversation approval inside a message.
+   Split from agent-chat.css when that layer passed the reviewability ceiling.
+   --------------------------------------------------------------------------- */
+
+/*
+ * Tool and turn activity inside a message.
+ *
+ * The Runtime labels every step (kind, state, detail). This list had no styling
+ * at all, so a reply with tool calls rendered as bare bullet text — the one
+ * place a reader could see what the Agent actually did was the least legible.
+ * It stays subordinate to the answer: small, ruled, no fill.
+ */
+.agent-chat-activity {
+  display: grid;
+  gap: 3px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-code);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+.agent-chat-activity > li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0 3px 9px;
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
+  min-width: 0;
+}
+.agent-chat-activity > li.agent-chat-activity-running { border-left-color: var(--accent); color: var(--text); }
+.agent-chat-activity > li.agent-chat-activity-succeeded { border-left-color: var(--state-signal); }
+.agent-chat-activity > li.agent-chat-activity-failed { border-left-color: var(--state-danger); color: var(--state-danger-strong); }
+.agent-chat-activity > li.agent-chat-activity-waiting_approval { border-left-color: var(--state-caution-line); }
+.agent-chat-activity-label { flex: 0 0 auto; color: var(--text); }
+.agent-chat-activity > li code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+/* Approval inside the conversation: one decision, stated plainly. */
+.agent-chat-approval-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
