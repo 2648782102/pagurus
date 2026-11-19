@@ -65,6 +65,7 @@
   --radius-control: var(--ag-radius);
   --measure-reading: var(--ag-measure);
   --interaction-hover: rgba(20, 28, 25, .06);
+  --focus-ring: rgba(47, 107, 99, .11);
   --on-accent: var(--ag-on-accent);
   --state-caution-line: var(--ag-caution-line);
   --state-caution-ink: var(--ag-caution-ink);
@@ -124,6 +125,7 @@
   --radius-control: var(--radius-sm);
   --measure-reading: var(--content-width);
   --interaction-hover: rgba(23, 33, 36, .06);
+  --focus-ring: rgba(54, 107, 122, .14);
   --on-accent: #f7faf8;
   --state-caution-line: var(--amber);
   --state-caution-ink: var(--amber);

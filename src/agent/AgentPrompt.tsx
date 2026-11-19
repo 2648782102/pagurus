@@ -62,12 +62,12 @@ export function AgentPrompt({
   return (
     <div className="agent-prompt">
       <h1 className="agent-prompt-title">
-        {selectedAgent ? `和 ${selectedAgent.name} 说点什么` : '这里还没有可对话的 Agent'}
+        {selectedAgent ? `和 ${selectedAgent.name} 说点什么` : '还没有可对话的 Agent'}
       </h1>
       <p className="agent-prompt-sub">
         {selectedAgent
           ? '说出你的问题或目标。回答会固定记录所用的模型版本。'
-          : 'Agent 由 Runtime 定义。在控制台的「Agent 配置」里创建之后，回到这里就能对话。'}
+          : 'Runtime 没有返回可用的 Agent。通常是 provider 或模型目录还没配置好；到控制台的运行时状态页确认后刷新即可。'}
       </p>
 
       <form

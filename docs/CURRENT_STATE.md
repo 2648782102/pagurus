@@ -19,9 +19,12 @@ Updated: 2026-11-19
 
 ## Product gaps
 
-- First-run setup is still spread across several operator-oriented surfaces;
-  there is no guided setup yet, so a first-time user lands on an empty Agent
-  page that points at the console.
+- A genuinely new install is already usable: the Runtime always exposes a
+  built-in Boss Agent, so there is no "create your first Agent" step. When the
+  Agent list is empty the surface says so and points at the provider/model
+  stage, which is the part that actually blocks a first conversation.
+- Provider and workspace setup still live only in the operator console; there
+  is no guided first-run path for them.
 - Boss conversation, Agent Chat, task operations, and organization views expose
   overlapping concepts that should be unified for a personal user.
 - A single cross-surface activity timeline is missing.
