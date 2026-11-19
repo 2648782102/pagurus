@@ -108,6 +108,14 @@ export function OrganizationConsolePanel({ runtime }: { runtime: RuntimeInfo | n
       </>}
 
       <p className="task-note">组织状态由 Conchbase 独占发布。Pagurus 不读写私有数据库、不计算授权、不把员工提案当成可执行的 Agent revision。</p>
+
+      {/*
+       * The secondary door. Direct Agent chat is a real capability, but it is
+       * not a second product: a person who wants "an assistant" starts here.
+       */}
+      <p className="task-note organization-secondary">
+        只想和某一个 Agent 单独对话？<a href="#agent-chat">打开直接对话</a>
+      </p>
     </Section>
   );
 }

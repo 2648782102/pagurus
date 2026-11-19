@@ -11,7 +11,6 @@ export interface WorkspaceGroup {
 /** Explicit quick-entry order. It is presentation data, not navigation state. */
 export const QUICK_STARTS: readonly WorkspaceId[] = Object.freeze([
   'organization',
-  'agentChat',
   'tasks',
 ]);
 
@@ -19,8 +18,15 @@ export const QUICK_STARTS: readonly WorkspaceId[] = Object.freeze([
 export const WORKSPACE_GROUPS: readonly WorkspaceGroup[] = Object.freeze([
   {
     title: '组织与对话',
-    note: '把目标交给老板 Agent，或直接与一个配置好的 Agent 对话。',
+    /*
+     * One assistant, one entry. Talking to the boss Agent and talking to any
+     * other configured Agent were two equal navigation items, which made the
+     * product read as a console with a chat feature. The organization surface
+     * is the assistant; direct Agent chat is a secondary door from there.
+     */
+    note: '把目标交给老板 Agent；需要直接找一个 Agent 对话时，从组织台进入。',
     ids: ['organization', 'agentChat'],
+    labels: { agentChat: '直接对话（次级）' },
   },
   {
     title: '运行与审计',
