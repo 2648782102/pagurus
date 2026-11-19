@@ -162,22 +162,7 @@
   font: 500 10px var(--font-body);
   letter-spacing: .03em;
 }
-.agent-answer-code pre {
-  margin: 0;
-  padding: 10px 12px;
-  overflow-x: auto;
-}
-.agent-answer-code code {
-  padding: 0;
-  background: transparent;
-  color: var(--text-strong);
-  font: 12.5px/1.7 var(--font-mono);
-  white-space: pre;
-}
 
-/* --- message actions ----------------------------------------------------- */
-
-.agent-message-actions { display: flex; gap: 6px; margin-top: 10px; opacity: 0; transition: opacity .12s ease; }
 .agent-chat-message:hover .agent-message-actions,
 .agent-message-actions:focus-within { opacity: 1; }
 .agent-message-action {
@@ -295,3 +280,7 @@
   font: 600 11.5px var(--font-body);
 }
 .agent-model-new:hover { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-ink); }
+
+/* --- message actions ----------------------------------------------------- */
+
+.agent-message-actions { display: flex; gap: 6px; margin-top: 10px; opacity: 0; transition: opacity .12s ease; }

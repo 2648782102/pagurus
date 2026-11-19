@@ -53,6 +53,32 @@ export function AgentAnswer({ body, streaming = false }: {
             return <h4 key={index}>{parseSpans(block.text).map(renderSpan)}</h4>;
           case 'quote':
             return <blockquote key={index}>{parseSpans(block.text).map(renderSpan)}</blockquote>;
+          case 'rule':
+            return <hr key={index} />;
+          case 'table':
+            /*
+             * A wide table must scroll rather than force the reading column
+             * wider, so the wrapper owns the overflow and the table keeps its
+             * natural width.
+             */
+            return (
+              <div className="agent-answer-table" key={index}>
+                <table>
+                  <thead>
+                    <tr>{block.head.map((cell, cellIndex) => (
+                      <th key={cellIndex} scope="col">{parseSpans(cell).map(renderSpan)}</th>
+                    ))}</tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>{row.map((cell, cellIndex) => (
+                        <td key={cellIndex}>{parseSpans(cell).map(renderSpan)}</td>
+                      ))}</tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
           default:
             return <p key={index}>{parseSpans(block.text).map(renderSpan)}</p>;
         }
@@ -64,6 +90,11 @@ export function AgentAnswer({ body, streaming = false }: {
 /** One inline span; the element is chosen here, never by the answer text. */
 function renderSpan(span: AnswerSpan, index: number) {
   if (span.kind === 'strong') return <strong key={index}>{span.text}</strong>;
+  if (span.kind === 'emphasis') return <em key={index}>{span.text}</em>;
+  if (span.kind === 'strike') return <del key={index}>{span.text}</del>;
   if (span.kind === 'code') return <code key={index}>{span.text}</code>;
+  if (span.kind === 'link') {
+    return <a key={index} href={span.href} target="_blank" rel="noreferrer noopener">{span.text}</a>;
+  }
   return <span key={index}>{span.text}</span>;
 }

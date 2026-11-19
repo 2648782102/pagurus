@@ -161,3 +161,33 @@ describe('answer parsing', () => {
     ]);
   });
 });
+
+describe('markdown coverage', () => {
+  it('parses a table only when the divider agrees on the column count', () => {
+    const blocks = parseAnswer('| 项 | 值 |\n| --- | --- |\n| a | 1 |\n| b | 2 |');
+    expect(blocks).toEqual([{ kind: 'table', head: ['项', '值'], rows: [['a', '1'], ['b', '2']] }]);
+  });
+
+  it('leaves a pipe line as prose when there is no divider', () => {
+    const blocks = parseAnswer('a | b 不是表格');
+    expect(blocks[0]?.kind).toBe('paragraph');
+  });
+
+  it('reads a horizontal rule as a rule, not as a bullet', () => {
+    expect(parseAnswer('---')).toEqual([{ kind: 'rule' }]);
+  });
+
+  it('supports emphasis, strike, and links inline', () => {
+    const spans = parseSpans('*斜* ~~删~~ [站点](https://example.com)');
+    expect(spans.some((s) => s.kind === 'emphasis' && s.text === '斜')).toBe(true);
+    expect(spans.some((s) => s.kind === 'strike' && s.text === '删')).toBe(true);
+    expect(spans.some((s) => s.kind === 'link' && s.href === 'https://example.com')).toBe(true);
+  });
+
+  it('refuses non-http link schemes instead of rendering them as links', () => {
+    // A model must not be able to smuggle javascript: or data: through a link.
+    const spans = parseSpans('[点我](javascript:alert(1))');
+    expect(spans.some((s) => s.kind === 'link')).toBe(false);
+    expect(spans.every((s) => s.kind === 'text')).toBe(true);
+  });
+});

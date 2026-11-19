@@ -16,7 +16,13 @@ export type AnswerBlock =
   | { readonly kind: 'heading'; readonly text: string }
   | { readonly kind: 'code'; readonly text: string; readonly language: string | null }
   | { readonly kind: 'list'; readonly ordered: boolean; readonly items: readonly string[] }
-  | { readonly kind: 'quote'; readonly text: string };
+  | { readonly kind: 'quote'; readonly text: string }
+  | { readonly kind: 'rule' }
+  | {
+    readonly kind: 'table';
+    readonly head: readonly string[];
+    readonly rows: readonly (readonly string[])[];
+  };
 
 /**
  * An inline run of text.
@@ -30,7 +36,10 @@ export type AnswerBlock =
 export type AnswerSpan =
   | { readonly kind: 'text'; readonly text: string }
   | { readonly kind: 'strong'; readonly text: string }
-  | { readonly kind: 'code'; readonly text: string };
+  | { readonly kind: 'emphasis'; readonly text: string }
+  | { readonly kind: 'strike'; readonly text: string }
+  | { readonly kind: 'code'; readonly text: string }
+  | { readonly kind: 'link'; readonly text: string; readonly href: string };
 
 /**
  * Splits a line into text, bold, and inline-code spans.
@@ -39,13 +48,30 @@ export type AnswerSpan =
  */
 export function parseSpans(text: string): readonly AnswerSpan[] {
   const spans: AnswerSpan[] = [];
-  const pattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*/g;
+  /*
+   * Order matters: code is matched before emphasis so a `**` inside backticks
+   * stays literal, and a link is matched before its label's emphasis so the
+   * href cannot be mistaken for prose. Everything is rendered as React text,
+   * so none of this can inject markup.
+   */
+  const pattern = /`([^`\n]+)`|\[([^\]\n]+)\]\(([^)\s]+)\)|\*\*([^*\n]+)\*\*|__([^_\n]+)__|~~([^~\n]+)~~|\*([^*\n]+)\*|_([^_\n]+)_/g;
   let scanned = 0;
   for (const match of text.matchAll(pattern)) {
     const start = match.index ?? 0;
     if (start > scanned) spans.push({ kind: 'text', text: text.slice(scanned, start) });
     if (match[1] !== undefined) spans.push({ kind: 'code', text: match[1] });
-    else if (match[2] !== undefined) spans.push({ kind: 'strong', text: match[2] });
+    else if (match[2] !== undefined && match[3] !== undefined) {
+      // Only http(s) and same-document links survive; anything else (javascript:,
+      // data:) is rendered as its label so a model cannot smuggle a scheme.
+      const href = match[3];
+      if (/^https?:\/\//i.test(href) || href.startsWith('#')) spans.push({ kind: 'link', text: match[2], href });
+      else spans.push({ kind: 'text', text: match[2] });
+    }
+    else if (match[4] !== undefined) spans.push({ kind: 'strong', text: match[4] });
+    else if (match[5] !== undefined) spans.push({ kind: 'strong', text: match[5] });
+    else if (match[6] !== undefined) spans.push({ kind: 'strike', text: match[6] });
+    else if (match[7] !== undefined) spans.push({ kind: 'emphasis', text: match[7] });
+    else if (match[8] !== undefined) spans.push({ kind: 'emphasis', text: match[8] });
     scanned = start + match[0].length;
   }
   if (scanned < text.length) spans.push({ kind: 'text', text: text.slice(scanned) });
@@ -57,6 +83,15 @@ const ORDERED_ITEM = /^\s{0,3}(\d{1,3})[.)]\s+(.*)$/;
 const BULLET_ITEM = /^\s{0,3}[-*+]\s+(.*)$/;
 const HEADING = /^\s{0,3}(#{1,4})\s+(.+?)\s*#*\s*$/;
 const QUOTE = /^\s{0,3}>\s?(.*)$/;
+const RULE = /^\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$/;
+/** A table row: `| a | b |` or `a | b`, with optional outer pipes. */
+const TABLE_DIVIDER = /^\s{0,3}\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)+\|?\s*$/;
+
+/** Splits one table row into trimmed cells, dropping the optional outer pipes. */
+function splitTableRow(line: string): string[] {
+  const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+  return trimmed.split('|').map((cell) => cell.trim());
+}
 
 /**
  * Splits the last list item if a closing sentence was appended to it.
@@ -124,6 +159,40 @@ export function parseAnswer(body: string): readonly AnswerBlock[] {
       blocks.push({ kind: 'heading', text: heading[2]! });
       index += 1;
       continue;
+    }
+
+    // A horizontal rule must be checked before list items: `---` also matches
+    // the bullet pattern with an empty body.
+    if (RULE.test(line)) {
+      flushParagraph(paragraph);
+      blocks.push({ kind: 'rule' });
+      index += 1;
+      continue;
+    }
+
+    /*
+     * A table is a header row immediately followed by a divider row. Both must
+     * agree on column count; otherwise the lines are ordinary prose and stay
+     * that way rather than being guessed into a table.
+     */
+    if (line.includes('|') && index + 1 < lines.length && TABLE_DIVIDER.test(lines[index + 1]!)) {
+      const head = splitTableRow(line);
+      const divider = splitTableRow(lines[index + 1]!);
+      if (head.length > 1 && head.length === divider.length) {
+        flushParagraph(paragraph);
+        const rows: string[][] = [];
+        index += 2;
+        while (index < lines.length) {
+          const candidate = lines[index]!;
+          if (candidate.trim().length === 0 || !candidate.includes('|')) break;
+          const cells = splitTableRow(candidate);
+          if (cells.length !== head.length) break;
+          rows.push(cells);
+          index += 1;
+        }
+        blocks.push({ kind: 'table', head, rows });
+        continue;
+      }
     }
 
     const ordered = ORDERED_ITEM.exec(line);
