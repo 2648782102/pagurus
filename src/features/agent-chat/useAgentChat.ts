@@ -63,6 +63,17 @@ export function useAgentChat(
       ]);
       const available = list.filter((agent) => !agent.archived);
       setAgents(available);
+      // Pick the identity in the same commit that publishes the list.
+      //
+      // Restoring a conversation awaits a second request below. Selecting the
+      // Agent after that await left one render where the list and the
+      // first-run guide were populated but `selectedAgentId` was still empty,
+      // so the landing prompt claimed the Runtime returned no usable Agent and
+      // disabled the input. Both reads describe one snapshot; publish them
+      // together.
+      setSelectedAgentId((current) => current || available.find((agent) => isBossAgent(agent))?.id
+        || available.find((agent) => agent.isDefault)?.id
+        || available[0]?.id || '');
       setModels(catalog);
       const preferred = history?.defaultModelId
         ? catalog.find((model) => model.modelId === history.defaultModelId)
@@ -82,9 +93,6 @@ export function useAgentChat(
           setConversation(null);
         }
       }
-      setSelectedAgentId((current) => current || available.find((agent) => isBossAgent(agent))?.id
-        || available.find((agent) => agent.isDefault)?.id
-        || available[0]?.id || '');
       setError(null);
     } catch (cause) {
       setError(errorText(cause));

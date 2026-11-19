@@ -50,3 +50,55 @@ describe('Agent surface with no usable Agent', () => {
     expect(screen.queryByText(/在控制台的「Agent 配置」里创建/)).toBeNull();
   });
 });
+
+describe('Agent surface while resuming a conversation', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/v1/health') return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
+      if (path === '/v1/runtime') return Promise.resolve(json(runtime));
+      if (path === '/v1/agent-chat/agents') {
+        return Promise.resolve(json({
+          version: '1.8.0',
+          agents: [{
+            id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
+            providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
+          }],
+        }));
+      }
+      if (path === '/v1/model-catalog') {
+        return Promise.resolve(json({ models: [{
+          providerId: 'magpie', modelId: 'fixture/chat-model',
+          reference: 'magpie:fixture/chat-model', displayName: 'Fixture', capabilities: ['chat'],
+        }] }));
+      }
+      if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+        return Promise.resolve(json({
+          version: '1.8.0', defaultModelId: null,
+          conversations: [{
+            id: `chat_${'a'.repeat(24)}`, agentId: 'boss-agent', reasoningEffort: 'medium',
+            createdAt: '2026-11-19T00:00:00.000Z', messageCount: 2, lastMessagePreview: '上次的对话',
+          }],
+        }));
+      }
+      // Hold the resume request open: the list is already known, the thread is not.
+      if (path === `/v1/agent-chat/conversations/chat_${'a'.repeat(24)}`) {
+        return new Promise<Response>(() => undefined);
+      }
+      return Promise.resolve(json({}));
+    }));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it('does not claim the Runtime returned no Agent while the thread loads', async () => {
+    render(<AgentApp />);
+
+    expect(await screen.findByText('和 老板 Agent 说点什么')).toBeTruthy();
+    expect(screen.queryByText('还没有可对话的 Agent')).toBeNull();
+    expect((screen.getByLabelText('输入消息') as HTMLTextAreaElement).disabled).toBe(false);
+  });
+});
