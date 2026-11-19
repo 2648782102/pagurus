@@ -13,6 +13,7 @@ import { AgentAnswer } from './AgentAnswer.js';
 import { AgentMessageActions } from './AgentMessageActions.js';
 import { AgentModelMenu } from './AgentModelMenu.js';
 import { AgentPrompt } from './AgentPrompt.js';
+import { FirstRunGuide } from './FirstRunGuide.js';
 import { AgentThreadDrawer } from './AgentThreadDrawer.js';
 import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
@@ -27,6 +28,14 @@ const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
 
 /** Message states in which the reply body is still being appended. */
 const STREAMING = new Set(['pending', 'thinking', 'streaming', 'organizing']);
+
+/**
+ * Onboarding dismissal lives in memory only.
+ *
+ * The console must not use browser storage (see the repository guardrails), and
+ * a first-run hint is not worth an exception: it reappears on reload, which is
+ * the safe default for a guide you can dismiss with one click.
+ */
 
 /**
  * The shipped Agent product.
@@ -46,6 +55,7 @@ export function AgentApp() {
   const agentCapabilities = useAgentCapabilities();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const [firstRunDismissed, setFirstRunDismissed] = useState(false);
   const contextButtonRef = useRef<HTMLButtonElement | null>(null);
   const { theme, toggle: toggleTheme } = useAgentTheme();
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -171,6 +181,17 @@ export function AgentApp() {
         <main className="agent-page">
           {chat.conversation === null ? (
             <div className="agent-page-center">
+              <FirstRunGuide
+                connection={runtimeStatus.state}
+                agents={chat.agents}
+                models={chat.models}
+                dismissed={firstRunDismissed}
+                onDismiss={() => setFirstRunDismissed(true)}
+                onUseExample={(text) => {
+                  chat.setDraft(text);
+                  setFirstRunDismissed(true);
+                }}
+              />
               <AgentPrompt
                 agents={chat.agents}
                 selectedAgentId={chat.selectedAgentId}
