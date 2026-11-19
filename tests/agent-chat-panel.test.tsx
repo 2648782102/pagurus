@@ -164,7 +164,15 @@ describe('Agent Chat panel', () => {
         activity: [
           { id: 'turn-0', kind: 'turn', label: '第 1 轮', state: 'running', detail: null },
           { id: 'tool-1', kind: 'tool', label: '写入文件', state: 'running', detail: 'workspace_write' },
-          { id: 'approval-1', kind: 'approval', label: '等待审批', state: 'waiting_approval', detail: null },
+          {
+            id: 'approval-1', kind: 'approval',
+            label: '等待审批：workspace_write → notes/a.txt',
+            state: 'waiting_approval', detail: '写入 notes/a.txt（风险：write）',
+          },
+          {
+            id: 'approval-preview-1', kind: 'output', label: '将要发生的改动',
+            state: 'waiting_approval', detail: '--- /dev/null\n+++ notes/a.txt\n+hello',
+          },
         ],
       },
     ];
@@ -179,12 +187,39 @@ describe('Agent Chat panel', () => {
     );
     expect(screen.getByText('等待你批准工具调用')).toBeTruthy();
     expect(screen.getByText('等待你批准工具调用').closest('article')?.getAttribute('aria-busy')).toBe('false');
+    const card = screen.getByRole('region', { name: '待批准的改动' });
+    expect(card).toBeTruthy();
+    expect(screen.getByText('等待审批：workspace_write → notes/a.txt')).toBeTruthy();
+    expect(screen.getByText('写入 notes/a.txt（风险：write）')).toBeTruthy();
+    expect(screen.getByText(/\+hello/).textContent).toContain('+hello');
+    // The same two facts are in the card, not repeated in the plain activity list.
+    expect(screen.getAllByText('写入 notes/a.txt（风险：write）')).toHaveLength(1);
     expect(screen.getByText('写入文件')).toBeTruthy();
     expect(screen.getByText('workspace_write')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '批准并继续' }));
     expect(onDecision).toHaveBeenCalledWith(`amsg_${'3'.repeat(24)}`, 'approved');
     fireEvent.click(screen.getByRole('button', { name: '拒绝' }));
     expect(onDecision).toHaveBeenCalledWith(`amsg_${'3'.repeat(24)}`, 'rejected');
+  });
+
+  it('still asks for approval when the Runtime published no preview', () => {
+    render(
+      <AgentChatThread
+        messages={[{
+          id: `amsg_${'4'.repeat(24)}`, sequence: 1, author: 'assistant', body: '',
+          state: 'waiting_approval', taskId: 'task_beta', error: null, phase: 'human',
+          progress: null, updatedAt: '2026-11-15T00:00:00.000Z', replyToId: null,
+          activity: [{ id: 'approval-2', kind: 'approval', label: '等待审批：git_commit', state: 'waiting_approval', detail: null }],
+        }]}
+        agentName="文件助手"
+        busy={false}
+        onDecision={() => undefined}
+      />,
+    );
+    expect(screen.getByRole('region', { name: '待批准的改动' })).toBeTruthy();
+    expect(screen.getByText('等待审批：git_commit')).toBeTruthy();
+    expect(screen.queryByRole('figure')).toBeNull();
+    expect(screen.getByRole('button', { name: '批准并继续' })).toBeTruthy();
   });
 
   it('keeps Shift Enter as a newline and hides technical details by default', async () => {

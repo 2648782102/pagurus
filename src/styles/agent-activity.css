@@ -42,7 +42,61 @@
   font-size: 10px;
 }
 
-/* Approval inside the conversation: one decision, stated plainly. */
+/*
+ * Approval inside the conversation.
+ *
+ * The pending change is the decision, so it gets the visual weight: a ruled
+ * card, the risk in the caution ink already used for blocked work, and the
+ * preview in the tool voice. The buttons stay last, where a decision belongs.
+ */
+.agent-chat-approval {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--state-caution-border);
+  border-left: 3px solid var(--state-caution-line);
+  border-radius: 4px;
+  background: var(--state-caution);
+}
+.agent-chat-approval-kicker {
+  margin: 0 0 4px;
+  color: var(--state-caution-strong);
+  font: 600 10.5px var(--font-body);
+  letter-spacing: .04em;
+}
+.agent-chat-approval-title {
+  margin: 0;
+  color: var(--text-strong);
+  font: 600 13px/1.5 var(--font-body);
+  overflow-wrap: anywhere;
+}
+.agent-chat-approval-risk {
+  margin: 4px 0 0;
+  color: var(--state-caution-ink);
+  font: 12px/1.65 var(--font-body);
+  overflow-wrap: anywhere;
+}
+.agent-chat-approval-preview {
+  margin: 10px 0 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.agent-chat-approval-preview figcaption {
+  padding: 5px 9px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font: 600 10px var(--font-body);
+}
+.agent-chat-approval-preview pre {
+  margin: 0;
+  padding: 9px;
+  max-height: 260px;
+  overflow: auto;
+  color: var(--text-strong);
+  font: 11.5px/1.6 var(--font-code);
+  white-space: pre;
+}
 .agent-chat-approval-actions {
   display: flex;
   gap: 8px;

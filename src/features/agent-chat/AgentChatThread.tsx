@@ -1,5 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import type { AgentChatMessage, AgentChatMessageState } from '../../shared/api/agent-chat.js';
+import type {
+  AgentChatActivity,
+  AgentChatMessage,
+  AgentChatMessageState,
+} from '../../shared/api/agent-chat.js';
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
 
 interface AgentChatThreadProps {
@@ -104,6 +108,77 @@ function closeOutSections(body: string): readonly { readonly title: string; read
   return sections.length > 0 ? sections : null;
 }
 
+/**
+ * Splits the published activity into the pending decision and everything else.
+ *
+ * The Runtime publishes the approval and its bounded preview as ordinary
+ * activity entries. Three consumers need them: the card below, the button
+ * gate, and the remaining list. One helper keeps them from disagreeing about
+ * which entry is "the" approval.
+ */
+function pendingApprovalParts(message: AgentChatMessage): {
+  readonly requested: boolean;
+  readonly approval: AgentChatActivity | null;
+  readonly preview: AgentChatActivity | null;
+  readonly rest: readonly AgentChatActivity[];
+} {
+  const requested = message.state === 'waiting_approval' && message.taskId !== null;
+  if (!requested) return { requested, approval: null, preview: null, rest: message.activity };
+  const approval = [...message.activity].reverse().find((entry) => entry.kind === 'approval'
+    && entry.state === 'waiting_approval') ?? null;
+  const preview = approval
+    ? message.activity.find((entry) => entry.kind === 'output' && entry.label === '将要发生的改动') ?? null
+    : null;
+  const promoted = new Set([approval?.id, preview?.id].filter((id): id is string => id !== undefined));
+  return {
+    requested,
+    approval,
+    preview,
+    rest: message.activity.filter((entry) => !promoted.has(entry.id)),
+  };
+}
+
+/**
+ * The change that is waiting for a decision.
+ *
+ * Rendering the preview as an ordinary list row made the one thing the reader
+ * must judge the least prominent text in the message. The facts are the same
+ * published ones; only the weight changes.
+ */
+function PendingApproval({
+  message,
+  approval,
+  preview,
+  busy,
+  onDecision,
+}: {
+  readonly message: AgentChatMessage;
+  readonly approval: AgentChatActivity | null;
+  readonly preview: AgentChatActivity | null;
+  readonly busy: boolean;
+  readonly onDecision: (assistantMessageId: string, decision: 'approved' | 'rejected') => void;
+}) {
+  return (
+    <section className="agent-chat-approval" aria-label="待批准的改动">
+      <p className="agent-chat-approval-kicker">需要你的批准</p>
+      {approval && <h4 className="agent-chat-approval-title">{approval.label}</h4>}
+      {approval?.detail && <p className="agent-chat-approval-risk">{approval.detail}</p>}
+      {preview?.detail && (
+        <figure className="agent-chat-approval-preview">
+          <figcaption>{preview.label}</figcaption>
+          <pre><code>{preview.detail}</code></pre>
+        </figure>
+      )}
+      <div className="agent-chat-approval-actions">
+        <Button variant="primary" size="sm" type="button" disabled={busy}
+          onClick={() => onDecision(message.id, 'approved')}>批准并继续</Button>
+        <Button size="sm" type="button" disabled={busy}
+          onClick={() => onDecision(message.id, 'rejected')}>拒绝</Button>
+      </div>
+    </section>
+  );
+}
+
 export function AgentChatThread({
   messages,
   agentName,
@@ -147,82 +222,86 @@ export function AgentChatThread({
           <p>直接说出你的想法。Runtime 会调用选中的 Agent，并把回复发布到这里。</p>
         </div>
       )}
-      {messages.map((message) => (
-        <article
-          className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}`}
-          key={message.id}
-          aria-busy={isWorking(message.state)}
-        >
-          <div className="agent-chat-message-meta">
-            <span className="agent-chat-message-author">
-              {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
-            </span>
-            {STATE_LABELS[message.state] && (
-              <span className="agent-chat-state-label" role="status">
-                <StatusDot tone={statusTone(message.state)} />
-                {STATE_LABELS[message.state]}
+      {messages.map((message) => {
+        const parts = pendingApprovalParts(message);
+        return (
+          <article
+            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}`}
+            key={message.id}
+            aria-busy={isWorking(message.state)}
+          >
+            <div className="agent-chat-message-meta">
+              <span className="agent-chat-message-author">
+                {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
               </span>
-            )}
-          </div>
-          {isWorking(message.state) && <div className="agent-chat-typing" aria-hidden="true"><i /><i /><i /></div>}
-          {messageBody(message).length > 0 && (
-            (() => {
-              const body = messageBody(message);
-              if (renderBody) {
+              {STATE_LABELS[message.state] && (
+                <span className="agent-chat-state-label" role="status">
+                  <StatusDot tone={statusTone(message.state)} />
+                  {STATE_LABELS[message.state]}
+                </span>
+              )}
+            </div>
+            {isWorking(message.state) && <div className="agent-chat-typing" aria-hidden="true"><i /><i /><i /></div>}
+            {messageBody(message).length > 0 && (
+              (() => {
+                const body = messageBody(message);
+                if (renderBody) {
+                  return (
+                    <>
+                      {renderBody(message, body)}
+                      {isStreamingText(message.state) && <span className="agent-chat-caret" aria-hidden="true" />}
+                    </>
+                  );
+                }
+                const sections = closeOutSections(body);
+                if (!sections) {
+                  return <p>{body}{message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}</p>;
+                }
+                const headline = body.split('\n')[0] ?? '';
                 return (
-                  <>
-                    {renderBody(message, body)}
-                    {isStreamingText(message.state) && <span className="agent-chat-caret" aria-hidden="true" />}
-                  </>
+                  <div className="agent-chat-report">
+                    <p className="agent-chat-report-headline">{headline}</p>
+                    {sections.map((section) => (
+                      <section key={section.title} className="agent-chat-report-section">
+                        <h3>{section.title}</h3>
+                        <ul>
+                          {section.lines.map((line, index) => <li key={`${section.title}-${index}`}>{line}</li>)}
+                        </ul>
+                      </section>
+                    ))}
+                  </div>
                 );
-              }
-              const sections = closeOutSections(body);
-              if (!sections) {
-                return <p>{body}{message.state === 'streaming' && <span className="agent-chat-caret" aria-hidden="true" />}</p>;
-              }
-              const headline = body.split('\n')[0] ?? '';
-              return (
-                <div className="agent-chat-report">
-                  <p className="agent-chat-report-headline">{headline}</p>
-                  {sections.map((section) => (
-                    <section key={section.title} className="agent-chat-report-section">
-                      <h3>{section.title}</h3>
-                      <ul>
-                        {section.lines.map((line, index) => <li key={`${section.title}-${index}`}>{line}</li>)}
-                      </ul>
-                    </section>
-                  ))}
-                </div>
-              );
-            })()
-          )}
-          {message.progress !== null && message.progress > 0 && message.progress < 100 && (
-            <div className="agent-chat-progress" aria-label={`回复进度 ${message.progress}%`}>
-              <span style={{ width: `${message.progress}%` }} />
-            </div>
-          )}
-          {message.activity.length > 0 && (
-            <ul className="agent-chat-activity" aria-label="Agent 执行活动">
-              {message.activity.map((entry) => (
-                <li key={entry.id} className={`agent-chat-activity-${entry.state}`}>
-                  <span className="agent-chat-activity-label">{entry.label}</span>
-                  {entry.detail && <code>{entry.detail}</code>}
-                </li>
-              ))}
-            </ul>
-          )}
-          {message.state === 'waiting_approval' && message.taskId !== null && (
-            <div className="agent-chat-approval-actions">
-              <Button variant="primary" size="sm" type="button" disabled={busy}
-                onClick={() => onDecision(message.id, 'approved')}>批准并继续</Button>
-              <Button size="sm" type="button" disabled={busy}
-                onClick={() => onDecision(message.id, 'rejected')}>拒绝</Button>
-            </div>
-          )}
-          {message.error && <small>{message.error}</small>}
-          {renderMessageActions?.(message)}
-        </article>
-      ))}
+              })()
+            )}
+            {message.progress !== null && message.progress > 0 && message.progress < 100 && (
+              <div className="agent-chat-progress" aria-label={`回复进度 ${message.progress}%`}>
+                <span style={{ width: `${message.progress}%` }} />
+              </div>
+            )}
+            {parts.rest.length > 0 && (
+              <ul className="agent-chat-activity" aria-label="Agent 执行活动">
+                {parts.rest.map((entry) => (
+                  <li key={entry.id} className={`agent-chat-activity-${entry.state}`}>
+                    <span className="agent-chat-activity-label">{entry.label}</span>
+                    {entry.detail && <code>{entry.detail}</code>}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {parts.requested && (
+              <PendingApproval
+                message={message}
+                approval={parts.approval}
+                preview={parts.preview}
+                busy={busy}
+                onDecision={onDecision}
+              />
+            )}
+            {message.error && <small>{message.error}</small>}
+            {renderMessageActions?.(message)}
+          </article>
+        );
+      })}
     </div>
   );
 }
