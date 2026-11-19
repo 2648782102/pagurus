@@ -210,25 +210,19 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * The Runtime's own port check probes the socket it is already listening on,
- * so a healthy instance always reports "in use". Until the Runtime distinguishes
- * "this is me" from "someone else", present that case as what it actually
- * means here — the instance is up — instead of a conflict the user must fix.
+ * The Runtime now distinguishes "this port is me" from "someone else holds it"
+ * (Conchbase `f1946c1`), so the panel renders the check verbatim. Older Runtimes
+ * that still report a self-held port as a conflict are honestly shown as a
+ * warning rather than papered over here.
  */
-function isSelfPortCheck(check: DiagnosticCheck): boolean {
-  return check.id === 'runtime-port' && check.status === 'warn' && /already in use/.test(check.detail);
-}
-
 function toneOf(check: DiagnosticCheck): 'success' | 'warning' | 'danger' {
-  if (isSelfPortCheck(check)) return 'success';
   return check.status === 'ok' ? 'success' : check.status === 'warn' ? 'warning' : 'danger';
 }
 
 function labelOf(check: DiagnosticCheck): string {
-  if (isSelfPortCheck(check)) return 'listening';
   return check.status;
 }
 
 function detailOf(check: DiagnosticCheck): string {
-  return isSelfPortCheck(check) ? '本实例正在监听该端口。' : check.detail;
+  return check.detail;
 }

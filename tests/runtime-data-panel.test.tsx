@@ -66,28 +66,24 @@ describe('Runtime data panel', () => {
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 
-  it('reads the self-port warning as "listening", not as a conflict to fix', async () => {
-    // The Runtime probes the socket it is already bound to, so a healthy
-    // instance reports "already in use". Showing that as a warning would train
-    // people to ignore the diagnostics.
+  it('renders the runtime-port check verbatim instead of second-guessing it', async () => {
     vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
       const path = String(input);
       if (path === '/v1/operations/data') {
         return Promise.resolve(json({
-          version: 1, databasePath: '/tmp/r.sqlite', sizeBytes: 4096, schemaVersion: 9, exists: true,
+          version: 1, databasePath: '/tmp/runtime.sqlite', sizeBytes: 10, schemaVersion: 9, exists: true,
         }));
       }
-      return Promise.resolve(json({
-        version: 1,
-        checks: [{ id: 'runtime-port', status: 'warn', detail: '127.0.0.1:4372 is already in use (another Runtime or process).' }],
-      }));
+      if (path === '/v1/operations/diagnostics') {
+        return Promise.resolve(json({
+          version: 1,
+          checks: [{ id: 'runtime-port', status: 'ok', detail: '127.0.0.1:4372 is this Runtime.' }],
+        }));
+      }
+      return Promise.resolve(json({}, 404));
     }));
-
     render(<RuntimeDataPanel runtime={runtime} />);
-
-    expect(await screen.findByText('listening')).toBeTruthy();
-    expect(screen.getByText('本实例正在监听该端口。')).toBeTruthy();
-    expect(screen.queryByText(/another Runtime/)).toBeNull();
+    expect(await screen.findByText('127.0.0.1:4372 is this Runtime.')).toBeTruthy();
   });
 
   it('backs up to a chosen path and reports integrity', async () => {
