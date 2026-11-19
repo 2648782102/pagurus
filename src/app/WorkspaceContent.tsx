@@ -2,6 +2,7 @@ import { AgentWorkspace } from '../features/agents/AgentWorkspace.js';
 import { AgentChatPanel } from '../features/agent-chat/AgentChatPanel.js';
 import { CapabilityPanel } from '../features/capabilities/CapabilityPanel.js';
 import { ConfigurationPanel } from '../features/configuration/ConfigurationPanel.js';
+import { RuntimeDataPanel } from '../features/runtime-status/RuntimeDataPanel.js';
 import { ExecutionConsolePanel } from '../features/execution/ExecutionConsolePanel.js';
 import { OrganizationConsolePanel } from '../features/organization/OrganizationConsolePanel.js';
 import { SecretHandlePanel } from '../features/secrets/SecretHandlePanel.js';
@@ -43,7 +44,10 @@ export function WorkspaceContent({
     case 'secrets':
       return <SecretHandlePanel runtime={runtime} />;
     case 'settings':
-      return <ConfigurationPanel />;
+      return <>
+        <ConfigurationPanel />
+        <RuntimeDataPanel runtime={runtime} />
+      </>;
     default:
       return null;
   }

@@ -65,4 +65,24 @@
 .secret-create-form > .task-actions { grid-column: 1 / -1; }
 .compare-mono { font-family: var(--font-mono); font-size: 10px; }
 
+/* Data location and environment checks: dense, ruled, read-only. */
+.runtime-data-subhead {
+  margin: 18px 0 8px;
+  color: var(--text-strong);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+.runtime-data-checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.runtime-data-checks > li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.runtime-data-checks > li code { flex: 0 0 auto; color: var(--text-strong); font-size: 10.5px; }
+.runtime-data-checks > li span { min-width: 0; overflow-wrap: anywhere; }
+
 
