@@ -38,7 +38,7 @@ describe('front-end architecture boundaries', () => {
   });
 
   it('keeps every cascade layer small enough to review in one pass', () => {
-    // ADR 0038 split the 955-line sheet into named layers. The entry point is
+    // The entry point is
     // now import-only, so the ceiling applies per layer rather than to one file.
     expect(read('src/styles.css').split('\n').length - 1, 'src/styles.css must stay an import entry point')
       .toBeLessThanOrEqual(30);
@@ -84,7 +84,7 @@ describe('front-end architecture boundaries', () => {
   });
 
   it('keeps the product surface free of borrowed third-party assets', () => {
-    // ADR 0040 accepts interaction patterns, not another product's identity.
+    // the implementation accepts interaction patterns, not another product's identity.
     // A vendor name in the shipped shell would mean we copied branding.
     const product = sourceFiles('src/agent').map((file) => ({ file, source: read(file) }));
     const borrowedIdentity = /\b(?:codex|dsh|deepseek\s*harness|workbuddy|cursor|claude)\b/i;
@@ -96,7 +96,7 @@ describe('front-end architecture boundaries', () => {
   });
 
   it('keeps the reading column centred at a predictable width', () => {
-    // ADR 0041 sets the measure from tokens. A `ch`-based measure depends on the
+    // A `ch`-based measure depends on the
     // root font size and came out far narrower than intended, which read as a
     // column stuck to the left of a wide window. Assert the unit, not the pixel
     // value, so the intent survives a font change.

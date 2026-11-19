@@ -63,7 +63,7 @@
  * Dark theme: blue-violet near-black, not warm charcoal or neutral grey.
  * Semantic tokens (`semantic-tokens.css`) need no changes: they alias `--ag-*`,
  * so overriding the palette here switches the whole Agent surface at once.
- * See docs/DESIGN_LANGUAGE.zh-CN.md, "暗色主题".
+ * See the semantic color tokens.
  */
 :root[data-agent-theme='dark'] .agent-app,
 :root[data-agent-theme='dark'] .agent-app-blocked {

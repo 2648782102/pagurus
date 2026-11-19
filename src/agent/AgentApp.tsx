@@ -35,7 +35,7 @@ const STREAMING = new Set(['pending', 'thinking', 'streaming', 'organizing']);
  * "finish a thought", not "manage a library"; the console remains the place to
  * inspect runtime state.
  *
- * Facts are unchanged from ADR 0040: one `useAgentChat` controller, the
+ * one `useAgentChat` controller, the
  * published Agent Chat contract, and a resumed thread that actually has
  * messages.
  */

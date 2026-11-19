@@ -8,7 +8,7 @@
  *
  * They share the version-2 wire rules but not a lifecycle, so each keeps its
  * own types, validators, and routes. Splitting them means a SecretHandle change
- * cannot accidentally touch a capability write. See ADR 0039.
+ * cannot accidentally touch a capability write.
  */
 export * from './capabilities.js';
 export * from './local-source.js';

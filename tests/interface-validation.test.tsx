@@ -29,7 +29,7 @@ const styleLayers = [
 ];
 const styleEntry = readFileSync(path.join(repositoryRoot, 'src/styles.css'), 'utf8');
 /**
- * ADR 0038 keeps one entry point but splits the cascade by layer. Tests assert
+ * Tests assert
  * against the composed sheet so a selector's file location stays free to move.
  */
 const styles = styleLayers

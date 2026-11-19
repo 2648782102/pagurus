@@ -6,7 +6,7 @@
  * - `organization-client.ts` — typed reads and the two accepted writes.
  * - `organization-selectors.ts` — pure projections of one session payload.
  *
- * The split follows ADR 0038's rule: one module answers one question, and a
+ * one module answers one question, and a
  * change to a session projection cannot alter a request.
  */
 export * from './organization-contract.js';

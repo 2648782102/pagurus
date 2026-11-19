@@ -2,6 +2,13 @@
 
 Please do not publish credentials, private user data, or an unpatched vulnerability in a public issue. Use GitHub's private vulnerability reporting for this repository when enabled, or contact the maintainers through the account profile.
 
-Pagurus `1.0.0` uses only Conchbase's published routes. Configuration writes store bounded opaque references and v2 composition data; work-control, local Source, capability, and SecretHandle writes are explicit and capability-gated. [ADR 0010](docs/decisions/0010-final-local-first-client.md) implements the paired final local-first control client. Pagurus does not call Conchbase's tool request/approval ledger routes, and a runtime ledger decision is never treated as client-side execution permission. Use the current loopback development proxy; production remote pairing UX remains outside the final target.
+Pagurus uses only Conchbase's published routes. Configuration, work-control,
+capability, and SecretHandle writes are explicit and capability-gated. Pagurus
+does not call private Runtime files or database state, and a Runtime decision is
+never treated as client-side execution permission.
 
-[ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) and [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md) are historical records. The write-only editor accepts one sensitive `value` through a password input, clears it immediately after submission, and never reads it back. Plaintext must never enter browser storage, rendered DOM, URLs, logs, errors, the frontend bundle, or model context. The client shows only handle keys, versions, status, adapter/destination binding, digests, timestamps, and digest-only use receipts; it never receives a value back or holds a decryptable resolver token. Conchbase seals values with a process-scoped AES-256-GCM key; restart invalidates old sealed values, stale use requests return a digest-only `denied` receipt, and rotation requires another one-shot value. This is not an OS-keychain or production-vault design.
+The write-only editor accepts one sensitive value through a password input,
+clears it immediately after submission, and never reads it back. Plaintext must
+never enter browser storage, rendered DOM, URLs, logs, errors, the frontend
+bundle, or model context. The client shows only opaque handle metadata,
+timestamps, and digest-only receipts.

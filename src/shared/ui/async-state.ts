@@ -6,7 +6,7 @@
  * (`ready-empty`). Collapsing them makes the UI assert "Runtime published
  * nothing" while it actually knows nothing yet.
  *
- * See pagurus/docs/DESIGN_LANGUAGE.zh-CN.md, "异步状态原语".
+ * See the shared async-state styles.
  */
 export type AsyncPhase =
   | 'checking'

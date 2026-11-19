@@ -1,54 +1,45 @@
 # Pagurus
 
-**The local control console for Conchbase agent runtimes.**
+Pagurus is the local web console for the [Conchbase](https://github.com/2648782102/conchbase)
+personal Agent runtime. It helps a user start conversations, inspect progress,
+approve actions, manage Agents, and recover local work. Conchbase remains the
+authority for execution, permissions, secrets, and durable state.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/2648782102/pagurus/ci.yml?branch=main&label=CI)](https://github.com/2648782102/pagurus/actions/workflows/ci.yml) [![MIT License](https://img.shields.io/github/license/2648782102/pagurus)](LICENSE) [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-43853d)](https://nodejs.org/)
+## Quick start
 
-Pagurus `1.0.0` is the optional control panel where users manage and customize their own Agents and their local-first Runtime. Conchbase remains responsible for Agent identity and revisions, task execution, durable work state, secrets, and permission enforcement; CLI and other interfaces can use the same Runtime API.
-
-[ADR 0010](docs/decisions/0010-final-local-first-client.md) implements the paired final local-first `1.0.0` client: a control workbench for work start/stop/complete, restart reconciliation, delivery decisions, local Source policy and bounded event evidence; a capability metadata directory; and a write-only SecretHandle editor with rotation, status, fixed-adapter use, and digest-only receipts. Each surface is gated on its published Runtime capability. [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) and [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md) are historical records. No plaintext secret is returned, rendered, or retained after one-shot submission.
-
-The current client connects to Conchbase, reports Runtime API state, manages Agent profiles and immutable revisions, edits the separate v1/v2 runtime configuration, controls durable work, records bounded capability metadata, and submits one-shot SecretHandle values. Users can create/edit/duplicate Agents, select a default, archive profiles, choose any model exposed by the provider-neutral catalog, roll back by appending a historical revision, and compare two revisions in a read-only view. Agent-backed tasks pin the selected Agent revision and Runtime configuration revision; task views show both revisions and the effective provider/model. The task history view reads the existing `GET /v1/tasks` route, supports state and Agent filters, and keeps legacy task records visible. Streaming progress, cancel, and retry remain available. Runtimes without Agent capabilities keep the legacy Magpie compatibility task flow. Conchbase advertises tool ledger and provider observation capabilities, but Pagurus has no corresponding UI or write routes. Configuration references remain data; visual composition editing, executable capability installation, generic secret resolution, server-side task pagination/filtering, live task history, model-driven composition, remote pairing UX, and stable cross-process secret custody remain outside the final local-first target.
-
-The configuration panel remains a generic editor for one runtime-wide policy/capability revision, separate from individual Agent profiles. The v2 composition executor is deterministic and does not call a model; it is not model-driven multi-Agent execution.
-
-The console shell groups these implemented surfaces into ten labeled, hash-based workspaces with a persistent connection badge and active navigation. [ADR 0013](docs/decisions/0013-console-workspace-navigation.md) records this presentation-only boundary; it does not change the Runtime API, capability gates, or versioned contracts.
-
-Conchbase ADR 0021 exercises these published clients against the real Runtime and two independent Agents over deterministic live loopback HTTP. ADR 0007 adds only client-side read-only history and comparison on the existing contract. Its local Runtime screen has been validated manually and visually with mixed Agent/legacy tasks, provider success/error records, filters, refresh/recovery, revision comparison, and a 320px viewport. This closes local API acceptance and ADR 0007's screen walkthrough; automated real-provider conformance, accessibility, pagination/live-history, and remote-runtime validation remain separate layers.
-
-Agent profile and Agent task model selection use Conchbase's provider-neutral contract. The Magpie-backed catalog remains available for compatibility with older runtimes and legacy clients.
-
-## Run locally
-
-Requirements: Node.js 24 or newer.
+Requirements: Node.js 24 or newer. Start Conchbase first, then:
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-The Vite development server proxies `/v1` requests to `http://127.0.0.1:4318`. The current Conchbase compatibility adapter uses Magpie, so start both services and enable a model there to run a task. This describes current adapter support; it is not a restriction on future Agent provider choices. Provider credentials stay behind the runtime adapter boundary; Pagurus receives no secrets.
+Open `http://127.0.0.1:5173/`. Vite proxies `/v1` to Conchbase at
+`http://127.0.0.1:4318`. Real model calls require a configured local provider;
+tests use deterministic Runtime fixtures.
 
-## Principles
+## Read next
 
-- Pagurus submits desired configuration; Conchbase validates and applies it.
-- Installing, enabling, and granting access are separate actions.
-- The console never receives model or tool secrets in clear text.
-- Each task runs against a fixed runtime configuration revision. Agent-backed tasks also pin their immutable Agent revision and effective provider/model.
+- [`docs/START_HERE.md`](docs/START_HERE.md) — short coding-model entry point.
+- [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — current screens and gaps.
+- [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) — UI tasks and user journey.
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — implementation workflow.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — client boundaries.
+- [`docs/VALIDATION_PLAN.md`](docs/VALIDATION_PLAN.md) — UI checks.
 
-See [the architecture notes](docs/ARCHITECTURE.md). New coding models should start with the [AI handoff](docs/AI_HANDOFF.md), the machine-readable [project status](docs/PROJECT_STATUS.json), the Chinese [target-mode brief](docs/OBJECTIVE_MODE.zh-CN.md), [ADR 0010](docs/decisions/0010-final-local-first-client.md), [ADR 0011](docs/decisions/0011-ai-handoff-readiness-development-boundary.md), [ADR 0014](docs/decisions/0014-interface-validation-boundary.md), the long-range [ADR 0015](docs/decisions/0015-organization-console-direction.md) and [ADR 0016](docs/decisions/0016-organization-console-delivery-boundary.md), Conchbase's [organization target](https://github.com/2648782102/conchbase/blob/main/docs/ORGANIZATION_RUNTIME_TARGET.zh-CN.md), [ADR 0025](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0025-local-first-v1-platform.md), ADRs [0030–0034](https://github.com/2648782102/conchbase/tree/main/docs/decisions), and its [AI task queue](https://github.com/2648782102/conchbase/blob/main/docs/AI_TASK_QUEUE.md). Chinese: [README.zh-CN.md](README.zh-CN.md), [quick start](docs/QUICK_START.zh-CN.md), and [v1.0.0 release notes](docs/RELEASE_NOTES_1.0.0.zh-CN.md). The optional [paired visual overview](https://github.com/2648782102/conchbase/blob/main/docs/VISUAL_OVERVIEW.zh-CN.md) is a human-facing illustration only, not a source of truth.
+The `docs/` directory intentionally contains only current product and
+engineering documentation. The code and tests are the source of implementation
+history.
 
-The connected Boss Mode `1.1.0` Organization Console is documented in [ADR 0018](docs/decisions/0018-boss-mode-console-product-loop.md) and [v1.1.0 release notes](docs/RELEASE_NOTES_1.1.0.zh-CN.md). Controlled execution v1 is connected under [ADR 0020](docs/decisions/0020-controlled-execution-console-v1.md) and [v1.2.0 release notes](docs/RELEASE_NOTES_1.2.0.zh-CN.md). Isolated execution v2 is connected under [ADR 0021](docs/decisions/0021-isolated-execution-console-v2.md) and [v1.3.0 release notes](docs/RELEASE_NOTES_1.3.0.zh-CN.md); it uses a deterministic isolated local child process, not real MCP/Skill/plugin/host-tool execution. The primary-conversation console is connected under [ADR 0022](docs/decisions/0022-primary-conversation-console.md) and [v1.4.0 release notes](docs/RELEASE_NOTES_1.4.0.zh-CN.md); it renders a bounded ordered Runtime-published Boss orchestration stream. The separate Agent Chat workspace is connected under [ADR 0023](docs/decisions/0023-agent-chat-console.md) and [v1.5.0 release notes](docs/RELEASE_NOTES_1.5.0.zh-CN.md); it lets users talk directly to a configured Agent through the Runtime's OpenAI-compatible protocol path. [ADR 0024](docs/decisions/0024-boss-agent-chat-console.md) makes the Runtime-owned 老板 Agent the preferred Agent Chat entry while keeping organization authority in Conchbase. [ADR 0025](docs/decisions/0025-codex-style-agent-chat-flow.md) reshapes the workspace into a setup-to-conversation flow with a persistent composer and continuous Runtime-published message thread. [ADR 0026](docs/decisions/0026-agent-chat-conversation-states-console.md) renders the full thinking, streaming, organizing, waiting-attention, replied, failed, unavailable, and cancelled state vocabulary. [ADR 0027](docs/decisions/0027-boss-conversation-console.md) records that natural Boss replies use the same Runtime-published conversation without client authority. [ADR 0028](docs/decisions/0028-boss-conversation-hardening-console.md) updates copy for pure conversation, Runtime-validated organization actions, real streaming progress, and explicit web/local-file/device boundaries. [ADR 0029](docs/decisions/0029-agent-chat-tool-approval-console.md) renders bounded tool activity and inline write approval against Conchbase ADR 0059; [ADR 0030](docs/decisions/0030-agent-chat-live-stream-console.md) consumes the Conchbase ADR 0060 resumable SSE stream with a polling fallback; Conchbase ADR 0051 adds a model selector in Agent Chat setup sourced from the Runtime model catalog.
-See also [the technology baseline](docs/TECH_STACK.md), [roadmap](docs/ROADMAP.md), and [validation plan](docs/VALIDATION_PLAN.md). The runtime is [Conchbase](https://github.com/2648782102/conchbase).
+## Checks
 
-## AI-first development
+```sh
+npm run check
+npm test
+npm run build
+```
 
-This project is developed primarily by AI coding agents. Architecture, documentation, and validation are optimized for fast context loading, bounded changes, and deterministic verification; future human handoff is not a product requirement. Start with [`AGENTS.md`](AGENTS.md), then follow `docs/PROJECT_STATUS.json`'s `aiEntry.requiredOrder`: the [AI handoff](docs/AI_HANDOFF.md), machine-readable [project status](docs/PROJECT_STATUS.json), Chinese [target-mode brief](docs/OBJECTIVE_MODE.zh-CN.md), and [development guide](docs/AI_DEVELOPMENT.md).
+Pagurus never reads Conchbase private files, stores provider credentials in the
+browser, or implements a second Runtime state model.
 
-Before implementing the next product slice, read accepted [ADR 0010](docs/decisions/0010-final-local-first-client.md), [ADR 0014](docs/decisions/0014-interface-validation-boundary.md), [ADR 0018](docs/decisions/0018-boss-mode-console-product-loop.md), [ADR 0019](docs/decisions/0019-controlled-execution-console-direction.md), [ADR 0020](docs/decisions/0020-controlled-execution-console-v1.md), [ADR 0021](docs/decisions/0021-isolated-execution-console-v2.md), [ADR 0022](docs/decisions/0022-primary-conversation-console.md), historical [ADR 0008](docs/decisions/0008-human-attention-workbench-proposal.md) / [ADR 0009](docs/decisions/0009-read-only-attention-workbench-client.md), and Conchbase [ADR 0041](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0041-boss-mode-product-loop.md) / [ADR 0042](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0042-controlled-execution-direction.md) / [ADR 0043](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0043-controlled-execution-v1.md) / [ADR 0044](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0044-isolated-local-execution-v2.md) / [ADR 0045](https://github.com/2648782102/conchbase/blob/main/docs/decisions/0045-primary-conversation-projection.md), the additive `1.1.0` organization contract, additive `1.2.0` controlled-execution contract, additive `1.3.0` execution-run contract, and additive `1.4.0` primary-conversation contract. ADR 0014 closes executable accessibility and published-contract fixtures; ADR 0018 connects the Boss-mode console; ADR 0021 connects deterministic isolated execution v2; ADR 0022 connects the Runtime-published primary conversation. The status JSON has no `ready` bounded slice. Do not add real MCP/Skill/plugin lifecycle, host tool execution, durable chat authoring, external adapters, stable cross-process keys, or remote pairing UX until separate contracts are accepted in both repositories.
-
-> Final local-first target: Pagurus `1.0.0` and ADR 0010 close the paired control client. One-shot sensitive values are submitted through published write-only routes and cleared immediately; the client never receives, displays, stores, or resolves plaintext. Conchbase owns process-scoped AES-256-GCM sealed values, fixed-adapter injection, digest-only receipts, and restart invalidation. OS keychain custody, arbitrary adapters, real tools, external Sources, and cloud deployment require separate ADRs.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+MIT licensed. See [`LICENSE`](LICENSE).
