@@ -44,8 +44,17 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
           className="agent-chat-send"
           type="submit"
           variant="primary"
-          disabled={busy || draft.trim().length === 0}
+          /*
+           * Not `disabled`: a disabled button leaves the tab order, so a
+           * keyboard user typing a message could not reach Send without
+           * shift-tabbing backwards. It stays focusable and refuses the click
+           * instead, which is what "not ready yet" should mean.
+           */
+          aria-disabled={busy || draft.trim().length === 0}
           aria-label="发送消息"
+          onClick={(event) => {
+            if (busy || draft.trim().length === 0) event.preventDefault();
+          }}
         >
           ↑
         </Button>
