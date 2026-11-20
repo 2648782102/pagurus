@@ -123,4 +123,32 @@ describe('front-end architecture boundaries', () => {
     const imports = [...entry.matchAll(/@import\s+"([^"]+)"/g)].map((m) => m[1]);
     expect(imports.at(-1)).toBe('./styles/motion.css');
   });
+
+  it('keeps the product surface on semantic tokens, and free of !important', () => {
+    /*
+     * The agent surface shares class names with the console panel, but only the
+     * console redefines the palette variables. A rule in a shared sheet that
+     * uses `var(--steel)` therefore resolves to the light value inside the dark
+     * product surface — which is how four `!important` activity colours ended
+     * up painting light-theme red on a near-black ground.
+     */
+    const palette = /var\(--(?:steel|signal|amber|danger|ink|paper|line|muted|faint|rust|canvas|navy|rule)[a-z-]*\)/;
+    const productSheets = styleFiles()
+      .filter((file) => /agent-(shell|entry|chat|activity|markdown|model|drawer|context|responsive|tokens)\.css$/.test(file))
+      .filter((file) => !file.endsWith('agent-tokens.css'));
+    const offenders = productSheets.filter((file) => palette.test(read(file)));
+    expect(offenders, `product sheets must use semantic tokens, not the palette:\n${offenders.join('\n')}`).toEqual([]);
+
+    /*
+     * `!important` is required in exactly one place: a reduced-motion override
+     * has to beat every animation and transition declared elsewhere. Anywhere
+     * else it means two layers are fighting over the same selector.
+     */
+    const motionExempt = new Set(['src/styles/motion.css', 'src/styles/responsive.css']);
+    const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
+    const important = styleFiles()
+      .filter((file) => !motionExempt.has(file))
+      .filter((file) => /!important/.test(withoutComments(read(file))));
+    expect(important, `no layer outside reduced-motion may need !important:\n${important.join('\n')}`).toEqual([]);
+  });
 });

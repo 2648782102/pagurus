@@ -161,10 +161,13 @@
 }
 .agent-chat-activity .agent-chat-activity-label { color: var(--ink-soft); font-weight: 600; }
 .agent-chat-activity code { font-size: 9.5px; overflow-wrap: anywhere; }
-.agent-chat-activity-running { border-left-color: var(--steel) !important; }
-.agent-chat-activity-succeeded { border-left-color: var(--signal) !important; }
-.agent-chat-activity-failed { border-left-color: var(--danger) !important; }
-.agent-chat-activity-waiting_approval { border-left-color: var(--amber) !important; }
+/*
+ * The activity state colours live in agent-activity.css and use the semantic
+ * tokens, because the same list renders inside the product surface where the
+ * palette variables are not redefined for the dark theme. Four `!important`
+ * rules here used to override them from the console sheet, which made a
+ * failed step look like a light-theme red on a near-black ground.
+ */
 .agent-chat-approval-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
 .task-record { display: grid; gap: 8px; }
 .task-output-block { display: grid; gap: 6px; }

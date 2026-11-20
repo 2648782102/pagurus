@@ -144,5 +144,7 @@
   letter-spacing: -.01em;
 }
 .agent-blocked p { margin: 0; color: var(--text); font-size: 13px; line-height: 1.7; }
-.agent-blocked-detail { color: var(--text-muted) !important; font-size: 11.5px !important; }
+/* Scoped to the paragraph rule above so specificity wins by structure, not by
+   !important: two classes beat one class plus an element. */
+.agent-blocked p.agent-blocked-detail { color: var(--text-muted); font-size: 11.5px; }
 .agent-blocked-actions { display: flex; align-items: center; gap: 14px; margin-top: 6px; }

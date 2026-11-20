@@ -103,7 +103,9 @@
   line-height: 1.6;
 }
 .sidebar-foot p { margin: 0; }
-.sidebar-foot-label { margin-bottom: 4px !important; color: #c2d0d1; font-weight: 650; }
+/* The sidebar sits on the dark rail, so it names that surface's ink explicitly
+   instead of reaching for !important to beat a generic paragraph rule. */
+.sidebar-foot .sidebar-foot-label { margin-bottom: 4px; color: var(--accent-rail-ink-soft); font-weight: 650; }
 
 .console-main { min-width: 0; outline: none; background: var(--canvas); }
 .console-main:focus-visible { outline: none; box-shadow: inset 0 2px 0 var(--steel); }
