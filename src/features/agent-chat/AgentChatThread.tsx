@@ -284,12 +284,19 @@ export function AgentChatThread({
                 {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
               </span>
               {/*
-               * Said plainly, because the alternative is a reader assuming the
-               * later reply had read the earlier one. It does not say "still
-               * generating": by the time this renders, both have finished.
+               * Facts only, and one that stayed true when the Runtime changed:
+               * this question was submitted while the reply above it was still
+               * being written.
+               *
+               * It used to say more than that — "上一条回复还在生成" — and the
+               * reader was meant to conclude the two replies did not know about
+               * each other, because that was true: a second turn started its
+               * own task. Turns are queued now, and the queued one is given the
+               * transcript as it stands when it runs, answer included. The old
+               * wording would now assert the opposite of what happened.
                */}
               {concurrent && (
-                <span className="agent-chat-concurrent-note">发出时，上一条回复还在生成</span>
+                <span className="agent-chat-concurrent-note">上一条回复生成中时发出</span>
               )}
               {STATE_LABELS[message.state] && (
                 <span className="agent-chat-state-label" role="status">

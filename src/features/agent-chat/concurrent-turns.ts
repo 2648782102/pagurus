@@ -24,18 +24,25 @@ function isReply(message: AgentChatMessage): boolean {
  * The user messages that were asked while an earlier reply was still being
  * written.
  *
- * The Runtime accepts a second message mid-generation by starting its own task
- * (`tests/agent-chat-concurrent.test.ts` asserts exactly that, and the composer
- * says so: "正在等待回复；你可以继续写下一条"). Each task is given the
- * transcript as it stood when it was asked, so the two replies are written
- * without knowledge of each other and land side by side. Read as one exchange,
- * that says something false about what each reply knew.
+ * The Runtime used to accept a second message mid-generation by starting its
+ * own task, so the two replies were written without knowledge of each other and
+ * landed side by side — read as one exchange, that said something false about
+ * what each reply knew. Those conversations are still in the store, and this is
+ * what marks them.
  *
- * Which turns were concurrent is recoverable from published fields alone, so it
+ * It no longer describes new conversations. A turn asked mid-reply is queued
+ * now (`startNextQueuedTurn` builds its prompt from the transcript at the time
+ * it runs, which includes the answer in front of it), so the later reply does
+ * see the earlier one. The reader still sees a `true` here for a queued turn —
+ * the question really was asked while a reply was being written — which is why
+ * the UI must not draw the old conclusion from it. See the note in
+ * `AgentChatThread`.
+ *
+ * Which turns those were is recoverable from published fields alone, so it
  * survives a reload: a reply cannot have finished before the question asked
  * after it was accepted. If an assistant message's `updatedAt` is later than a
- * following user message's `updatedAt`, that user message arrived while the
- * reply was still being generated.
+ * following user message's, that user message arrived while the reply was
+ * still being generated.
  *
  * `updatedAt` moves as a message streams, so the comparison is against the
  * reply's *last* update — exactly what is needed: it is later than the question
