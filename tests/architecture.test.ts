@@ -258,12 +258,57 @@ describe('front-end architecture boundaries', () => {
   });
 
   it('keeps presentation modules free of Runtime transport calls', () => {
-    // Type-only imports are data shapes, not transport calls. A value import
-    // from shared/api would make a presentation module own fetching.
-    const transports = /import\s+(?!type\b)[^;]*?from\s+['"][^'"]*shared\/api\/[^'"]*['"]/;
-    const offenders = sourceFiles('src/app')
+    /*
+     * Type-only imports are data shapes, not transport calls. A value import
+     * from shared/api would make a presentation module own fetching.
+     *
+     * Every `.tsx` in the tree, not two directories. This rule was written for
+     * `src/app` and `src/shared/ui` and then left there while the code moved
+     * into `src/features` and `src/agent`: `RuntimeDataPanel` held four
+     * transport calls and its own phase machine, and the test that exists to
+     * forbid exactly that reported nothing, because it was not looking.
+     *
+     * A component may still import a pure formatter (`formatSupportBundle`,
+     * `conversationKindLabel`) — those are display functions that happen to be
+     * typed against the contract. The marker for a transport call is that it
+     * returns a promise; anything else is a value import that a component is
+     * entitled to.
+     */
+    /*
+     * A component may import a formatter — `formatSupportBundle`,
+     * `conversationKindLabel` — because those are display helpers typed against
+     * the contract. What it may not import is a request, and in this codebase
+     * that is exactly "returns a promise": every client function in
+     * `shared/api` is `async`; no formatter is.
+     *
+     * The check resolves each imported name in the module it came from rather
+     * than keeping a list of allowed names. A list would be an exception
+     * mechanism with extra steps.
+     */
+    const returnsPromise = (modulePath: string, name: string): boolean => {
+      const source = read(modulePath);
+      return new RegExp(
+        `export\\s+(?:async\\s+)?function\\s+${name}\\s*\\([^)]*\\)\\s*:\\s*Promise<`,
+        'm',
+      ).test(source) || new RegExp(`export\\s+const\\s+${name}\\s*=\\s*async`, 'm').test(source);
+    };
+    const presentationFiles = sourceFiles('src/app')
       .concat(sourceFiles('src/shared/ui'))
-      .filter((file) => transports.test(read(file)));
+      .concat(sourceFiles('src/features').filter((file) => file.endsWith('.tsx')))
+      .concat(sourceFiles('src/agent').filter((file) => file.endsWith('.tsx')));
+    const offenders = presentationFiles.filter((file) => {
+      const source = read(file);
+      for (const match of source.matchAll(/import\s+(?!type\b)\{([^}]*)\}\s+from\s+['"]([^'"]*shared\/api\/[^'"]*)['"]/g)) {
+        const names = match[1]!
+          .split(',')
+          .map((entry) => entry.trim())
+          .filter((entry) => entry.length > 0 && !entry.startsWith('type '))
+          .map((entry) => entry.split(/\s+as\s+/)[0]!.trim());
+        const module = match[2]!.replace(/^[\s\S]*shared\/api\//, 'src/shared/api/').replace(/\.js$/, '.ts');
+        if (names.some((name) => returnsPromise(module, name))) return true;
+      }
+      return false;
+    });
     expect(offenders, `presentation modules must receive typed data, not call the API:\n${offenders.join('\n')}`)
       .toEqual([]);
   });

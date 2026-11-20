@@ -1,13 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
-import {
-  createBackup, formatSupportBundle, getDiagnostics, getRuntimeData, getSupportBundle,
-  type BackupResult, type DiagnosticCheck, type RuntimeDataInfo, type SupportBundle,
-} from '../../shared/api/operations.js';
+import { formatSupportBundle, type DiagnosticCheck } from '../../shared/api/operations.js';
 import { Button, Section, StatusDot, Tag } from '../../shared/ui/primitives.js';
-import { errorMessage } from '../../shared/ui/errors.js';
-
-type Phase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
+import { useRuntimeData } from './use-runtime-data.js';
 
 /**
  * "Where is my data, and is my environment healthy?"
@@ -17,97 +12,24 @@ type Phase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
  * redacted check list, and never shows contents.
  */
 export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | null }) {
-  const [phase, setPhase] = useState<Phase>('checking');
-  const [data, setData] = useState<RuntimeDataInfo | null>(null);
-  const [checks, setChecks] = useState<readonly DiagnosticCheck[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { phase, data, checks, error, notice, busy, backup, bundle, reload, runBackup, loadBundle, reportNotice } =
+    useRuntimeData(runtime);
+  /* Local to the panel: the path being typed and the copy acknowledgement. */
   const [target, setTarget] = useState('');
-  const [backup, setBackup] = useState<BackupResult | null>(null);
-  const [bundle, setBundle] = useState<SupportBundle | null>(null);
-  const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
-  /** Errors from backup/support actions; separate from the panel's load phase. */
-  const [notice, setNotice] = useState<string | null>(null);
-
-  /*
-   * The Runtime does not advertise these routes as a capability, so gating on
-   * one would disable the panel forever. Probe instead: a 404 means an older
-   * Runtime, which is a genuine "unsupported", while other failures are errors.
-   */
   const supported = runtime !== null;
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (runtime === null) {
-      setPhase('checking');
-      return;
-    }
-    if (!supported) {
-      setPhase('unsupported');
-      return;
-    }
-    setPhase('loading');
-    setError(null);
-    try {
-      const [info, results] = await Promise.all([getRuntimeData(signal), getDiagnostics(signal)]);
-      if (signal?.aborted) return;
-      setData(info);
-      setChecks(results);
-      setPhase('ready');
-    } catch (cause) {
-      if (signal?.aborted) return;
-      if (/HTTP\s404/.test(cause instanceof Error ? cause.message : '')) {
-        setPhase('unsupported');
-        return;
-      }
-      setError(errorMessage(cause, '读取运行时数据失败'));
-      setPhase('error');
-    }
-  }, [runtime, supported]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
-
-  const runBackup = async () => {
-    if (target.trim().length === 0) {
-      setNotice('请填写一个绝对路径，例如 /Users/你/Desktop/conchbase-backup.sqlite');
-      return;
-    }
-    setBusy(true);
-    setNotice(null);
-    try {
-      setBackup(await createBackup(target.trim()));
-      await load();
-    } catch (cause) {
-      setNotice(errorMessage(cause, '备份失败'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const loadBundle = async () => {
-    setBusy(true);
-    setNotice(null);
-    try {
-      setBundle(await getSupportBundle());
-    } catch (cause) {
-      setNotice(errorMessage(cause, '无法生成支持包'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const copyBundle = async () => {
+  const copyBundle = (): void => {
     if (!bundle) return;
-    try {
-      await navigator.clipboard.writeText(formatSupportBundle(bundle));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setNotice('复制失败：浏览器未授予剪贴板权限，可手动选择文本复制。');
-    }
+    /* The copy result is presentation; the bundle itself comes from the hook. */
+    void navigator.clipboard.writeText(formatSupportBundle(bundle)).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      },
+      /* The hook cannot see this one: the refusal happens in the browser. */
+      () => reportNotice('复制失败：浏览器未授予剪贴板权限，可手动选择文本复制。'),
+    );
   };
 
   return (
@@ -116,7 +38,7 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
       id="runtime-data-title"
       title="数据与诊断"
       description="数据库位置、体积与环境检查；只读，不含内容"
-      action={<Button size="sm" type="button" onClick={() => void load()}
+      action={<Button size="sm" type="button" onClick={reload}
         disabled={!supported || phase === 'loading'}>
         {phase === 'loading' ? '读取中…' : '刷新'}
       </Button>}
@@ -168,7 +90,7 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
                 aria-label="备份目标绝对路径"
               />
             </label>
-            <Button size="sm" type="button" disabled={busy} onClick={() => void runBackup()}>
+            <Button size="sm" type="button" disabled={busy} onClick={() => runBackup(target)}>
               {busy ? '处理中…' : '备份'}
             </Button>
           </div>
