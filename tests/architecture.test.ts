@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -24,11 +24,209 @@ function styleFiles(): string[] {
     .sort();
 }
 
-/** Strip comments so prose that mentions a token does not count as a use. */
-const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
+/**
+ * Strip comments so prose that mentions a token does not count as a use.
+ *
+ * Newlines inside a comment are kept, because rule checks report a line number
+ * and a collapse would point at the wrong rule.
+ */
+const withoutComments = (source: string) =>
+  source.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ''));
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
+}
+
+/**
+ * Palette entries that carry no theme: a typeface, a monospace alias, or a
+ * corner radius. They cannot leak a colour, so the guard ignores them.
+ */
+const THEME_NEUTRAL = new Set(['font-sans', 'font-mono', 'mono', 'radius-lg', 'radius-md', 'radius-sm']);
+
+/** The scope the product surface renders inside, in either theme. */
+const PRODUCT_SCOPE = /\.agent-app(?:-blocked)?\b/;
+
+/**
+ * Names of the custom properties a rule declares, without the `--` prefix so
+ * they can be compared against the identifiers inside `var(--…)`.
+ */
+function declaredBy(rule: CssRule): string[] {
+  return [...rule.body.matchAll(/(?:^|;)[ \t]*--([\w-]+)[ \t]*:/gm)].map((match) => match[1]!);
+}
+
+/**
+ * The palette entries a product-facing rule must not read.
+ *
+ * A palette token is only a leak when the product surface inherits the console
+ * value. `--rust` is safe because the dark Agent theme redefines it; `--steel`
+ * is not, because nothing does, so a rule inside the dark chat resolves it to
+ * the light teal that was meant for the console. Deriving the set instead of
+ * hard-coding it means the guard follows the theme rather than a stale list,
+ * and stops objecting the moment a token is properly themed.
+ */
+function unthemedPalette(): Set<string> {
+  const rules = styleFiles().flatMap(cssRules);
+  /*
+   * The palette is what the console entry declares on the document root. A
+   * shared scale like `--space-2` also lives there, but it is not themed by
+   * design — it is a length, identical on both surfaces — so it never leaks.
+   */
+  const palette = new Set(
+    rules
+      .filter((rule) => rule.file === 'src/styles/tokens.css')
+      .filter((rule) => rule.selectors.includes(':root'))
+      .flatMap(declaredBy),
+  );
+  const themed = new Set<string>();
+
+  for (const rule of rules) {
+    if (!rule.selectors.some((selector) => PRODUCT_SCOPE.test(selector))) continue;
+    for (const name of declaredBy(rule)) themed.add(name);
+  }
+
+  return new Set([...palette].filter((name) => !themed.has(name) && !THEME_NEUTRAL.has(name)));
+}
+
+/**
+ * Every file the product surface can load, found by following relative imports
+ * from `src/agent`. A file-name pattern would miss `conversation.css`, whose
+ * rules reach the product through `AgentChatThread`, and it would miss the
+ * `shared/ui` primitives the product chrome renders.
+ */
+function productModules(): string[] {
+  const seen = new Set<string>();
+  const queue = sourceFiles('src/agent');
+  while (queue.length > 0) {
+    const file = queue.shift()!;
+    if (seen.has(file)) continue;
+    seen.add(file);
+    for (const match of read(file).matchAll(/from\s+['"](\.[^'"]+)['"]/g)) {
+      const base = path.normalize(path.join(path.dirname(file), match[1]!)).replace(/\.js$/, '');
+      for (const extension of ['.tsx', '.ts']) {
+        const candidate = `${base}${extension}`;
+        if (!seen.has(candidate) && existsSync(path.join(repositoryRoot, candidate))) queue.push(candidate);
+      }
+    }
+  }
+  return [...seen].sort();
+}
+
+interface CssRule {
+  readonly file: string;
+  readonly line: number;
+  readonly selectors: readonly string[];
+  readonly body: string;
+}
+
+/**
+ * Flat CSS reader. Comments are stripped first so prose that quotes a
+ * declaration cannot trip a check, and `@`-blocks are skipped so a media query
+ * or keyframe wrapper is not mistaken for a selector.
+ */
+function cssRules(relativePath: string): CssRule[] {
+  const source = withoutComments(read(relativePath));
+  const rules: CssRule[] = [];
+  let buffer = '';
+  let index = 0;
+
+  while (index < source.length) {
+    const character = source[index]!;
+    if (character === '{') {
+      const header = buffer.trim();
+      buffer = '';
+      if (header.startsWith('@')) {
+        index += 1;
+        continue;
+      }
+      const close = source.indexOf('}', index);
+      rules.push({
+        file: relativePath,
+        line: source.slice(0, index).split('\n').length,
+        selectors: header.split(',').map((selector) => selector.trim()).filter(Boolean),
+        body: source.slice(index + 1, close),
+      });
+      index = close + 1;
+      continue;
+    }
+    if (character === '}') {
+      buffer = '';
+      index += 1;
+      continue;
+    }
+    buffer += character;
+    index += 1;
+  }
+
+  return rules;
+}
+
+/** Class names a stylesheet declares. Derived from selectors, never from prose. */
+function declaredClasses(rules: readonly CssRule[]): Set<string> {
+  const names = new Set<string>();
+  for (const rule of rules) {
+    for (const selector of rule.selectors) {
+      for (const match of selector.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)) names.add(match[1]!);
+    }
+  }
+  return names;
+}
+
+/** State modifiers ride along on any block, so they never identify a surface. */
+const STATE_MODIFIER = /^(?:is|has)-/;
+
+/**
+ * The class names the product surface can actually render.
+ *
+ * Read through every string and template literal in the product module
+ * closure, then intersected with what the stylesheets declare. Indirect on
+ * purpose: parsing `className` alone misses `cx('ui-button', …)` in the shared
+ * primitives, and it misses template interpolation — `agent-chat-state-${…}`
+ * renders classes that appear nowhere in the source as a whole word.
+ */
+function productClasses(): Set<string> {
+  const declared = declaredClasses(styleFiles().flatMap(cssRules));
+  const reachable = new Set<string>();
+  const prefixes = new Set<string>();
+
+  for (const file of productModules()) {
+    for (const match of read(file).matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`]*)`/g)) {
+      const literal = match[1] ?? match[2] ?? match[3] ?? '';
+      for (const segment of literal.split(/\$\{[^}]*\}/)) {
+        for (const token of segment.match(/[A-Za-z][\w-]*/g) ?? []) {
+          if (declared.has(token)) reachable.add(token);
+          /*
+           * A template prefix implies every declared class under it. Only a
+           * namespaced prefix does: `agent-chat-state-` and `ui-button-` each
+           * name one family, while `status-` is a bare word both surfaces
+           * share, and matching it would drag console-only classes like
+           * `status-dot` into scope.
+           */
+          else if (token.endsWith('-') && token.slice(0, -1).includes('-')) prefixes.add(token);
+        }
+      }
+    }
+  }
+
+  for (const name of declared) {
+    if ([...prefixes].some((prefix) => name.startsWith(prefix))) reachable.add(name);
+  }
+  return reachable;
+}
+
+/**
+ * Whether a selector can style the product surface.
+ *
+ * Every selector in a comma list counts, because one declaration block applies
+ * to all of them. Every compound counts too, because a product ancestor still
+ * paints inside the product — `.agent-chat-thread .console-note` lands on the
+ * dark surface even though its rightmost class belongs to the console.
+ */
+function reachesProduct(selectors: readonly string[], product: ReadonlySet<string>): boolean {
+  return selectors.some((selector) =>
+    [...selector.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)]
+      .map((match) => match[1]!)
+      .filter((name) => !STATE_MODIFIER.test(name))
+      .some((name) => product.has(name)));
 }
 
 describe('front-end architecture boundaries', () => {
@@ -129,25 +327,26 @@ describe('front-end architecture boundaries', () => {
 
   it('keeps the product surface on semantic tokens, and free of !important', () => {
     /*
-     * The agent surface shares class names with the console panel, but only the
-     * console redefines the palette variables. A rule in a shared sheet that
-     * uses `var(--steel)` therefore resolves to the light value inside the dark
-     * product surface — which is how four `!important` activity colours ended
-     * up painting light-theme red on a near-black ground.
+     * The agent surface shares class names with the console panel, but the
+     * palette is re-themed for the product only where `agent-tokens.css` says
+     * so. A rule that reaches the product and reads an unthemed entry resolves
+     * to the light value — which is how four `!important` activity colours
+     * painted light-theme red on a near-black ground.
+     *
+     * Scope is decided per rule, not per file: the surface a rule paints is a
+     * property of its selector, and the shared sheets mix both. `conversation.css`
+     * is imported once and serves the console panel and the product chat alike.
      */
-    const palette = /var\(--(?:steel|signal|amber|danger|ink|paper|line|muted|faint|rust|canvas|canvas-deep|navy|navy-soft|rule|paper-inset|paper-raised|steel-ink|steel-wash|signal-wash|amber-wash|danger-wash|rust-strong|rust-wash|shadow-card|content-width|rail-width|topbar-height)[a-z-]*\)/;
-    /*
-     * Scope: what the agent surface renders. Those sheets are shared with the
-     * console panel, and only the console root redefines the palette, so a
-     * palette reference there silently resolves to the light value on the dark
-     * product surface. Console-only sheets legitimately use their own palette
-     * and are out of scope here.
-     */
-    const agentSheets = styleFiles()
-      .filter((file) => /agent-[a-z-]+\.css$/.test(file))
-      .filter((file) => !file.endsWith('agent-tokens.css'));
-    const offenders = agentSheets.filter((file) => palette.test(withoutComments(read(file))));
-    expect(offenders, `agent-surface sheets must use semantic tokens, not the palette:\n${offenders.join('\n')}`).toEqual([]);
+    const product = productClasses();
+    const unthemed = unthemedPalette();
+    const offenders = styleFiles()
+      .flatMap(cssRules)
+      .filter((rule) => reachesProduct(rule.selectors, product))
+      .filter((rule) => [...rule.body.matchAll(/var\(--([\w-]+)\)/g)]
+        .some((match) => unthemed.has(match[1]!)))
+      .map((rule) => `${rule.file}:${rule.line} ${rule.selectors.join(', ')}`);
+    expect(offenders, `product-facing rules must use semantic tokens, not the palette:\n${offenders.join('\n')}`)
+      .toEqual([]);
 
     /*
      * `!important` is required in exactly one place: a reduced-motion override

@@ -101,6 +101,12 @@
   /* Action colour: the dark-theme rust must stay legible on blue-black. */
   --rust: #e09770;
   --rust-strong: #f0ac86;
+  /*
+   * The wash has to follow the action colour. Left alone it resolves to the
+   * light theme's pale peach, which paints a near-white block on a near-black
+   * ground — the same class of leak as the activity colours.
+   */
+  --rust-wash: #2a1d1a;
   --ag-action-contrast: #241108;
 
   /* On a near-black ground a light shadow is invisible and a grey one looks
