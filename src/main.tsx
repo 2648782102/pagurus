@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App.js';
-import { resolveSurfaceFromLocation } from './app/surface.js';
+import { resolveSurfaceFromLocation } from './shared/ui/surface.js';
 import { AgentApp } from './agent/AgentApp.js';
 import './styles.css';
 

@@ -4,7 +4,7 @@ import {
   consoleSurfaceHref,
   resolveSurface,
   resolveSurfaceFromLocation,
-} from '../src/app/surface.js';
+} from '../src/shared/ui/surface.js';
 
 describe('surface resolution', () => {
   it('defaults to the Agent surface', () => {

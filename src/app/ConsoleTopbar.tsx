@@ -1,5 +1,5 @@
 import type { RuntimeConnectionState } from '../features/runtime-status/useRuntimeStatus.js';
-import { agentSurfaceHref } from './surface.js';
+import { agentSurfaceHref } from '../shared/ui/surface.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '正在检查',

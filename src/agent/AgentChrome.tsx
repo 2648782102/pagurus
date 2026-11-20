@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { Button } from '../shared/ui/primitives.js';
-import { consoleSurfaceHref } from '../app/surface.js';
+import { consoleSurfaceHref } from '../shared/ui/surface.js';
 
 /**
  * The product's only persistent chrome: one thin bar.

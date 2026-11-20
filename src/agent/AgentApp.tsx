@@ -4,7 +4,7 @@ import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js
 import { AgentChatComposer } from '../features/agent-chat/AgentChatComposer.js';
 import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
 import { Button } from '../shared/ui/primitives.js';
-import { consoleSurfaceHref } from '../app/surface.js';
+import { consoleSurfaceHref } from '../shared/ui/surface.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentChrome } from './AgentChrome.js';
 import { useAgentTheme } from './useAgentTheme.js';

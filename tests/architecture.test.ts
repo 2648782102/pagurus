@@ -274,6 +274,65 @@ describe('front-end architecture boundaries', () => {
     expect(offenders, `shared modules must not import feature modules:\n${offenders.join('\n')}`).toEqual([]);
   });
 
+  it('keeps imports pointing down, one layer at a time', () => {
+    /*
+     * Four layers, and a module may only import from below itself:
+     *
+     *     app / agent   the two entries, side by side
+     *     features      one product area each
+     *     shared        transport, contracts, primitives
+     *
+     * `agent` and `app` are peers. They are the two surfaces of one build, and
+     * neither owns the other: a helper both need belongs in `shared`, which is
+     * what happened to `surface.ts` when both entries reached for it. Without
+     * this rule that showed up as `agent → app`, which is the same shape as a
+     * component importing its own page.
+     */
+    const allowed: Readonly<Record<string, readonly string[]>> = {
+      agent: ['features', 'shared'],
+      app: ['features', 'shared'],
+      features: ['shared'],
+      shared: [],
+    };
+    /*
+     * Resolve the path, do not read the specifier. `../agents/x` from
+     * `features/task-history` is `features/agents/x` — a sibling feature —
+     * while `../shared/x` from the same file is a layer below. Only the
+     * resolved path tells them apart.
+     */
+    const layerOf = (resolved: string): string | null => {
+      const match = /^src\/([a-z]+)\//.exec(resolved);
+      return match && match[1]! in allowed ? match[1]! : null;
+    };
+    const offenders: string[] = [];
+    for (const [layer, targets] of Object.entries(allowed)) {
+      for (const file of sourceFiles(`src/${layer}`)) {
+        for (const match of read(file).matchAll(/from\s+['"](\.[^'"]+)['"]/g)) {
+          const resolved = path
+            .normalize(path.join(path.dirname(file), match[1]!))
+            .replace(/\.js$/, '');
+          const target = layerOf(resolved);
+          if (target === null) continue;
+          /*
+           * A file may import within its own layer — except in `features`,
+           * where each directory is a separate product area. `features/a` and
+           * `features/b` share a layer name but not a purpose, and one
+           * importing the other is the horizontal dependency this rejects.
+           */
+          if (target === layer) {
+            if (layer !== 'features') continue;
+            /* `src/features/<area>/…` — the area is the third segment. */
+            const area = (source: string): string => source.split('/')[2] ?? '';
+            if (area(file) === area(resolved)) continue;
+          }
+          if (targets.includes(target)) continue;
+          offenders.push(`${file} → ${resolved}`);
+        }
+      }
+    }
+    expect(offenders, `imports must point down, never sideways or up:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
   it('keeps presenters from accepting an entire controller', () => {
     const offenders = sourceFiles('src/app')
       .concat(sourceFiles('src/features'))
