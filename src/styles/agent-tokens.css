@@ -60,6 +60,18 @@
   --ag-measure: 44rem;
   --ag-rail-width: 272px;
   --ag-radius: 3px;
+
+  /*
+   * One focus ring, one press response.
+   *
+   * The product surface has its own controls — bare buttons, icon buttons,
+   * text links — because a reading app should not look like a form. What those
+   * controls must still share is how they announce focus and acknowledge a
+   * press, or a keyboard user has to relearn the interface one component at a
+   * time.
+   */
+  --ag-focus-ring: 0 0 0 2px var(--ag-paper), 0 0 0 4px var(--ag-tide);
+  --ag-press: scale(.97);
 }
 
 /*

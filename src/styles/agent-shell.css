@@ -161,3 +161,55 @@
   flex-direction: column;
   min-height: 0;
 }
+
+/*
+ * The response every product control shares.
+ *
+ * The Agent surface has several kinds of control — bare text buttons, icon
+ * buttons, pill buttons, link-shaped actions — and they are deliberately
+ * different shapes. What they were not consistent about is feedback: some had a
+ * focus ring, some relied on the browser default, and none gave a press.
+ *
+ *   focus   one ring, drawn outside the element so it never covers the label
+ *   press   a barely-there scale, so a click feels acknowledged
+ *
+ * The press scale is 0.97 rather than something visible: anything larger reads
+ * as a bounce, and bounce says "playful" on a surface built for reading.
+ *
+ * `:active` is scoped to the enabled state so a disabled control does not
+ * respond, and the scale is dropped under reduced motion — it is movement, and
+ * the setting is about not being moved.
+ */
+.agent-app button:not(:disabled),
+.agent-app [role='button']:not([aria-disabled='true']),
+.agent-app a[href] {
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
+}
+
+.agent-app button:focus-visible,
+.agent-app [role='button']:focus-visible,
+.agent-app a[href]:focus-visible {
+  outline: none;
+  box-shadow: var(--ag-focus-ring);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .agent-app button:not(:disabled):active,
+  .agent-app [role='button']:not([aria-disabled='true']):active {
+    transform: var(--ag-press);
+  }
+}
+
+/*
+ * A disabled control stays readable. Dimming it to near-invisible makes a
+ * reader think the text is gone rather than that the control is unavailable.
+ */
+.agent-app button:disabled,
+.agent-app [aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: .55;
+}
