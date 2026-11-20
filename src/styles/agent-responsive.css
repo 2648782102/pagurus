@@ -8,13 +8,24 @@
 
 @media (max-width: 720px) {
   .agent-chrome { gap: 10px; padding: 0 12px; }
+  /*
+   * Below 720px the title steps aside, as it always has. An attempt to keep it
+   * by giving it a floor pushed the actions under each other — the row has
+   * 220px of buttons and no spare width at 420px, so something has to go, and
+   * an action is a way out while a truncated title is not. The thread name is
+   * still one tap away in 对话记录.
+   */
   .agent-chrome-thread, .agent-chrome-divider { display: none; }
   .agent-chrome-status { display: none; }
   /* Except on the blocked screen, where the connection state is the subject. */
   .agent-app-blocked .agent-chrome-status { display: inline-flex; }
-  /* Two actions must stay distinguishable at 320–420px. The history action
-     keeps a text label; the primary action is already visually distinct by
-     fill, so it can tighten before either label is truncated. */
+  /*
+   * Five actions — theme, console, history, context, new thread — at 420px is
+   * 220px of buttons plus gaps; the row cannot also hold a title. They tighten
+   * rather than any being dropped: the console link is how a reader returns to
+   * the operator surface, and hiding it would make the shipped app a one-way
+   * door.
+   */
   .agent-chrome-actions { gap: 6px; }
   .agent-chrome-actions .ui-button-pill { padding: 6px 10px; font-size: 11px; }
   /* The blocked screen is a short message, not a measured column: top-align it
