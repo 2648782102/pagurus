@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import type {
   AgentChatActivity,
   AgentChatMessage,
@@ -158,6 +158,7 @@ function PendingApproval({
   readonly busy: boolean;
   readonly onDecision: (assistantMessageId: string, decision: 'approved' | 'rejected') => void;
 }) {
+  const approvalBlockedId = useId();
   return (
     <section className="agent-chat-approval" aria-label="待批准的改动">
       <p className="agent-chat-approval-kicker">需要你的批准</p>
@@ -170,10 +171,31 @@ function PendingApproval({
         </figure>
       )}
       <div className="agent-chat-approval-actions">
-        <Button variant="primary" size="sm" type="button" disabled={busy}
-          onClick={() => onDecision(message.id, 'approved')}>批准并继续</Button>
-        <Button size="sm" type="button" disabled={busy}
-          onClick={() => onDecision(message.id, 'rejected')}>拒绝</Button>
+        {/*
+         * `busy` means a request is in flight somewhere in this conversation,
+         * not that this message is waiting for a decision — a reader can be
+         * sending a new message while an older task sits blocked on approval.
+         * It is also not `disabled`: that removes the button from the tab
+         * order, and the approval is the only way to unblock the task, so a
+         * keyboard reader would have no way out. Same treatment as the Send
+         * button: stay focusable, and decline the click.
+         */}
+        <Button variant="primary" size="sm" type="button"
+          aria-disabled={busy}
+          aria-describedby={busy ? approvalBlockedId : undefined}
+          onClick={() => { if (busy) return; onDecision(message.id, 'approved'); }}>批准并继续</Button>
+        <Button size="sm" type="button"
+          aria-disabled={busy}
+          aria-describedby={busy ? approvalBlockedId : undefined}
+          onClick={() => { if (busy) return; onDecision(message.id, 'rejected'); }}>拒绝</Button>
+        {/*
+         * The visual state already says "not now", but not *why*. A tooltip
+         * covers a mouse reader; this covers everyone else, including a screen
+         * reader, which announces it as the buttons' description.
+         */}
+        {busy && (
+          <p id={approvalBlockedId} className="sr-only">上一条消息正在发送，稍后即可处理这次审批。</p>
+        )}
       </div>
     </section>
   );

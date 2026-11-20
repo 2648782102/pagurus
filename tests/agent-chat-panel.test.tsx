@@ -222,6 +222,48 @@ describe('Agent Chat panel', () => {
     expect(screen.getByRole('button', { name: '批准并继续' })).toBeTruthy();
   });
 
+  it('keeps the approval buttons reachable while a request is in flight', () => {
+    /*
+     * `busy` is a request in flight somewhere in this conversation, not "this
+     * message is waiting for a decision" — a reader sending a new message must
+     * still be able to answer the approval in front of them. A `disabled`
+     * button also leaves the tab order, and the approval is the only way out of
+     * a blocked task, so a keyboard reader would be stuck. The button stays
+     * focusable and declines the click instead.
+     */
+    const onDecision = vi.fn();
+    render(
+      <AgentChatThread
+        messages={[{
+          id: `amsg_${'5'.repeat(24)}`, sequence: 1, author: 'assistant', body: '',
+          state: 'waiting_approval', taskId: 'task_gamma', error: null, phase: 'human',
+          progress: null, updatedAt: '2026-11-15T00:00:00.000Z', replyToId: null,
+          activity: [{ id: 'approval-3', kind: 'approval', label: '等待审批：workspace_write', state: 'waiting_approval', detail: null }],
+        }]}
+        agentName="文件助手"
+        busy
+        onDecision={onDecision}
+      />,
+    );
+    const approve = screen.getByRole('button', { name: '批准并继续' });
+    const reject = screen.getByRole('button', { name: '拒绝' });
+    expect(approve.getAttribute('aria-disabled')).toBe('true');
+    expect(approve.hasAttribute('disabled')).toBe(false);
+    expect(reject.getAttribute('aria-disabled')).toBe('true');
+    expect(reject.hasAttribute('disabled')).toBe(false);
+    // A reader who reaches the button needs to know why it declined, not just
+    // that nothing happened. Both buttons point at that sentence.
+    const describedBy = approve.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy!)?.textContent).toContain('稍后');
+    expect(reject.getAttribute('aria-describedby')).toBe(describedBy);
+    approve.focus();
+    expect(document.activeElement).toBe(approve);
+    fireEvent.click(approve);
+    fireEvent.click(reject);
+    expect(onDecision).not.toHaveBeenCalled();
+  });
+
   it('keeps Shift Enter as a newline and hides technical details by default', async () => {
     render(<AgentChatPanel runtime={runtime} />);
     fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));

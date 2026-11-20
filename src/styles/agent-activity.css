@@ -102,3 +102,13 @@
   gap: 8px;
   margin-top: 10px;
 }
+
+/*
+ * A refused approval stays in the tab order, so it must look refused rather
+ * than accept a click that goes nowhere. `disabled` would say the same thing
+ * and also remove the only way out of a blocked task from the keyboard.
+ */
+.agent-chat-approval-actions .ui-button[aria-disabled='true'] {
+  opacity: .45;
+  cursor: not-allowed;
+}
