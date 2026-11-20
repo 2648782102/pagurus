@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   hasBlockStructure,
   parseAnswer,
@@ -39,7 +39,10 @@ export function AgentAnswer({ body, streaming = false }: {
           case 'code':
             return (
               <figure className="agent-answer-code" key={index}>
-                {block.language && <figcaption>{block.language}</figcaption>}
+                <figcaption>
+                  <span className="agent-answer-code-lang">{block.language ?? '代码'}</span>
+                  <CodeCopyButton text={block.text} />
+                </figcaption>
                 <pre><code>{block.text}</code></pre>
               </figure>
             );
@@ -97,4 +100,34 @@ function renderSpan(span: AnswerSpan, index: number) {
     return <a key={index} href={span.href} target="_blank" rel="noreferrer noopener">{span.text}</a>;
   }
   return <span key={index}>{span.text}</span>;
+}
+
+/**
+ * Copy the whole block, not a selection.
+ *
+ * A fenced block is the one place a reader reliably wants the exact text —
+ * commands, config, SQL — and selecting it by hand across wrapped lines is
+ * where copying usually goes wrong.
+ */
+function CodeCopyButton({ text }: { readonly text: string }) {
+  const [state, setState] = useState<'idle' | 'copied'>('idle');
+  return (
+    <button
+      type="button"
+      className={`agent-answer-code-copy${state === 'copied' ? ' is-copied' : ''}`}
+      aria-label={state === 'copied' ? '已复制代码' : '复制代码'}
+      onClick={() => {
+        void navigator.clipboard?.writeText(text).then(
+          () => {
+            setState('copied');
+            window.setTimeout(() => setState('idle'), 1600);
+          },
+          () => undefined,
+        );
+      }}
+    >
+      <span aria-hidden="true">{state === 'copied' ? '✓' : '⧉'}</span>
+      <span>{state === 'copied' ? '已复制' : '复制'}</span>
+    </button>
+  );
 }

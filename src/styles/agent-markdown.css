@@ -3,6 +3,27 @@
    Split from agent-chat.css to stay under the per-layer review ceiling.
    --------------------------------------------------------------------------- */
 
+/* Copy affordance on a fenced block: quiet until hovered or focused. */
+.agent-answer-code-copy {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 10px var(--font-body);
+  cursor: pointer;
+  opacity: 0;
+}
+.agent-answer-code:hover .agent-answer-code-copy,
+.agent-answer-code-copy:focus-visible,
+.agent-answer-code-copy.is-copied { opacity: 1; }
+.agent-answer-code-copy:hover { border-color: var(--border-strong); color: var(--text-strong); }
+.agent-answer-code-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
 /* Tables: the reading column never widens; a wide table scrolls instead. */
 .agent-answer-table {
   overflow-x: auto;

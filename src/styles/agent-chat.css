@@ -156,12 +156,16 @@
   background: var(--surface-sunk);
 }
 .agent-answer-code figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 6px 10px;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
   font: 500 10px var(--font-body);
   letter-spacing: .03em;
 }
+.agent-answer-code-lang { flex: 1 1 auto; min-width: 0; }
 
 .agent-chat-message:hover .agent-message-actions,
 .agent-message-actions:focus-within { opacity: 1; }
