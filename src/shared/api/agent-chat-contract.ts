@@ -92,22 +92,50 @@ export interface AgentChatActivity {
   readonly detail: string | null;
 }
 
+/*
+ * Both predicates enumerate every state rather than defaulting.
+ *
+ * They used to be "terminal, else pending", which meant a state the Runtime
+ * added would silently count as still generating: `done` did exactly that, and
+ * the result was a poll that never stopped and a composer that kept saying a
+ * reply was being written. Spelled out, the compiler names the missing case
+ * when the Runtime adds one, instead of leaving it to be discovered by a
+ * client burning a request every 700 ms.
+ */
+/*
+ * `published` belongs to neither set on purpose: it is an accepted user
+ * message, and its reply is a separate message. Every state has to appear in
+ * one of the three places below, and the compiler enforces that — a state the
+ * Runtime adds fails to compile here until someone decides which it is.
+ */
+const CLASSIFIED_STATES: Readonly<Record<Exclude<AgentChatMessageState, 'published'>, 'terminal' | 'pending'>> = {
+  succeeded: 'terminal',
+  failed: 'terminal',
+  cancelled: 'terminal',
+  done: 'terminal',
+  unavailable: 'terminal',
+  replied: 'terminal',
+  pending: 'pending',
+  thinking: 'pending',
+  streaming: 'pending',
+  organizing: 'pending',
+  waiting_approval: 'pending',
+  waiting_attention: 'pending',
+};
+
 export function isTerminalAgentChatState(state: AgentChatMessageState): boolean {
-  return state === 'replied'
-    || state === 'succeeded'
-    || state === 'failed'
-    || state === 'cancelled'
-    /*
-     * `done` is finished-but-unread. Without this it fell through to "pending"
-     * below, which would keep the poll running and keep the composer telling
-     * the reader a reply was still being written, for a reply that had landed.
-     */
-    || state === 'done'
-    || state === 'unavailable';
+  return state !== 'published' && CLASSIFIED_STATES[state] === 'terminal';
 }
 
+/**
+ * Whether the Runtime still owes this message something.
+ *
+ * `published` is a user message that has been accepted; it is neither pending
+ * nor terminal, because the reply to it is a message of its own. Every other
+ * state is listed above, so a new one cannot fall through by default.
+ */
 export function isPendingAgentChatState(state: AgentChatMessageState): boolean {
-  return !isTerminalAgentChatState(state) && state !== 'published';
+  return state !== 'published' && CLASSIFIED_STATES[state] === 'pending';
 }
 
 export interface AgentChatConversation {
