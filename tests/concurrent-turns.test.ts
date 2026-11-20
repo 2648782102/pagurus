@@ -160,3 +160,25 @@ describe('the done state', () => {
     expect(isPendingAgentChatState(settled.state)).toBe(false);
   });
 });
+
+describe('a real transcript', () => {
+  /*
+   * Verbatim from a Boss conversation where two messages were posted 0.4 s
+   * apart and both completed. The first reply's last update (54.498) lands
+   * after the second question (52.375), which is the whole signal: that
+   * question arrived while the reply was still being written. The second reply
+   * finishing later changes nothing about it.
+   */
+  const real = [
+    // The reply ids are the real ones, so this reads as the Runtime's output and
+    // not as three messages that happen to share a default.
+    message('m1', 1, 'user', '2026-11-20T16:25:51.960Z', '什么是事务隔离级别'),
+    message('m2', 2, 'assistant', '2026-11-20T16:25:54.498Z', '回答一', 'm1'),
+    message('m3', 3, 'user', '2026-11-20T16:25:52.375Z', '可重复读解决了什么'),
+    message('m4', 4, 'assistant', '2026-11-20T16:25:59.343Z', '回答二', 'm3'),
+  ];
+
+  it('marks exactly the turn that was asked mid-reply', () => {
+    expect([...concurrentTurnIds(real)]).toEqual(['m3']);
+  });
+});

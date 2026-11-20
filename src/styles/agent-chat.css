@@ -83,6 +83,13 @@
   cursor: help;
 }
 
+/*
+ * A turn asked mid-reply sits slightly askew from the run of the thread, so the
+ * break in the exchange is visible before the note is read. One pixel, no
+ * colour change: the note carries the meaning, this only hints at it.
+ */
+.agent-chat-message.is-concurrent { border-left-style: dashed; }
+
 .agent-thread-area .agent-chat-message-assistant .agent-chat-message-author {
   color: var(--accent-ink);
   font-weight: 600;
