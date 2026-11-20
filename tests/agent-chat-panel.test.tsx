@@ -282,7 +282,9 @@ describe('Agent Chat panel', () => {
     const notes = screen.getAllByText(/发出时，上一条回复还在生成/);
     // Only the second question was asked mid-reply; the first waited for nothing.
     expect(notes).toHaveLength(1);
-    expect(notes[0]?.textContent).toContain('第 2 条');
+    // The note names no turn: a `sequence` can skip (a Runtime notice occupies
+    // one), so a number would point at the wrong message.
+    expect(notes[0]?.textContent).toBe('发出时，上一条回复还在生成');
   });
 
   it('does not annotate a conversation where every question waited', () => {

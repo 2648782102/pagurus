@@ -5,15 +5,7 @@ import type {
   AgentChatMessageState,
 } from '../../shared/api/agent-chat.js';
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
-import { blockingReply, concurrentTurnIds } from './concurrent-turns.js';
-
-/**
- * A short handle for a message in the thread, so a note can point at a
- * specific earlier turn without quoting it.
- */
-function turnLabel(message: AgentChatMessage): string {
-  return `第 ${message.sequence} 条`;
-}
+import { concurrentTurnIds } from './concurrent-turns.js';
 
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
@@ -50,6 +42,9 @@ const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
   waiting_approval: '等待你批准工具调用',
   waiting_attention: '等待你的确认',
   replied: '',
+  // No label: `done` says "finished, unread" for the Runtime's benefit. To a
+  // reader looking at the thread it is simply a reply that is there.
+  done: '',
   unavailable: '模型服务暂不可用',
 };
 
@@ -72,7 +67,7 @@ function statusTone(state: AgentChatMessageState): 'neutral' | 'success' | 'warn
   if (state === 'failed' || state === 'cancelled' || state === 'unavailable') return 'danger';
   if (state === 'waiting_approval' || state === 'waiting_attention') return 'warning';
   if (state === 'thinking' || state === 'streaming' || state === 'organizing' || state === 'pending') return 'info';
-  if (state === 'replied') return 'success';
+  if (state === 'replied' || state === 'done') return 'success';
   return 'neutral';
 }
 
@@ -294,13 +289,7 @@ export function AgentChatThread({
                * generating": by the time this renders, both have finished.
                */}
               {concurrent && (
-                <span className="agent-chat-concurrent-note">
-                  发出时，上一条回复还在生成
-                  {(() => {
-                    const reply = blockingReply(messages, message.id);
-                    return reply ? `（${turnLabel(reply)}）` : '';
-                  })()}
-                </span>
+                <span className="agent-chat-concurrent-note">发出时，上一条回复还在生成</span>
               )}
               {STATE_LABELS[message.state] && (
                 <span className="agent-chat-state-label" role="status">

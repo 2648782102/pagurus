@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { blockingReply, concurrentTurnIds } from '../src/features/agent-chat/concurrent-turns.js';
+import { isPendingAgentChatState, isTerminalAgentChatState } from '../src/shared/api/agent-chat-contract.js';
 import type { AgentChatMessage } from '../src/shared/api/agent-chat.js';
 
 function message(
@@ -8,6 +9,7 @@ function message(
   author: 'user' | 'assistant' | 'runtime',
   updatedAt: string,
   body = '',
+  replyToId: string | null = author === 'assistant' ? 'u1' : null,
 ): AgentChatMessage {
   return {
     id,
@@ -20,8 +22,19 @@ function message(
     phase: author === 'user' ? 'accepted' : 'terminal',
     progress: null,
     updatedAt,
-    replyToId: null,
+    replyToId,
     activity: [],
+  };
+}
+
+/**
+ * A notice the Runtime writes into the Boss conversation. Authored `assistant`
+ * so it appears in the thread, but it answers nothing — `replyToId` is null.
+ */
+function notice(id: string, sequence: number, updatedAt: string): AgentChatMessage {
+  return {
+    ...message(id, sequence, 'assistant', updatedAt, '项目已归档', null),
+    state: 'done',
   };
 }
 
@@ -78,5 +91,65 @@ describe('which turns were asked while a reply was being written', () => {
 
   it('has no blocking reply for an unknown message', () => {
     expect(blockingReply([message('u1', 1, 'user', '2026-11-20T15:55:00.000Z')], 'nope')).toBeNull();
+  });
+
+  describe('Runtime notices', () => {
+    /*
+     * A notice is authored `assistant` so it renders in the thread, but it is
+     * not a reply: no `replyToId`, no task, and `state` `done` — which a
+     * finished Boss reply also uses, and a Boss reply has no task either. If a
+     * notice counted as a reply, it would be reported as the reply a concurrent
+     * turn was blocked on, and its timestamp would mark the next question as
+     * concurrent even when nothing was generating.
+     */
+    it('does not report a notice as the blocking reply', () => {
+      const messages = [
+        message('u1', 1, 'user', '2026-11-20T15:55:00.000Z', 'A'),
+        message('a1', 2, 'assistant', '2026-11-20T15:55:02.000Z', 'answer to A'),
+        notice('n1', 3, '2026-11-20T15:55:03.000Z'),
+        message('u2', 4, 'user', '2026-11-20T15:55:04.000Z', 'B'),
+      ];
+      expect(blockingReply(messages, 'u2')?.id).toBe('a1');
+    });
+
+    it('does not mark a question concurrent just because a notice came before it', () => {
+      // The notice is newer than the question, but it was never generating.
+      const messages = [
+        message('u1', 1, 'user', '2026-11-20T15:55:00.000Z', 'A'),
+        message('a1', 2, 'assistant', '2026-11-20T15:55:02.000Z', 'answer to A'),
+        notice('n1', 3, '2026-11-20T15:55:07.000Z'),
+        message('u2', 4, 'user', '2026-11-20T15:55:06.000Z', 'B'),
+      ];
+      expect([...concurrentTurnIds(messages)]).toEqual([]);
+    });
+
+    it('still marks a question asked during a real reply that a notice followed', () => {
+      const messages = [
+        message('u1', 1, 'user', '2026-11-20T15:55:00.000Z', 'A'),
+        notice('n1', 2, '2026-11-20T15:55:01.000Z'),
+        message('a1', 3, 'assistant', '2026-11-20T15:55:09.000Z', 'answer to A'),
+        message('u2', 4, 'user', '2026-11-20T15:55:05.000Z', 'B'),
+      ];
+      expect([...concurrentTurnIds(messages)]).toEqual(['u2']);
+      expect(blockingReply(messages, 'u2')?.id).toBe('a1');
+    });
+  });
+});
+
+describe('the done state', () => {
+  /*
+   * The Runtime settles a Boss turn and writes its notices as `done`. The
+   * client contract did not list it, so it fell through `isPending` — which
+   * kept the poll running and told the reader a reply was still being written,
+   * for a reply that had already landed.
+   */
+  it('is finished, not pending', () => {
+    expect(isTerminalAgentChatState('done')).toBe(true);
+    expect(isPendingAgentChatState('done')).toBe(false);
+  });
+
+  it('does not make a settled Boss turn look like it is still generating', () => {
+    const settled = { ...message('a1', 2, 'assistant', '2026-11-20T15:55:02.000Z'), state: 'done' as const };
+    expect(isPendingAgentChatState(settled.state)).toBe(false);
   });
 });

@@ -32,6 +32,13 @@ export type AgentChatMessageState =
   | 'waiting_approval'
   | 'waiting_attention'
   | 'replied'
+  /*
+   * Finished, and the reader has not looked at it yet. The Runtime writes this
+   * on a settled Boss turn and on the notices it adds to the Boss conversation
+   * (a project converging or being archived), so a client that omits it will
+   * meet a state it cannot name.
+   */
+  | 'done'
   | 'unavailable';
 
 export type AgentChatMessagePhase =
@@ -90,6 +97,12 @@ export function isTerminalAgentChatState(state: AgentChatMessageState): boolean 
     || state === 'succeeded'
     || state === 'failed'
     || state === 'cancelled'
+    /*
+     * `done` is finished-but-unread. Without this it fell through to "pending"
+     * below, which would keep the poll running and keep the composer telling
+     * the reader a reply was still being written, for a reply that had landed.
+     */
+    || state === 'done'
     || state === 'unavailable';
 }
 
