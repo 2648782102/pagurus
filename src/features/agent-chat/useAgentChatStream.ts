@@ -6,7 +6,7 @@ import {
   type AgentChatConversation,
   type AgentChatStream,
 } from '../../shared/api/agent-chat.js';
-import { mergeConversation } from './merge-conversation.js';
+import { mergeRefresh, applyFrame, applyMessageFrame } from './merge-conversation.js';
 import { useAbortablePolling, useTicker } from '../../shared/ui/use-poll.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 
@@ -40,10 +40,7 @@ export function useAgentChatStream(options: {
     try {
       const next = await getAgentChatConversation(current.id, signal);
       if (signal?.aborted) return;
-      setConversation((previous) => {
-        if (!previous || previous.id !== next.id) return next;
-        return mergeConversation(previous, next);
-      });
+      setConversation(mergeRefresh(next));
     } catch (cause) {
       if (signal?.aborted) return;
       onError(errorMessage(cause, 'Agent 对话刷新失败'));
@@ -96,25 +93,11 @@ export function useAgentChatStream(options: {
         lastFrameAtRef.current = Date.now();
         setStreamAttempt(0);
         if (frame.kind === 'snapshot' && frame.conversation) {
-          const snapshot = frame.conversation;
-          setConversation(previous => previous && previous.id !== snapshot.id
-            ? previous
-            : previous ? mergeConversation(previous, snapshot) : snapshot);
+          setConversation(applyFrame(frame.conversation));
           return;
         }
         if (frame.kind !== 'message' || !frame.message) return;
-        const incoming = frame.message;
-        setConversation(previous => {
-          if (!previous || previous.id !== current.id) return previous;
-          const index = previous.messages.findIndex((entry) => entry.id === incoming.id);
-          if (index >= 0 && Date.parse(incoming.updatedAt) < Date.parse(previous.messages[index]!.updatedAt)) {
-            return previous;
-          }
-          const messages = index >= 0
-            ? previous.messages.map((entry) => entry.id === incoming.id ? incoming : entry)
-            : [...previous.messages, incoming].sort((left, right) => left.sequence - right.sequence);
-          return { ...previous, messages };
-        });
+        setConversation(applyMessageFrame(frame.message, current.id));
       },
     });
     streamRef.current = stream;

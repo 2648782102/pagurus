@@ -19,6 +19,7 @@ import {
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 import { useAgentChatStream } from './useAgentChatStream.js';
+import { replaceWith } from './merge-conversation.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 
 function errorText(cause: unknown): string {
@@ -71,6 +72,17 @@ export function useAgentChat(
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  /*
+   * Every write to `conversation` goes through here, so the rules about what
+   * counts as a replacement live in one place. These are all command results:
+   * the Runtime just told us what the conversation is, so it replaces.
+   * Streamed frames reach a different entry point that will not accept a
+   * foreign id, and a refresh of the open conversation merges instead.
+   */
+  const applyConversation = useCallback((next: AgentChatConversation | null) => {
+    setConversation(replaceWith(next));
+  }, []);
+
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
 
@@ -109,16 +121,16 @@ export function useAgentChat(
         : undefined;
       if (resumable) {
         try {
-          setConversation(await getAgentChatConversation(resumable.id));
+          applyConversation(await getAgentChatConversation(resumable.id));
         } catch {
-          setConversation(null);
+          applyConversation(null);
         }
       }
       setError(null);
     } catch (cause) {
       setError(errorText(cause));
     }
-  }, [supported]);
+  }, [applyConversation, supported]);
 
   useEffect(() => { void loadAgents({ restoreLatest: autoResume }); }, [autoResume, loadAgents]);
 
@@ -169,7 +181,7 @@ export function useAgentChat(
           ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
           : {}),
       });
-      setConversation(created);
+      applyConversation(created);
       restoreDraft(created.id);
       setDetailsOpen(false);
       void refreshRecent();
@@ -178,14 +190,14 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [busy, models, reasoningEffort, refreshRecent, restoreDraft, selectedAgentId, selectedModelReference, supported]);
+  }, [applyConversation, busy, models, reasoningEffort, refreshRecent, restoreDraft, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
-    setConversation(null);
+    applyConversation(null);
     restoreDraft(null);
     setError(null);
     setDetailsOpen(false);
-  }, [restoreDraft]);
+  }, [applyConversation, restoreDraft]);
 
   /**
    * Start a conversation and immediately say the first thing.
@@ -212,7 +224,7 @@ export function useAgentChat(
         text,
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
       });
-      setConversation(await getAgentChatConversation(created.id));
+      applyConversation(await getAgentChatConversation(created.id));
       restoreDraft(created.id);
       setDetailsOpen(false);
       void refreshRecent();
@@ -221,7 +233,7 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [busy, draft, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
+  }, [applyConversation, busy, draft, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
 
   /**
    * Opens an existing conversation from the history list. Selecting history is
@@ -233,7 +245,7 @@ export function useAgentChat(
     setBusy(true);
     setError(null);
     try {
-      setConversation(await getAgentChatConversation(conversationId));
+      applyConversation(await getAgentChatConversation(conversationId));
       restoreDraft(conversationId);
       setDetailsOpen(false);
     } catch (cause) {
@@ -241,7 +253,7 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [busy]);
+  }, [applyConversation, busy]);
 
   /**
    * Choosing an Agent on the landing panel scopes the history list to that
@@ -265,14 +277,14 @@ export function useAgentChat(
       });
       draftsByConversation.current.delete(current.id);
       setDraft('');
-      setConversation(await getAgentChatConversation(current.id));
+      applyConversation(await getAgentChatConversation(current.id));
       void refreshRecent();
     } catch (cause) {
       setError(errorText(cause));
     } finally {
       setBusy(false);
     }
-  }, [busy, draft, refreshRecent]);
+  }, [applyConversation, busy, draft, refreshRecent]);
 
   const decideApproval = useCallback(async (
     assistantMessageId: string,
@@ -284,13 +296,13 @@ export function useAgentChat(
     setError(null);
     try {
       await decideAgentChatApproval(current.id, { assistantMessageId, decision });
-      setConversation(await getAgentChatConversation(current.id));
+      applyConversation(await getAgentChatConversation(current.id));
     } catch (cause) {
       setError(errorText(cause));
     } finally {
       setBusy(false);
     }
-  }, [busy]);
+  }, [applyConversation, busy]);
 
   const activeAgent = useMemo(
     () => agents.find((agent) => agent.id === (conversation?.agentId ?? selectedAgentId)),
