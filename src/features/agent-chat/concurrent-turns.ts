@@ -40,41 +40,36 @@ function isReply(message: AgentChatMessage): boolean {
  * `updatedAt` moves as a message streams, so the comparison is against the
  * reply's *last* update — exactly what is needed: it is later than the question
  * only if the reply was still changing when the question arrived.
+ *
+ * The walk is by `sequence`, not by array position. "Earlier" is a claim about
+ * the conversation, and a caller's array order is not: an unsorted list would
+ * put a later reply before the question it answered and the turn would go
+ * unmarked, with nothing to show anything was wrong. Ordering here costs one
+ * sort and removes that dependency.
  */
 export function concurrentTurnIds(messages: readonly AgentChatMessage[]): ReadonlySet<string> {
+  const ordered = [...messages].sort((left, right) => left.sequence - right.sequence);
   const concurrent = new Set<string>();
-  for (const [index, message] of messages.entries()) {
+  /*
+   * One pass carrying the latest moment any reply so far was still changing.
+   * A question is concurrent if that moment is later than the question, because
+   * a reply that finished before the question would have an earlier `updatedAt`
+   * and would no longer be the latest. Linear in the thread rather than scanning
+   * the prefix per message, which matters because every streaming frame re-runs
+   * this.
+   */
+  let latestReplyUpdate = Number.NEGATIVE_INFINITY;
+  for (const message of ordered) {
+    if (isReply(message)) {
+      const updatedAt = Date.parse(message.updatedAt);
+      if (!Number.isNaN(updatedAt)) latestReplyUpdate = Math.max(latestReplyUpdate, updatedAt);
+      continue;
+    }
     if (message.author !== 'user') continue;
     const askedAt = Date.parse(message.updatedAt);
     if (Number.isNaN(askedAt)) continue;
-    for (const earlier of messages.slice(0, index)) {
-      if (!isReply(earlier)) continue;
-      const stillWriting = Date.parse(earlier.updatedAt) > askedAt;
-      if (stillWriting) {
-        concurrent.add(message.id);
-        break;
-      }
-    }
+    if (latestReplyUpdate > askedAt) concurrent.add(message.id);
   }
   return concurrent;
 }
 
-/**
- * The reply that was still being written when a concurrent turn was asked.
- *
- * The nearest earlier assistant message is the one that was in flight: an
- * earlier reply that had already finished would have an `updatedAt` before the
- * question, and so would not have marked this turn concurrent at all.
- */
-export function blockingReply(
-  messages: readonly AgentChatMessage[],
-  userMessageId: string,
-): AgentChatMessage | null {
-  const index = messages.findIndex((message) => message.id === userMessageId);
-  if (index < 0) return null;
-  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
-    const candidate = messages[cursor]!;
-    if (isReply(candidate)) return candidate;
-  }
-  return null;
-}
