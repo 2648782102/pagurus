@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Textarea } from '../../shared/ui/primitives.js';
 
@@ -7,9 +8,38 @@ interface AgentChatComposerProps {
   readonly waiting: boolean;
   readonly onDraftChange: (value: string) => void;
   readonly onSend: () => void;
+  /**
+   * Focus the input on mount. Set only for a fresh conversation: a resumed
+   * thread is being read, and stealing focus there jumps the reader's place.
+   */
+  readonly autoFocus?: boolean;
 }
 
-export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend }: AgentChatComposerProps) {
+export function AgentChatComposer({
+  draft, busy, waiting, onDraftChange, onSend, autoFocus = false,
+}: AgentChatComposerProps) {
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
+
+  /*
+   * Grow with the draft, up to a cap.
+   *
+   * A fixed two-row box means a long message, a pasted log, or a multi-step
+   * question is read through a letterbox. Growing with the content keeps the
+   * whole draft visible; the cap stops the composer from eating the thread.
+   */
+  useEffect(() => {
+    const node = inputRef.current;
+    if (!node) return;
+    node.style.height = 'auto';
+    const max = Math.round(window.innerHeight * 0.4);
+    node.style.height = `${Math.min(node.scrollHeight, max)}px`;
+    node.style.overflowY = node.scrollHeight > max ? 'auto' : 'hidden';
+  }, [draft]);
+
   const submit = () => {
     if (draft.trim().length === 0 || busy) return;
     onSend();
@@ -24,8 +54,9 @@ export function AgentChatComposer({ draft, busy, waiting, onDraftChange, onSend 
       <div className="agent-chat-composer-field">
         <Textarea
           id="agent-chat-message"
+          textareaRef={inputRef}
           value={draft}
-          rows={2}
+          rows={1}
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
             // A Chinese or Japanese IME fires Enter to commit a candidate.

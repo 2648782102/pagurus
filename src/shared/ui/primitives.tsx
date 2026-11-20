@@ -84,8 +84,15 @@ export function Select({ className, children, ...rest }: SelectHTMLAttributes<HT
   return <select className={cx('ui-control', 'ui-select', className)} {...rest}>{children}</select>;
 }
 
-export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={cx('ui-control', 'ui-textarea', className)} {...rest} />;
+export function Textarea({
+  className,
+  textareaRef,
+  ...rest
+}: {
+  /** Explicit ref; keeps callers from needing forwardRef. */
+  readonly textareaRef?: Ref<HTMLTextAreaElement>;
+} & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea ref={textareaRef} className={cx('ui-control', 'ui-textarea', className)} {...rest} />;
 }
 
 export function Tag({ tone = 'neutral', children }: { readonly tone?: Tone; readonly children: ReactNode }) {

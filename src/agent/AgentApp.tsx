@@ -271,6 +271,8 @@ export function AgentApp() {
                   waiting={chat.hasPending}
                   onDraftChange={chat.setDraft}
                   onSend={chat.sendMessage}
+                  /* Only an empty thread: a resumed one is being read. */
+                  autoFocus={chat.conversation.messages.length === 0}
                 />
               </div>
             </>
