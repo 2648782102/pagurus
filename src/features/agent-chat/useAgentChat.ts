@@ -47,6 +47,27 @@ export function useAgentChat(
   const [recent, setRecent] = useState<readonly AgentChatConversationSummary[]>([]);
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
   const [draft, setDraft] = useState('');
+  /*
+   * A draft belongs to the conversation it was written in.
+   *
+   * Switching to history and back used to discard whatever was half-written,
+   * which is the one loss a reader cannot undo. Kept in memory only: the
+   * client boundary forbids browser storage, so a reload still starts empty.
+   * The key is the conversation id, or '' for the not-yet-created draft.
+   */
+  const draftsByConversation = useRef<Map<string, string>>(new Map());
+  const draftKey = conversation?.id ?? '';
+
+  const updateDraft = useCallback((value: string) => {
+    setDraft(value);
+    if (value.length === 0) draftsByConversation.current.delete(draftKey);
+    else draftsByConversation.current.set(draftKey, value);
+  }, [draftKey]);
+
+  /** Restore the draft that belongs to the conversation now becoming active. */
+  const restoreDraft = useCallback((conversationId: string | null) => {
+    setDraft(draftsByConversation.current.get(conversationId ?? '') ?? '');
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -149,7 +170,7 @@ export function useAgentChat(
           : {}),
       });
       setConversation(created);
-      setDraft('');
+      restoreDraft(created.id);
       setDetailsOpen(false);
       void refreshRecent();
     } catch (cause) {
@@ -157,14 +178,14 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [busy, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
+  }, [busy, models, reasoningEffort, refreshRecent, restoreDraft, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
     setConversation(null);
-    setDraft('');
+    restoreDraft(null);
     setError(null);
     setDetailsOpen(false);
-  }, []);
+  }, [restoreDraft]);
 
   /**
    * Start a conversation and immediately say the first thing.
@@ -192,7 +213,7 @@ export function useAgentChat(
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
       });
       setConversation(await getAgentChatConversation(created.id));
-      setDraft('');
+      restoreDraft(created.id);
       setDetailsOpen(false);
       void refreshRecent();
     } catch (cause) {
@@ -213,7 +234,7 @@ export function useAgentChat(
     setError(null);
     try {
       setConversation(await getAgentChatConversation(conversationId));
-      setDraft('');
+      restoreDraft(conversationId);
       setDetailsOpen(false);
     } catch (cause) {
       setError(errorText(cause));
@@ -242,6 +263,7 @@ export function useAgentChat(
         text,
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
       });
+      draftsByConversation.current.delete(current.id);
       setDraft('');
       setConversation(await getAgentChatConversation(current.id));
       void refreshRecent();
@@ -287,7 +309,7 @@ export function useAgentChat(
     setSelectedAgentId,
     conversation,
     draft,
-    setDraft,
+    setDraft: updateDraft,
     busy,
     error,
     detailsOpen,

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Textarea } from '../../shared/ui/primitives.js';
 
@@ -19,6 +19,8 @@ export function AgentChatComposer({
   draft, busy, waiting, onDraftChange, onSend, autoFocus = false,
 }: AgentChatComposerProps) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const characters = draft.length;
+  const [pasteNotice, setPasteNotice] = useState(false);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
@@ -58,6 +60,19 @@ export function AgentChatComposer({
           value={draft}
           rows={1}
           onChange={(event) => onDraftChange(event.target.value)}
+          onPaste={(event) => {
+            /*
+             * A pasted transcript can be thousands of lines. The composer
+             * stops growing at 40% of the viewport, so the box itself is safe,
+             * but the reader should know why it stopped rather than assume the
+             * paste was truncated.
+             */
+            const pasted = event.clipboardData?.getData('text') ?? '';
+            if (pasted.length > VERY_LONG_DRAFT && !pasted.includes('\u0000')) {
+              setPasteNotice(true);
+              window.setTimeout(() => setPasteNotice(false), 6000);
+            }
+          }}
           onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>) => {
             // A Chinese or Japanese IME fires Enter to commit a candidate.
             // Sending then would truncate the sentence the person is still
@@ -68,8 +83,13 @@ export function AgentChatComposer({
               submit();
             }
           }}
-          placeholder="说点什么…"
-          disabled={busy}
+          /*
+           * Not disabled while busy: the request is already sent, and locking
+           * the box forces the reader to wait before starting the next
+           * thought. The danger the flag prevented — a second submit — is
+           * handled by `submit()` refusing while busy.
+           */
+          placeholder={busy ? '正在发送上一句…' : '说点什么…'}
         />
         <Button
           className="agent-chat-send"
@@ -90,13 +110,35 @@ export function AgentChatComposer({
           ↑
         </Button>
       </div>
-      <p className="agent-chat-composer-hint" role="status">
-        {busy
-          ? '正在发送…'
-          : waiting
-            ? '正在等待回复…'
-            : 'Enter 发送，Shift + Enter 换行'}
-      </p>
+      <div className="agent-chat-composer-foot">
+        <p className="agent-chat-composer-hint" role="status">
+          {busy
+            ? '正在发送…'
+            : waiting
+              ? '正在等待回复；你可以继续写下一条'
+              : 'Enter 发送，Shift + Enter 换行'}
+        </p>
+        {/*
+         * Length only appears once it is worth knowing: a count from the first
+         * character is noise on a one-sentence question, and a warning that
+         * arrives only when it matters is a warning people read.
+         */}
+        {characters > LONG_DRAFT && (
+          <p className={`agent-chat-composer-count${characters > VERY_LONG_DRAFT ? ' is-over' : ''}`}>
+            {characters.toLocaleString()} 字
+          </p>
+        )}
+      </div>
+      {pasteNotice && (
+        <p className="agent-chat-composer-notice" role="status">
+          已粘贴一大段内容，输入框会在约 40% 屏高处停止增高；继续添加请向上滚动。
+        </p>
+      )}
     </form>
   );
 }
+
+/** A draft long enough that its length is worth showing. */
+const LONG_DRAFT = 600;
+/** Past this, the draft is likely to be cut or cost more than the reader expects. */
+const VERY_LONG_DRAFT = 4000;

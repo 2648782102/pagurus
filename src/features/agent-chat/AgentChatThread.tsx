@@ -197,6 +197,21 @@ export function AgentChatThread({
     container.scrollTop = container.scrollHeight;
   }, [messages]);
 
+  /*
+   * The composer grows with the draft, so the thread box shrinks under it. A
+   * reader who was at the bottom would otherwise find the last lines hidden
+   * behind a taller input, with no scroll event to correct it.
+   */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      if (nearBottomRef.current) container.scrollTop = container.scrollHeight;
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
       className="agent-chat-thread"

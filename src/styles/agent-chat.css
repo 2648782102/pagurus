@@ -243,5 +243,24 @@
    unavailable without disappearing from the keyboard path. */
 .agent-thread-area .agent-chat-send[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
 .agent-thread-area .agent-chat-composer-hint { color: var(--text-faint); font-size: 10px; }
+.agent-chat-composer-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.agent-chat-composer-count {
+  margin: 0;
+  color: var(--text-faint);
+  font: 10px var(--font-code);
+  font-variant-numeric: tabular-nums;
+}
+.agent-chat-composer-count.is-over { color: var(--state-caution-ink); }
+.agent-chat-composer-notice {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
 
 /* --- model indicator ----------------------------------------------------- */
