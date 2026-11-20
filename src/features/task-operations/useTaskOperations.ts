@@ -3,21 +3,17 @@ import {
   cancelTask,
   createTask,
   getTask,
-  listModels,
   retryTask,
   type Task,
 } from '../../shared/api/tasks.js';
 import {
-  getDefaultAgent,
-  listAgents,
-  listProviderModels,
-  supportsAgentManagement,
   getAgent,
   type AgentRecord,
   type ProviderModel,
 } from '../../shared/api/agents.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 import { isActiveTaskState } from '../../shared/ui/task-status.js';
+import { loadAgentCatalog, loadLegacyModels } from '../../shared/api/agent-catalog.js';
 
 interface TaskModel extends ProviderModel {
   legacyId?: string;
@@ -64,20 +60,17 @@ export function useTaskOperations(refreshToken = 0) {
   const loadModels = useCallback(async (signal?: AbortSignal) => {
     setState((current) => ({ ...current, phase: 'loading-models', error: null }));
     try {
-      const agentMode = await supportsAgentManagement(signal);
-      const [models, agents, defaultAgent] = agentMode
-        ? await Promise.all([listProviderModels(signal), listAgents(signal), getDefaultAgent(signal)])
-        : await listModels(signal).then((legacy) => [legacy.map((entry) => ({
-          providerId: 'magpie',
-          modelId: entry.id,
-          reference: `magpie:${entry.id}`,
-          displayName: entry.displayName,
-          capabilities: ['chat'],
-          legacyId: entry.id,
-        })), [], null] as const);
+      const catalog = await loadAgentCatalog(signal);
+      const agentMode = catalog.supportsAgents;
+      /*
+       * This composer still works against an older Runtime: without Agent
+       * management it offers the flat model list instead of Agent + model.
+       */
+      const models = agentMode ? catalog.models : await loadLegacyModels(signal);
+      const { agents, defaultAgentId } = catalog;
       if (signal?.aborted) return;
       const availableAgents = agents.filter((agent) => !agent.archived);
-      const initialAgent = availableAgents.find((agent) => agent.id === defaultAgent?.id);
+      const initialAgent = availableAgents.find((agent) => agent.id === defaultAgentId);
       const retainedAgent = availableAgents.find((agent) => agent.id === selectedAgentIdRef.current);
       const preferredAgent = retainedAgent ?? initialAgent;
       const initialModel = preferredAgent

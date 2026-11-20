@@ -17,23 +17,51 @@ function json(payload: unknown, status = 200): Response { return new Response(JS
 function runtime(): Response { return json({ name: 'Conchbase', version: '0.8.0', state: 'ready', capabilities: ['agents', 'provider-neutral-model-catalog'] }); }
 function catalog(): Response { return json({ models: [{ providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture model', capabilities: ['chat'] }] }); }
 
+/**
+ * Route the Runtime by path instead of by call order.
+ *
+ * The catalog is three independent reads settled together, so their order is
+ * an implementation detail. Positional stubs bound these tests to it: adding a
+ * read, or issuing the same reads in another order, broke every one of them
+ * without a behaviour change. `overrides` handles the calls a test wants to
+ * answer differently — a create, a specific Agent revision list.
+ */
+function serve(overrides: (url: string, init?: RequestInit) => Response | undefined) {
+  return (path: string, init?: RequestInit) => {
+    const url = String(path);
+    const custom = overrides(url, init);
+    if (custom) return Promise.resolve(custom);
+    if (url.endsWith('/v1/runtime')) return Promise.resolve(runtime());
+    if (url.includes('/v1/model-catalog')) return Promise.resolve(catalog());
+    if (url.endsWith('/v1/agents') && init?.method === 'POST') return Promise.resolve(json({ agent: AGENT }, 201));
+    if (url.endsWith('/v1/agents')) return Promise.resolve(json({ agents: [] }));
+    if (url.includes('/v1/agents/')) return Promise.resolve(json({ agent: null }));
+    return Promise.resolve(json({}));
+  };
+}
+
 describe('AgentWorkspace', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   beforeEach(() => { fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock); });
   afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
   it('creates and edits a versioned profile using provider-neutral fields', async () => {
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }))
-      .mockResolvedValueOnce(json({ agent: {
-        ...AGENT,
-        current: { ...REV1, name: 'Research', instructions: 'Be precise' },
-        revisions: [{ ...REV1, name: 'Research', instructions: 'Be precise' }],
-      } }, 201))
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }))
-      .mockResolvedValueOnce(json({ agent: AGENT }));
+    let created = false;
+    fetchMock.mockImplementation(serve((url, init) => {
+      if (url.endsWith('/v1/agents') && init?.method === 'POST') {
+        created = true;
+        return json({
+          agent: {
+            ...AGENT,
+            current: { ...REV1, name: 'Research', instructions: 'Be precise' },
+            revisions: [{ ...REV1, name: 'Research', instructions: 'Be precise' }],
+          },
+        }, 201);
+      }
+      if (url.endsWith('/v1/agents')) return json({ agents: created ? [AGENT] : [] });
+      if (url.includes('/v1/agents/')) return json({ agent: AGENT });
+      return undefined;
+    }));
     const onAgentsChanged = vi.fn();
     render(<AgentWorkspace onAgentsChanged={onAgentsChanged} />);
     fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
@@ -52,9 +80,7 @@ describe('AgentWorkspace', () => {
   });
 
   it('opens the editor from the empty state before the first Agent exists', async () => {
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
+    fetchMock.mockImplementation(serve(() => undefined));
     render(<AgentWorkspace />);
 
     expect(await screen.findByText('还没有 Agent。')).toBeTruthy();
@@ -66,12 +92,16 @@ describe('AgentWorkspace', () => {
   });
 
   it('sends the explicit capability grants and shows the fail-closed empty state', async () => {
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }))
-      .mockResolvedValueOnce(json({ agent: AGENT }, 201))
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }));
+    let created = false;
+    fetchMock.mockImplementation(serve((url, init) => {
+      if (url.endsWith('/v1/agents') && init?.method === 'POST') {
+        created = true;
+        return json({ agent: AGENT }, 201);
+      }
+      if (url.endsWith('/v1/agents')) return json({ agents: created ? [AGENT] : [] });
+      if (url.includes('/v1/agents/')) return json({ agent: AGENT });
+      return undefined;
+    }));
     render(<AgentWorkspace />);
     fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
@@ -91,9 +121,7 @@ describe('AgentWorkspace', () => {
   });
 
   it('rejects an invalid capability name before calling the Runtime', async () => {
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: null }));
+    fetchMock.mockImplementation(serve(() => undefined));
     render(<AgentWorkspace />);
     fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
@@ -105,7 +133,17 @@ describe('AgentWorkspace', () => {
   });
 
   it('shows an explicit unsupported state without calling Agent routes on older runtimes', async () => {
-    fetchMock.mockResolvedValueOnce(json({ name: 'Conchbase', version: '0.7.0', state: 'ready', capabilities: [] }));
+    /*
+     * Deliberately not `serve`: this asserts that an older Runtime produces
+     * exactly one request, so any default the helper adds would hide the very
+     * thing under test.
+     */
+    fetchMock.mockImplementation((path: string) => {
+      if (String(path).endsWith('/v1/runtime')) {
+        return Promise.resolve(json({ name: 'Conchbase', version: '0.7.0', state: 'ready', capabilities: [] }));
+      }
+      return Promise.resolve(json({}));
+    });
     render(<AgentWorkspace />);
     expect(await screen.findByText('当前 Runtime 未开放 Agent 管理')).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -118,12 +156,11 @@ describe('AgentWorkspace', () => {
       id: 'agt_00000000000000000000000000000002',
       isDefault: true,
     };
-    fetchMock
-      .mockResolvedValueOnce(runtime())
-      .mockResolvedValueOnce(json({ agents: [archived, defaultAgent] }))
-      .mockResolvedValueOnce(catalog())
-      .mockResolvedValueOnce(json({ agent: defaultAgent }))
-      .mockResolvedValueOnce(json({ agent: { ...defaultAgent, revisions: [REV1] } }));
+    fetchMock.mockImplementation(serve((url) => {
+      if (url.endsWith('/v1/agents')) return json({ agents: [archived, defaultAgent] });
+      if (url.includes('/v1/agents/')) return json({ agent: { ...defaultAgent, revisions: [REV1] } });
+      return undefined;
+    }));
 
     render(<AgentWorkspace />);
     await screen.findByText('默认 Agent');
@@ -266,12 +303,18 @@ describe('AgentWorkspace', () => {
 
   it('exposes immutable history and uses expected revision for rollback', async () => {
     const revised = { ...AGENT, currentRevisionId: REV2.id, current: REV2, revisions: [REV1, REV2] };
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [AGENT] }))
-      .mockResolvedValueOnce(catalog()).mockResolvedValueOnce(json({ agent: AGENT }))
-      .mockResolvedValueOnce(json({ agent: revised })).mockResolvedValueOnce(runtime())
-      .mockResolvedValueOnce(json({ agents: [revised] })).mockResolvedValueOnce(catalog())
-      .mockResolvedValueOnce(json({ agent: revised })).mockResolvedValueOnce(json({ agent: revised }));
+    let applied = false;
+    fetchMock.mockImplementation(serve((url) => {
+      if (url.includes('/revisions/apply')) { applied = true; return json({ agent: revised }); }
+      if (url.endsWith('/v1/agents')) return json({ agents: applied ? [revised] : [AGENT] });
+      /*
+       * The detail read carries the revision list; the summary in the list does
+       * not. "恢复此版本" only appears once a second revision exists, so the
+       * detail must return both from the first read.
+       */
+      if (url.includes('/v1/agents/')) return json({ agent: revised });
+      return undefined;
+    }));
     render(<AgentWorkspace />);
     fireEvent.click(await screen.findByRole('button', { name: '恢复此版本' }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([path, init]) => path === `/v1/agents/${AGENT.id}/revisions/apply` && init?.method === 'POST')).toBe(true));
@@ -282,14 +325,15 @@ describe('AgentWorkspace', () => {
   it('compares immutable revision fields and marks changed values', async () => {
     const revised = { ...REV2, instructions: 'Use a shorter style', providerId: 'alternate', modelId: 'fixture/alt' };
     const detailed = { ...AGENT, currentRevisionId: revised.id, current: revised, revisions: [REV1, revised] };
-    fetchMock
-      .mockResolvedValueOnce(runtime()).mockResolvedValueOnce(json({ agents: [detailed] }))
-      .mockResolvedValueOnce(json({ models: [
+    fetchMock.mockImplementation(serve((url) => {
+      if (url.includes('/v1/model-catalog')) return json({ models: [
         { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture model', capabilities: ['chat'] },
         { providerId: 'alternate', modelId: 'fixture/alt', reference: 'alternate:fixture/alt', displayName: 'Alternate model', capabilities: ['chat'] },
-      ] }))
-      .mockResolvedValueOnce(json({ agent: detailed }))
-      .mockResolvedValueOnce(json({ agent: detailed }));
+      ] });
+      if (url.endsWith('/v1/agents')) return json({ agents: [detailed] });
+      if (url.includes('/v1/agents/')) return json({ agent: detailed });
+      return undefined;
+    }));
 
     render(<AgentWorkspace />);
     expect(await screen.findByText('比较两个版本')).toBeTruthy();

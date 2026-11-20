@@ -5,17 +5,14 @@ import {
   createAgent,
   duplicateAgent,
   getAgent,
-  getDefaultAgent,
-  listAgents,
-  listProviderModels,
   setDefaultAgent,
-  supportsAgentManagement,
   updateAgent,
   type Agent,
   type AgentProfile,
   type AgentRecord,
   type ProviderModel,
 } from '../../shared/api/agents.js';
+import { loadAgentCatalog } from '../../shared/api/agent-catalog.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 import { grantsToDraft, parseGrantDraft, selectedModelReference } from './agent-draft.js';
 
@@ -63,17 +60,24 @@ export function useAgents(onChanged?: () => void) {
   const load = useCallback(async (signal?: AbortSignal, selectedId?: string) => {
     setState((current) => ({ ...current, phase: 'loading', error: null }));
     try {
-      if (!await supportsAgentManagement(signal)) {
+      const catalog = await loadAgentCatalog(signal);
+      if (!catalog.supportsAgents) {
+        /* No Agent management: the editor has nothing to edit. */
         if (!signal?.aborted) setState((current) => ({ ...current, phase: 'unsupported', supported: false }));
         return;
       }
-      const [agents, models, defaultAgent] = await Promise.all([
-        listAgents(signal), listProviderModels(signal), getDefaultAgent(signal),
-      ]);
+      const { agents, models, defaultAgentId } = catalog;
       if (signal?.aborted) return;
+      /*
+       * This panel opens on the Agent the reader last had, then the Runtime
+       * default, then the first one. It keeps its own order rather than the
+       * shared `preferredAgentId`: the editor is the one place that may need to
+       * show an Agent that has just been archived, so "remembered wins" is
+       * deliberate here and differs from the composer's rule.
+       */
       const requestedId = selectedId ?? selectedIdRef.current;
       const selectedRecord = agents.find((agent) => agent.id === requestedId)
-        ?? agents.find((agent) => agent.id === defaultAgent?.id && !agent.archived)
+        ?? agents.find((agent) => agent.id === defaultAgentId && !agent.archived)
         ?? agents.find((agent) => !agent.archived)
         ?? agents[0]
         ?? null;
@@ -87,7 +91,7 @@ export function useAgents(onChanged?: () => void) {
         agents,
         models,
         selected,
-        defaultAgentId: defaultAgent?.id ?? null,
+        defaultAgentId,
         name: selectedModel?.name ?? '',
         instructions: selectedModel?.instructions ?? '',
         modelReference: selectedModelReference(models, selectedModel),

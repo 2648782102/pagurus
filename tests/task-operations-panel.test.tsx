@@ -121,23 +121,29 @@ describe('TaskOperationsPanel', () => {
   });
 
   it('creates a pinned Agent task and shows both revisions and effective model', async () => {
-    fetchMock
-      .mockImplementationOnce(() => Promise.resolve(json(RUNTIME)))
-      .mockImplementationOnce(() => Promise.resolve(json({ models: [
+    /*
+     * Routed by path, not by call order: the catalog's three reads are
+     * independent, so nothing about this behaviour depends on which was issued
+     * first. A positional stub would pass or fail on an implementation detail.
+     */
+    fetchMock.mockImplementation((path: string, init?: RequestInit) => {
+      const url = String(path);
+      if (url.endsWith('/v1/runtime')) return Promise.resolve(json(RUNTIME));
+      if (url.includes('/v1/model-catalog')) return Promise.resolve(json({ models: [
         { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
         { providerId: 'alternate', modelId: 'fixture/alt', reference: 'alternate:fixture/alt', displayName: 'Alternate', capabilities: ['chat'] },
-      ] })))
-      .mockImplementationOnce(() => Promise.resolve(json({ agents: [AGENT] })))
-      .mockImplementationOnce(() => Promise.resolve(json({ agent: AGENT })))
-      .mockImplementationOnce(() => Promise.resolve(json({ task: {
+      ] }));
+      if (url.endsWith('/v1/agents')) return Promise.resolve(json({ agents: [AGENT] }));
+      if (url.includes('/v1/agents/')) return Promise.resolve(json({ agent: { ...AGENT, revisions: [REVISION] } }));
+      if (url.includes('default')) return Promise.resolve(json({ agent: AGENT }));
+      if (url.endsWith('/v1/tasks') && init?.method === 'POST') return Promise.resolve(json({ task: {
         ...TASK, agentId: AGENT.id, agentRevisionId: REVISION.id, providerId: 'alternate', modelId: 'fixture/alt',
-      } }, 202)))
-      .mockImplementation((path: string) => String(path).includes('/v1/agents/')
-        ? Promise.resolve(json({ agent: { ...AGENT, revisions: [REVISION] } }))
-        : Promise.resolve(json({ task: {
-          ...TASK, state: 'succeeded', output: 'bound output', agentId: AGENT.id,
-          agentRevisionId: REVISION.id, providerId: 'alternate', modelId: 'fixture/alt',
-        } })));
+      } }, 202));
+      return Promise.resolve(json({ task: {
+        ...TASK, state: 'succeeded', output: 'bound output', agentId: AGENT.id,
+        agentRevisionId: REVISION.id, providerId: 'alternate', modelId: 'fixture/alt',
+      } }));
+    });
 
     render(<TaskOperationsPanel />);
     await screen.findByLabelText('Agent');
@@ -158,13 +164,15 @@ describe('TaskOperationsPanel', () => {
   });
 
   it('disables launch when Agent mode has no available Agent', async () => {
-    fetchMock
-      .mockResolvedValueOnce(json(RUNTIME))
-      .mockResolvedValueOnce(json({ models: [
+    fetchMock.mockImplementation((path: string) => {
+      const url = String(path);
+      if (url.endsWith('/v1/runtime')) return Promise.resolve(json(RUNTIME));
+      if (url.includes('/v1/model-catalog')) return Promise.resolve(json({ models: [
         { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
-      ] }))
-      .mockResolvedValueOnce(json({ agents: [] }))
-      .mockResolvedValueOnce(json({ agent: null }));
+      ] }));
+      if (url.endsWith('/v1/agents')) return Promise.resolve(json({ agents: [] }));
+      return Promise.resolve(json({ agent: null }));
+    });
 
     render(<TaskOperationsPanel />);
     await screen.findByLabelText('Agent');
@@ -172,13 +180,15 @@ describe('TaskOperationsPanel', () => {
   });
 
   it('requires explicit Agent selection even when the Runtime has a default', async () => {
-    fetchMock
-      .mockResolvedValueOnce(json(RUNTIME))
-      .mockResolvedValueOnce(json({ models: [
+    fetchMock.mockImplementation((path: string) => {
+      const url = String(path);
+      if (url.endsWith('/v1/runtime')) return Promise.resolve(json(RUNTIME));
+      if (url.includes('/v1/model-catalog')) return Promise.resolve(json({ models: [
         { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
-      ] }))
-      .mockResolvedValueOnce(json({ agents: [AGENT] }))
-      .mockResolvedValueOnce(json({ agent: AGENT }));
+      ] }));
+      if (url.endsWith('/v1/agents')) return Promise.resolve(json({ agents: [AGENT] }));
+      return Promise.resolve(json({ agent: AGENT }));
+    });
 
     render(<TaskOperationsPanel />);
     await screen.findByLabelText('Agent');
@@ -194,21 +204,18 @@ describe('TaskOperationsPanel', () => {
       isDefault: false,
       current: { ...REVISION, name: 'Second', modelId: 'fixture/alt' },
     };
-    fetchMock
-      .mockResolvedValueOnce(json(RUNTIME))
-      .mockResolvedValueOnce(json({ models: [
+    fetchMock.mockImplementation((path: string) => {
+      const url = String(path);
+      if (url.endsWith('/v1/runtime')) return Promise.resolve(json(RUNTIME));
+      if (url.includes('/v1/model-catalog')) return Promise.resolve(json({ models: [
         { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
         { providerId: 'magpie', modelId: 'fixture/alt', reference: 'magpie:fixture/alt', displayName: 'Alternate', capabilities: ['chat'] },
-      ] }))
-      .mockResolvedValueOnce(json({ agents: [revisedAgent, secondAgent] }))
-      .mockResolvedValueOnce(json({ agent: revisedAgent }))
-      .mockResolvedValueOnce(json(RUNTIME))
-      .mockResolvedValueOnce(json({ models: [
-        { providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] },
-        { providerId: 'magpie', modelId: 'fixture/alt', reference: 'magpie:fixture/alt', displayName: 'Alternate', capabilities: ['chat'] },
-      ] }))
-      .mockResolvedValueOnce(json({ agents: [revisedAgent, secondAgent] }))
-      .mockResolvedValueOnce(json({ agent: revisedAgent }));
+      ] }));
+      if (url.endsWith('/v1/agents')) {
+        return Promise.resolve(json({ agents: [revisedAgent, secondAgent] }));
+      }
+      return Promise.resolve(json({ agent: revisedAgent }));
+    });
 
     const { rerender } = render(<TaskOperationsPanel agentRefreshToken={0} />);
     await screen.findByRole('option', { name: /Second/ });
