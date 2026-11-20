@@ -142,17 +142,46 @@ export function AgentApp() {
           </div>
         </header>
         <div className="agent-blocked">
-          <h1>{runtimeStatus.state === 'disconnected' ? '连不上本机 Runtime' : '这个 Runtime 还不支持 Agent 对话'}</h1>
+          {/*
+           * Three states, not two. `checking` means the first read has not
+           * landed; it used to fall through to "unsupported" and tell the
+           * reader to upgrade a Runtime that was merely still answering. The
+           * window is short but it is the first thing on screen, and it names
+           * the wrong cause.
+           */}
+          <h1>
+            {runtimeStatus.state === 'checking'
+              ? '正在连接本机 Runtime'
+              : runtimeStatus.state === 'disconnected'
+                ? '连不上本机 Runtime'
+                : '这个 Runtime 还不支持 Agent 对话'}
+          </h1>
           <p>
-            {runtimeStatus.state === 'disconnected'
-              ? 'Pagurus 只负责界面，对话需要本机 Runtime 在跑。确认它已启动后点下面的按钮。'
-              : 'Runtime 尚未发布 Agent 对话契约。升级 Runtime 之后这里会自动可用。'}
+            {runtimeStatus.state === 'checking'
+              ? '正在读取 Runtime 的能力；连上之后这里会自动显示对话。'
+              : runtimeStatus.state === 'disconnected'
+                ? 'Pagurus 只负责界面，对话需要本机 Runtime 在跑。确认它已启动后点下面的按钮。'
+                : 'Runtime 尚未发布 Agent 对话契约。升级 Runtime 之后这里会自动可用。'}
           </p>
           {runtimeStatus.state === 'disconnected' && (
             <p className="agent-blocked-detail">{agentErrorText(runtimeStatus.error, '连接失败')}</p>
           )}
           <div className="agent-blocked-actions">
-            <Button variant="primary" onClick={() => void runtimeStatus.refresh()}>重新连接</Button>
+            {/*
+             * `aria-disabled`, not `disabled`: the button stays reachable by
+             * keyboard while a reconnect is already under way, and declines
+             * the click instead of leaving the tab order.
+             */}
+            <Button
+              variant="primary"
+              aria-disabled={runtimeStatus.state === 'checking'}
+              onClick={() => {
+                if (runtimeStatus.state === 'checking') return;
+                void runtimeStatus.refresh();
+              }}
+            >
+              {runtimeStatus.state === 'checking' ? '连接中…' : '重新连接'}
+            </Button>
           </div>
         </div>
       </div>
