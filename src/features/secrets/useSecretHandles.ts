@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   createSecretHandle,
   listSecretHandleUseReceipts,
@@ -15,11 +15,10 @@ import {
 } from '../../shared/api/platform.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { errorMessage } from '../../shared/ui/errors.js';
-
-export type SecretPanelPhase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
+import { useAsyncResource } from '../../shared/ui/use-async-resource.js';
 
 export interface SecretPanelState {
-  phase: SecretPanelPhase;
+  phase: 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
   handles: readonly SecretHandleRecord[];
   receipts: readonly SecretHandleUseReceipt[];
   error: string | null;
@@ -27,72 +26,61 @@ export interface SecretPanelState {
   message: string | null;
 }
 
-export function useSecretHandles(runtime: RuntimeInfo | null) {
-  const [state, setState] = useState<SecretPanelState>({
-    phase: 'checking', handles: [], receipts: [], error: null, pending: null, message: null,
-  });
+interface SecretPanelData {
+  readonly handles: readonly SecretHandleRecord[];
+  readonly receipts: readonly SecretHandleUseReceipt[];
+}
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (!runtime) {
-      setState((current) => ({ ...current, phase: 'checking', error: null }));
-      return;
-    }
-    if (!supportsWriteOnlySecretHandles(runtime)) {
-      setState((current) => ({ ...current, phase: 'unsupported', error: null }));
-      return;
-    }
-    setState((current) => ({ ...current, phase: 'loading', error: null }));
-    try {
+export function useSecretHandles(runtime: RuntimeInfo | null) {
+  const resource = useAsyncResource<SecretPanelData>({
+    read: async (signal) => {
       const [handles, receipts] = await Promise.all([
         listSecretHandles(signal),
         listSecretHandleUseReceipts(signal),
       ]);
-      if (signal?.aborted) return;
-      setState((current) => ({
-        ...current,
-        phase: 'ready',
-        handles: handles.handles,
-        receipts: receipts.receipts,
-        error: null,
-      }));
-    } catch (cause) {
-      if (signal?.aborted) return;
-      setState((current) => ({
-        ...current,
-        phase: 'error',
-        error: errorMessage(cause, 'SecretHandle 元数据读取失败'),
-      }));
-    }
-  }, [runtime]);
+      return { handles: handles.handles, receipts: receipts.receipts };
+    },
+    failure: 'SecretHandle 元数据读取失败',
+    precondition: () => {
+      if (!runtime) return 'checking';
+      return supportsWriteOnlySecretHandles(runtime) ? null : 'unsupported';
+    },
+    deps: [runtime],
+  });
 
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
+  /* Mutations are not reads; they track their own label and outcome. */
+  const [pending, setPending] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const reload = resource.reload;
 
   const run = useCallback(async (label: string, action: () => Promise<unknown>, message: string) => {
     if (!supportsWriteOnlySecretHandles(runtime)) {
-      setState((current) => ({ ...current, phase: 'unsupported', error: null, pending: null }));
+      setPending(null);
       return;
     }
-    setState((current) => ({ ...current, pending: label, message: null }));
+    setPending(label);
+    setMessage(null);
+    setActionError(null);
     try {
       await action();
-      setState((current) => ({ ...current, pending: null, message }));
-      await load();
+      setPending(null);
+      setMessage(message);
+      reload();
     } catch (cause) {
-      setState((current) => ({
-        ...current,
-        pending: null,
-        error: errorMessage(cause, 'SecretHandle 操作失败'),
-      }));
+      setPending(null);
+      setActionError(errorMessage(cause, 'SecretHandle 操作失败'));
     }
-  }, [load, runtime]);
+  }, [reload, runtime]);
 
   return {
-    ...state,
-    load: () => void load(),
+    phase: resource.phase,
+    handles: resource.data?.handles ?? [],
+    receipts: resource.data?.receipts ?? [],
+    error: resource.error ?? actionError,
+    pending,
+    message,
+    load: reload,
     create: (input: SecretHandleCreate) => void run('create', () => createSecretHandle(input), '只写值已提交并清除'),
     rotate: (handleId: string, value: string) => void run(`rotate:${handleId}`, () => rotateSecretHandle(handleId, value), '值已轮换并清除'),
     status: (handleId: string, status: SecretHandleStatus) => void run(

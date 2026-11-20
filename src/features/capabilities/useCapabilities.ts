@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   listCapabilities,
   putCapability,
@@ -8,11 +8,10 @@ import {
 } from '../../shared/api/platform.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { errorMessage } from '../../shared/ui/errors.js';
-
-export type CapabilityPhase = 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
+import { useAsyncResource } from '../../shared/ui/use-async-resource.js';
 
 export interface CapabilityState {
-  phase: CapabilityPhase;
+  phase: 'checking' | 'unsupported' | 'loading' | 'ready' | 'error';
   capabilities: readonly CapabilityRecord[];
   error: string | null;
   pending: boolean;
@@ -20,58 +19,55 @@ export interface CapabilityState {
 }
 
 export function useCapabilities(runtime: RuntimeInfo | null) {
-  const [state, setState] = useState<CapabilityState>({
-    phase: 'checking', capabilities: [], error: null, pending: false, message: null,
+  const resource = useAsyncResource<readonly CapabilityRecord[]>({
+    read: async (signal) => (await listCapabilities(signal)).capabilities,
+    failure: '能力目录读取失败',
+    /*
+     * Two reasons not to read, and neither is an error: no Runtime has been
+     * reached yet, or this one does not serve the directory. `runtime` is in
+     * `deps` because the gate reads it — without that the panel would sit in
+     * `checking` after the Runtime arrives.
+     */
+    precondition: () => {
+      if (!runtime) return 'checking';
+      return supportsCapabilityDirectory(runtime) ? null : 'unsupported';
+    },
+    deps: [runtime],
   });
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (!runtime) {
-      setState((current) => ({ ...current, phase: 'checking', error: null }));
-      return;
-    }
-    if (!supportsCapabilityDirectory(runtime)) {
-      setState((current) => ({ ...current, phase: 'unsupported', error: null }));
-      return;
-    }
-    setState((current) => ({ ...current, phase: 'loading', error: null }));
-    try {
-      const result = await listCapabilities(signal);
-      if (signal?.aborted) return;
-      setState((current) => ({ ...current, phase: 'ready', capabilities: result.capabilities, error: null }));
-    } catch (cause) {
-      if (signal?.aborted) return;
-      setState((current) => ({
-        ...current,
-        phase: 'error',
-        error: errorMessage(cause, '能力目录读取失败'),
-      }));
-    }
-  }, [runtime]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
+  /* The write half is not a read, so it keeps its own progress and notice. */
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [writeError, setWriteError] = useState<string | null>(null);
+  const reload = resource.reload;
 
   const submit = useCallback(async (input: CapabilityWrite) => {
     if (!supportsCapabilityDirectory(runtime)) {
-      setState((current) => ({ ...current, phase: 'unsupported', error: null, pending: false }));
+      setPending(false);
       return;
     }
-    setState((current) => ({ ...current, pending: true, message: null }));
+    setPending(true);
+    setMessage(null);
+    setWriteError(null);
     try {
       await putCapability(input);
-      setState((current) => ({ ...current, pending: false, message: '能力记录已保存' }));
-      await load();
+      setPending(false);
+      setMessage('能力记录已保存');
+      reload();
     } catch (cause) {
-      setState((current) => ({
-        ...current,
-        pending: false,
-        error: errorMessage(cause, '能力记录保存失败'),
-      }));
+      setPending(false);
+      setWriteError(errorMessage(cause, '能力记录保存失败'));
     }
-  }, [load, runtime]);
+  }, [reload, runtime]);
 
-  return { ...state, load: () => void load(), submit: (input: CapabilityWrite) => void submit(input) };
+  return {
+    phase: resource.phase,
+    capabilities: resource.data ?? [],
+    /* A failed write is the error the reader can act on; a failed read outranks it. */
+    error: resource.error ?? writeError,
+    pending,
+    message,
+    load: reload,
+    submit: (input: CapabilityWrite) => void submit(input),
+  };
 }

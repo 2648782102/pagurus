@@ -1,86 +1,75 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { listTasks, type Task, type TaskState } from '../../shared/api/tasks.js';
-import { errorMessage } from '../../shared/ui/errors.js';
+import { useAsyncResource } from '../../shared/ui/use-async-resource.js';
 
-export type TaskHistoryPhase = 'loading' | 'ready' | 'error';
 export type TaskHistoryFilter = 'all' | TaskState;
 
 export interface TaskHistoryState {
-  phase: TaskHistoryPhase;
   tasks: readonly Task[];
   activeConfigurationRevisionId: string | null;
   selectedTaskId: string;
   stateFilter: TaskHistoryFilter;
   agentFilter: string;
-  error: string | null;
 }
 
-const initialState: TaskHistoryState = {
-  phase: 'loading',
-  tasks: [],
-  activeConfigurationRevisionId: null,
-  selectedTaskId: '',
-  stateFilter: 'all',
-  agentFilter: 'all',
-  error: null,
-};
+interface TaskHistoryData {
+  readonly tasks: readonly Task[];
+  readonly activeConfigurationRevisionId: string | null;
+}
 
 export function useTaskHistory() {
-  const [state, setState] = useState<TaskHistoryState>(initialState);
-
-  const load = useCallback(async (signal?: AbortSignal) => {
-    setState((current) => ({ ...current, phase: 'loading', error: null }));
-    try {
+  const resource = useAsyncResource<TaskHistoryData>({
+    read: async (signal) => {
       const result = await listTasks(signal);
-      if (signal?.aborted) return;
-      setState((current) => ({
-        ...current,
-        phase: 'ready',
-        tasks: result.tasks,
-        activeConfigurationRevisionId: result.activeConfigurationRevisionId,
-        selectedTaskId: result.tasks.some((task) => task.id === current.selectedTaskId)
-          ? current.selectedTaskId
-          : result.tasks[0]?.id ?? '',
-        error: null,
-      }));
-    } catch (cause) {
-      if (signal?.aborted) return;
-      setState((current) => ({
-        ...current,
-        phase: 'error',
-        error: errorMessage(cause, '任务历史加载失败'),
-      }));
-    }
-  }, []);
+      return { tasks: result.tasks, activeConfigurationRevisionId: result.activeConfigurationRevisionId };
+    },
+    failure: '任务历史加载失败',
+  });
+  const tasks = resource.data?.tasks ?? [];
+  const activeConfigurationRevisionId = resource.data?.activeConfigurationRevisionId ?? null;
 
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
+  /*
+   * Selection is a view concern, not a fetch concern: it follows the visible
+   * list, so filtering to another Agent or state lands on that Agent's first
+   * task instead of pointing at a row that is no longer shown. Kept in local
+   * state and corrected during render rather than fetched.
+   */
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [stateFilter, setStateFilter] = useState<TaskHistoryFilter>('all');
+  const [agentFilter, setAgentFilter] = useState('all');
 
-  const agentIds = useMemo(() => [...new Set(state.tasks
+  const agentIds = useMemo(() => [...new Set(tasks
     .filter((task) => task.agentId)
-    .map((task) => task.agentId!))], [state.tasks]);
-  const visibleTasks = useMemo(() => state.tasks.filter((task) =>
-    (state.stateFilter === 'all' || task.state === state.stateFilter)
-    && (state.agentFilter === 'all'
-      || (state.agentFilter === 'legacy' ? task.agentId === undefined : task.agentId === state.agentFilter))),
-  [state.agentFilter, state.stateFilter, state.tasks]);
-  const selectedTaskId = visibleTasks.some((task) => task.id === state.selectedTaskId)
-    ? state.selectedTaskId
+    .map((task) => task.agentId!))], [tasks]);
+  const visibleTasks = useMemo(() => tasks.filter((task) =>
+    (stateFilter === 'all' || task.state === stateFilter)
+    && (agentFilter === 'all'
+      || (agentFilter === 'legacy' ? task.agentId === undefined : task.agentId === agentFilter))),
+  [agentFilter, stateFilter, tasks]);
+  const effectiveTaskId = visibleTasks.some((task) => task.id === selectedTaskId)
+    ? selectedTaskId
     : visibleTasks[0]?.id ?? '';
-  const selectedTask = visibleTasks.find((task) => task.id === selectedTaskId) ?? null;
+  const selectedTask = visibleTasks.find((task) => task.id === effectiveTaskId) ?? null;
+
+  /* Keep the stored id in step with what is shown, so the next render agrees. */
+  useEffect(() => {
+    if (effectiveTaskId !== selectedTaskId) setSelectedTaskId(effectiveTaskId);
+  }, [effectiveTaskId, selectedTaskId]);
 
   return {
-    ...state,
-    selectedTaskId,
+    phase: resource.phase,
+    error: resource.error,
+    tasks,
+    activeConfigurationRevisionId,
+    selectedTaskId: effectiveTaskId,
     agentIds,
     visibleTasks,
     selectedTask,
-    load: () => void load(),
-    setSelectedTaskId: (selectedTaskId: string) => setState((current) => ({ ...current, selectedTaskId })),
-    setStateFilter: (stateFilter: TaskHistoryFilter) => setState((current) => ({ ...current, stateFilter })),
-    setAgentFilter: (agentFilter: string) => setState((current) => ({ ...current, agentFilter })),
+    stateFilter,
+    agentFilter,
+    load: resource.reload,
+    setSelectedTaskId,
+    setStateFilter,
+    setAgentFilter,
   };
 }
