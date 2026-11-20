@@ -148,3 +148,16 @@
    !important: two classes beat one class plus an element. */
 .agent-blocked p.agent-blocked-detail { color: var(--text-muted); font-size: 11.5px; }
 .agent-blocked-actions { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+
+/*
+ * The scrolling column and its pinned overlay share this box, which ends where
+ * the composer begins. Layout belongs here rather than in the conversation
+ * layer: it is the same shell whether or not a conversation is open.
+ */
+.agent-thread-column {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}

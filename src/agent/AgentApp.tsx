@@ -284,16 +284,21 @@ export function AgentApp() {
                     ? <AgentAnswer body={body} streaming={STREAMING.has(message.state)} />
                     : <p>{body}</p>}
                   onPinnedChange={setPinnedToBottom}
+                  /*
+                   * Pinned inside the message column, not beside the composer:
+                   * the column ends where the composer begins, so the control
+                   * cannot end up underneath a draft that grew past one line.
+                   */
+                  overlay={!pinnedToBottom ? (
+                    <button
+                      type="button"
+                      className="agent-jump-latest"
+                      onClick={jumpToLatest}
+                    >
+                      跳到最新
+                    </button>
+                  ) : null}
                 />
-                {!pinnedToBottom && (
-                  <button
-                    type="button"
-                    className="agent-jump-latest"
-                    onClick={jumpToLatest}
-                  >
-                    跳到最新
-                  </button>
-                )}
                 <AgentChatComposer
                   draft={chat.draft}
                   busy={chat.busy}

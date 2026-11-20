@@ -174,7 +174,22 @@
 .agent-chat-message small { color: var(--state-danger); font-size: 10px; overflow-wrap: anywhere; }
 .agent-chat-composer { display: grid; gap: 6px; padding: 10px max(18px, calc((100% - 860px) / 2)) 13px; border-top: 1px solid var(--border-strong); background: var(--surface-raised); }
 .agent-chat-composer-field { display: grid; grid-template-columns: minmax(0, 1fr) 36px; align-items: end; gap: 7px; }
-.agent-chat-composer textarea { min-height: 50px; max-height: 150px; }
+/*
+ * The composer's height is owned by one place: the script in
+ * `AgentChatComposer`, which grows the box to 40% of the viewport and switches
+ * `overflow-y` to `auto` at its own cap.
+ *
+ * CSS used to cap it twice — 150px here, 240px on `.ui-textarea` — and both
+ * were shorter than the script's cap. So the box stopped growing while the
+ * script still believed there was room, and it left `overflow-y: hidden`: the
+ * seventh line was clipped and could not be scrolled to. `resize: vertical`
+ * had the same problem from the other side, letting the reader drag a height
+ * the script would overwrite on the next keystroke.
+ *
+ * `min-height` stays: it is a floor the script does not model, and it keeps an
+ * empty composer from collapsing.
+ */
+.agent-chat-composer textarea { min-height: 50px; max-height: none; resize: none; }
 .agent-chat-send { width: 36px; height: 36px; padding: 0; font-size: 16px; }
 .agent-chat-composer-hint { margin: 0; color: var(--text-muted); font-size: 9.5px; }
 

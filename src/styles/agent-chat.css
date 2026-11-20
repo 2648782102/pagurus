@@ -14,11 +14,15 @@
   min-height: 0;
 }
 
-/* Appears only when the reader has scrolled away from the newest turn, so it
-   never competes with the composer for attention during normal reading. */
+/*
+ * Appears only when the reader has scrolled away from the newest turn. It is
+ * pinned inside `.agent-thread-column`, which ends where the composer begins —
+ * it used `bottom: 96px` (the composer at one line) and a six-line draft
+ * covered it.
+ */
 .agent-jump-latest {
   position: absolute;
-  bottom: 96px;
+  bottom: 12px;
   left: 50%;
   z-index: 5;
   transform: translateX(-50%);

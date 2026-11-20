@@ -559,4 +559,43 @@ describe('front-end architecture boundaries', () => {
     }
     expect(failures, `a filled control's label must be readable on its fill:\n${failures.join('\n')}`).toEqual([]);
   });
+
+  it('lets the composer own its own height', () => {
+    /*
+     * The composer grows to 40% of the viewport in `AgentChatComposer`, and the
+     * same code decides when to switch the textarea to `overflow-y: auto` — it
+     * compares `scrollHeight` against *its* cap.
+     *
+     * A CSS `max-height` shorter than that cap makes the box stop growing while
+     * the script still believes there is room, so it leaves `overflow-y:
+     * hidden` and the last lines are clipped with no way to scroll to them.
+     * That was 150px in `conversation.css` and 240px on `.ui-textarea`; at
+     * seven lines the seventh was unreachable.
+     *
+     * One owner. The product composer may set a floor (`min-height`), not a
+     * ceiling, and not a manual resize that the script would overwrite.
+     */
+    const composer = cssRules('src/styles/conversation.css')
+      .filter((rule) => rule.selectors.some((selector) => /\.agent-chat-composer\s+textarea\b/.test(selector)));
+    expect(composer.length, 'the composer textarea must be styled explicitly').toBeGreaterThan(0);
+    /*
+     * `none` is the fix, not the fault: the composer has to override the
+     * `.ui-textarea` defaults. What is rejected is any real cap or a manual
+     * resize, because either one fights the script.
+     */
+    /* Compare the declared value; a negative lookahead here matched `none`. */
+    const valueOf = (body: string, property: string): string | null => {
+      const match = new RegExp(`(?:^|;)\\s*${property}\\s*:\\s*([^;]+)`).exec(body);
+      return match ? match[1]!.trim() : null;
+    };
+    const offences = composer
+      .filter((rule) => {
+        const cap = valueOf(rule.body, 'max-height');
+        const resize = valueOf(rule.body, 'resize');
+        return (cap !== null && cap !== 'none') || (resize !== null && resize !== 'none');
+      })
+      .map((rule) => `src/styles/conversation.css:${rule.line} ${rule.body.trim().slice(0, 60)}`);
+    expect(offences, `the composer's height is set in script; CSS must not cap or resize it:\n${offences.join('\n')}`)
+      .toEqual([]);
+  });
 });

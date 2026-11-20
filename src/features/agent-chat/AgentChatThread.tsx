@@ -28,6 +28,16 @@ interface AgentChatThreadProps {
   readonly renderBody?: (message: AgentChatMessage, body: string) => ReactNode;
   /** Reports whether the reader is still following the newest turn. */
   readonly onPinnedChange?: (pinned: boolean) => void;
+  /**
+   * Rendered inside the scrolling column, pinned above its lower edge.
+   *
+   * It belongs here rather than beside the composer so it cannot overlap it:
+   * the column ends where the composer begins, whatever height the composer
+   * has grown to. As a sibling with `position: absolute` it sat 96px above the
+   * panel's bottom — the composer at one line — so a six-line draft covered
+   * the control whose job is to reach the message underneath it.
+   */
+  readonly overlay?: ReactNode;
 }
 
 const STATE_LABELS: Readonly<Record<AgentChatMessageState, string>> = {
@@ -228,6 +238,7 @@ export function AgentChatThread({
   renderMessageActions,
   renderBody,
   onPinnedChange,
+  overlay,
 }: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
@@ -261,24 +272,31 @@ export function AgentChatThread({
   }, []);
 
   return (
-    <div
-      className="agent-chat-thread"
-      ref={containerRef}
+    /*
+     * The scrolling column and anything pinned above it share one box, so the
+     * overlay's lower edge is the column's — where the composer begins, at any
+     * composer height. The overlay is a sibling of the scroll container, not a
+     * child: a child would scroll away with the messages.
+     */
+    <div className="agent-thread-column">
+      <div
+        className="agent-chat-thread"
+        ref={containerRef}
       /*
        * `off`, not `polite`: a streaming body changes on every frame, and a live
        * region would queue an announcement per frame, which is unusable with a
        * screen reader. New turns are announced by the state label instead.
        */
-      aria-live="off"
-      aria-label="Agent 对话消息"
-      onScroll={() => {
-        const container = containerRef.current;
-        if (!container) return;
-        const pinned = container.scrollHeight - container.scrollTop - container.clientHeight < 96;
-        nearBottomRef.current = pinned;
-        onPinnedChange?.(pinned);
-      }}
-    >
+        aria-live="off"
+        aria-label="Agent 对话消息"
+        onScroll={() => {
+          const container = containerRef.current;
+          if (!container) return;
+          const pinned = container.scrollHeight - container.scrollTop - container.clientHeight < 96;
+          nearBottomRef.current = pinned;
+          onPinnedChange?.(pinned);
+        }}
+      >
       {messages.length === 0 && (
         <div className="agent-chat-empty" role="status">
           <p className="agent-chat-empty-title">开始一段对话</p>
@@ -381,6 +399,8 @@ export function AgentChatThread({
           </article>
         );
       })}
+      </div>
+      {overlay}
     </div>
   );
 }
