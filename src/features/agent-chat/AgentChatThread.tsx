@@ -54,6 +54,21 @@ function isWorking(state: AgentChatMessageState): boolean {
 }
 
 /**
+ * A reply the Runtime has accepted but not started.
+ *
+ * A turn asked while another is running is queued, and the Runtime writes it
+ * as `pending` with no task. A task is assigned when the turn leaves the queue,
+ * and the state becomes `thinking` in the same write — so "pending and no task"
+ * means "waiting its turn", not "being prepared".
+ *
+ * The distinction matters with more than one question in a row: three of them
+ * are three rows saying "准备中" while only one is being worked on.
+ */
+function isQueued(message: AgentChatMessage): boolean {
+  return message.state === 'pending' && message.taskId === null;
+}
+
+/**
  * States where the caret belongs at the end of the text.
  *
  * Only once there is text to sit after: during preparation the typing dots are
@@ -301,7 +316,7 @@ export function AgentChatThread({
               {STATE_LABELS[message.state] && (
                 <span className="agent-chat-state-label" role="status">
                   <StatusDot tone={statusTone(message.state)} />
-                  {STATE_LABELS[message.state]}
+                  {isQueued(message) ? '排队中，等上一条回复完成' : STATE_LABELS[message.state]}
                 </span>
               )}
             </div>

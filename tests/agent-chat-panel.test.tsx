@@ -287,6 +287,36 @@ describe('Agent Chat panel', () => {
     expect(notes[0]?.textContent).toBe('上一条回复生成中时发出');
   });
 
+  it('distinguishes a queued reply from one the Runtime has started', () => {
+    /*
+     * A turn asked mid-reply is queued, not run. The Runtime writes it as
+     * `pending` with no task, and only assigns a task when the turn leaves the
+     * queue — at which point it becomes `thinking`. Three questions in a row
+     * therefore show three "正在准备…" today, while only one is being worked on.
+     *
+     * `taskId === null` is the separator, and it is a definition rather than a
+     * coincidence: an assistant message with a task has been handed to the
+     * executor, and one without has not been started.
+     */
+    const messages: readonly AgentChatMessage[] = [
+      { id: 'u1', sequence: 1, author: 'user', body: '第一个问题', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
+      // Running: the Runtime has a task for it.
+      { id: 'a1', sequence: 2, author: 'assistant', body: '', state: 'thinking', taskId: 'task_running', error: null, phase: 'preparing', progress: null, updatedAt: '2026-11-20T15:55:01.000Z', replyToId: 'u1', activity: [] },
+      { id: 'u2', sequence: 3, author: 'user', body: '第二个问题', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:02.000Z', replyToId: null, activity: [] },
+      // Queued: accepted, but not started.
+      { id: 'a2', sequence: 4, author: 'assistant', body: '', state: 'pending', taskId: null, error: null, phase: 'preparing', progress: null, updatedAt: '2026-11-20T15:55:03.000Z', replyToId: 'u2', activity: [] },
+    ];
+    const { container } = render(
+      <AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />,
+    );
+    const queued = container.querySelectorAll('.agent-chat-state-pending');
+    expect(queued).toHaveLength(1);
+    expect(queued[0]?.textContent).toContain('排队中');
+    // The running one keeps its own label; it is not queued.
+    expect(screen.getByText('正在思考…')).toBeTruthy();
+    expect(screen.queryByText('正在准备…')).toBeNull();
+  });
+
   it('does not annotate a conversation where every question waited', () => {
     const messages: readonly AgentChatMessage[] = [
       { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
