@@ -4,7 +4,7 @@
   width: min(100%, 640px);
   margin: 0 auto var(--space-4);
   padding: 14px 16px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-raised);
   display: grid;
@@ -66,8 +66,13 @@
   color: var(--text-muted);
 }
 
-.agent-first-run-step.is-done .agent-first-run-mark { color: var(--success); }
-.agent-first-run-step.is-blocked .agent-first-run-mark { color: var(--danger); }
+/*
+ * `--success` was never defined anywhere, so a finished step inherited its
+ * colour — the mark simply did not turn green. The semantic layer already has
+ * the vocabulary; a fourth synonym for "ok" would split it.
+ */
+.agent-first-run-step.is-done .agent-first-run-mark { color: var(--state-signal); }
+.agent-first-run-step.is-blocked .agent-first-run-mark { color: var(--state-danger); }
 
 .agent-first-run-label { color: var(--text-strong); }
 .agent-first-run-hint { color: var(--text-muted); }
@@ -79,7 +84,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   padding-top: 8px;
-  border-top: 1px dashed var(--border-subtle);
+  border-top: 1px dashed var(--border);
 }
 
 .agent-first-run-example p {
@@ -90,8 +95,8 @@
 
 .agent-first-run-example button {
   appearance: none;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  background: var(--surface-sunk);
   color: var(--text-strong);
   font: inherit;
   font-size: 12px;

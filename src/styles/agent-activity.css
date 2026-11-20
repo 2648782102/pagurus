@@ -79,7 +79,7 @@
   margin: 10px 0 0;
   border: 1px solid var(--border);
   border-radius: 3px;
-  background: var(--surface);
+  background: var(--surface-canvas);
   overflow: hidden;
 }
 .agent-chat-approval-preview figcaption {

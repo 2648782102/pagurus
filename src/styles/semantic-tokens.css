@@ -10,6 +10,20 @@
  * See the semantic token files.
  */
 
+:root {
+  /*
+   * Spacing scale, shared by both surfaces. Three product rules referenced
+   * `--space-2` and `--space-4`, which were never defined: the whole
+   * `gap`/`margin` declaration dropped, so the first-run card had no spacing.
+   */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+}
+
 /* Agent defaults: `--ag-*` is scoped to `.agent-app`, so the alias block is
  * scoped there too. Components inside inherit these names unchanged. */
 .agent-app,
@@ -55,6 +69,8 @@
   --state-signal-border: var(--ag-line-strong);
   --state-caution-strong: var(--ag-amber-wash);
   --state-caution-border: var(--ag-line-strong);
+  --state-caution-ink: var(--ag-caution-ink);
+  --state-caution-border-strong: var(--ag-caution-line);
   --state-danger-border: var(--ag-danger);
   --accent-border: var(--ag-line-strong);
 
@@ -137,6 +153,8 @@
   --state-signal-border: #b8d4c3;
   --state-caution-strong: #ddc999;
   --state-caution-border: #ddc999;
+  --state-caution-ink: #62501f;
+  --state-caution-border-strong: #ddc999;
   --state-danger-border: #ddb8ac;
   --accent-border: #b8cdd2;
 

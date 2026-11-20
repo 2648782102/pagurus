@@ -151,4 +151,24 @@ describe('front-end architecture boundaries', () => {
       .filter((file) => /!important/.test(withoutComments(read(file))));
     expect(important, `no layer outside reduced-motion may need !important:\n${important.join('\n')}`).toEqual([]);
   });
+
+  it('defines every custom property a stylesheet references', () => {
+    /*
+     * An undefined custom property does not fall back to a default — it makes
+     * the whole declaration invalid. Six such references had accumulated
+     * (`--border-subtle`, `--space-2/4`, `--success`, `--surface`,
+     * `--surface-sunken`), so the first-run card rendered with no border and no
+     * spacing at all. It looked "a bit tight" rather than broken.
+     */
+    const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
+    const defined = new Set<string>();
+    for (const file of styleFiles()) {
+      for (const match of withoutComments(read(file)).matchAll(/^\s*(--[\w-]+)\s*:/gm)) defined.add(match[1]!);
+    }
+    const missing = styleFiles().flatMap((file) =>
+      [...withoutComments(read(file)).matchAll(/var\((--[\w-]+)/g)]
+        .filter((match) => !defined.has(match[1]!))
+        .map((match) => `${file}: ${match[1]}`));
+    expect(missing, `every referenced custom property must be defined:\n${missing.join('\n')}`).toEqual([]);
+  });
 });
