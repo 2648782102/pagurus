@@ -24,6 +24,9 @@ function styleFiles(): string[] {
     .sort();
 }
 
+/** Strip comments so prose that mentions a token does not count as a use. */
+const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
+
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
 }
@@ -132,12 +135,19 @@ describe('front-end architecture boundaries', () => {
      * product surface — which is how four `!important` activity colours ended
      * up painting light-theme red on a near-black ground.
      */
-    const palette = /var\(--(?:steel|signal|amber|danger|ink|paper|line|muted|faint|rust|canvas|navy|rule)[a-z-]*\)/;
-    const productSheets = styleFiles()
-      .filter((file) => /agent-(shell|entry|chat|activity|markdown|model|drawer|context|responsive|tokens)\.css$/.test(file))
+    const palette = /var\(--(?:steel|signal|amber|danger|ink|paper|line|muted|faint|rust|canvas|canvas-deep|navy|navy-soft|rule|paper-inset|paper-raised|steel-ink|steel-wash|signal-wash|amber-wash|danger-wash|rust-strong|rust-wash|shadow-card|content-width|rail-width|topbar-height)[a-z-]*\)/;
+    /*
+     * Scope: what the agent surface renders. Those sheets are shared with the
+     * console panel, and only the console root redefines the palette, so a
+     * palette reference there silently resolves to the light value on the dark
+     * product surface. Console-only sheets legitimately use their own palette
+     * and are out of scope here.
+     */
+    const agentSheets = styleFiles()
+      .filter((file) => /agent-[a-z-]+\.css$/.test(file))
       .filter((file) => !file.endsWith('agent-tokens.css'));
-    const offenders = productSheets.filter((file) => palette.test(read(file)));
-    expect(offenders, `product sheets must use semantic tokens, not the palette:\n${offenders.join('\n')}`).toEqual([]);
+    const offenders = agentSheets.filter((file) => palette.test(withoutComments(read(file))));
+    expect(offenders, `agent-surface sheets must use semantic tokens, not the palette:\n${offenders.join('\n')}`).toEqual([]);
 
     /*
      * `!important` is required in exactly one place: a reduced-motion override
@@ -145,7 +155,6 @@ describe('front-end architecture boundaries', () => {
      * else it means two layers are fighting over the same selector.
      */
     const motionExempt = new Set(['src/styles/motion.css', 'src/styles/responsive.css']);
-    const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
     const important = styleFiles()
       .filter((file) => !motionExempt.has(file))
       .filter((file) => /!important/.test(withoutComments(read(file))));
@@ -160,7 +169,6 @@ describe('front-end architecture boundaries', () => {
      * `--surface-sunken`), so the first-run card rendered with no border and no
      * spacing at all. It looked "a bit tight" rather than broken.
      */
-    const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '');
     const defined = new Set<string>();
     for (const file of styleFiles()) {
       for (const match of withoutComments(read(file)).matchAll(/^\s*(--[\w-]+)\s*:/gm)) defined.add(match[1]!);

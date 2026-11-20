@@ -8,7 +8,7 @@
   margin-top: 12px;
   padding: 14px;
   border: 1px solid var(--border-strong);
-  background: var(--paper-raised);
+  background: var(--surface-raised);
 }
 .conversation-panel .section-heading { align-items: center; margin-bottom: 0; }
 .conversation-panel h3 { margin: 0; font-size: 14px; }
