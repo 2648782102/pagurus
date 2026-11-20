@@ -99,7 +99,7 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-.agent-drawer-thread-meta { color: var(--text-muted); font-size: 10.5px; }
+.agent-drawer-thread-meta { color: var(--text-muted); font-size: 10px; }
 
 .agent-drawer-foot { flex: 0 0 auto; padding-top: 10px; border-top: 1px solid var(--border); }
 .agent-drawer-foot a { color: var(--text-muted); font-size: 11px; text-decoration: none; }

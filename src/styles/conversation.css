@@ -81,7 +81,7 @@
 .agent-history-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .agent-history-copy { display: grid; flex: 1 1 190px; gap: 2px; min-width: 0; }
 .agent-history-copy strong { display: -webkit-box; overflow: hidden; font-size: 11px; font-weight: 550; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.agent-history-copy small { color: var(--text-muted); font-size: 9.5px; }
+.agent-history-copy small { color: var(--text-muted); font-size: 9px; }
 
 .agent-chat-shell { display: flex; flex-direction: column; height: min(760px, calc(100vh - 190px)); min-height: 560px; }
 .agent-chat-header {
@@ -100,7 +100,7 @@
 .agent-chat-subtitle { margin: 1px 0 0; color: var(--text-muted); font: 10px var(--font-mono); }
 .agent-chat-header-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .agent-chat-pins { margin: 0; padding: 8px 18px; border-bottom: 1px solid var(--border); background: var(--surface-sunk); }
-.agent-chat-mode-note { margin: 0; padding: 7px 18px; border-bottom: 1px solid #ddc999; background: var(--state-caution); color: #62501f; font-size: 10.5px; line-height: 1.6; }
+.agent-chat-mode-note { margin: 0; padding: 7px 18px; border-bottom: 1px solid #ddc999; background: var(--state-caution); color: #62501f; font-size: 10px; line-height: 1.6; }
 .agent-chat-shell > .work-error { margin: 10px 18px 0; }
 .agent-chat-conversation { display: grid; flex: 1 1 auto; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
 .agent-chat-thread { display: flex; flex-direction: column; gap: 0; min-height: 0; overflow: auto; padding: 0 max(18px, calc((100% - 860px) / 2)); scroll-behavior: smooth; }
@@ -126,7 +126,7 @@
 .agent-chat-state-failed .agent-chat-state-label, .agent-chat-state-unavailable .agent-chat-state-label { color: var(--state-danger); }
 .agent-chat-state-waiting_attention { border-left-color: var(--state-caution-strong); background: var(--state-caution); }
 .agent-chat-state-waiting_attention .agent-chat-state-label { color: var(--state-caution-strong); }
-.agent-chat-message p { margin: 0; color: var(--text-strong); font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agent-chat-message p { margin: 0; color: var(--text-strong); font-size: 13px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
 .agent-chat-progress { height: 2px; overflow: hidden; background: var(--border); }
 .agent-chat-progress span { display: block; height: 100%; background: var(--accent); }
 .agent-chat-typing { display: inline-flex; align-items: center; gap: 3px; height: 12px; }
@@ -137,10 +137,10 @@
 .agent-chat-caret { display: inline-block; width: 5px; height: 1em; margin-left: 2px; vertical-align: text-bottom; background: var(--accent); animation: agent-chat-blink .9s steps(2, start) infinite; }
 @keyframes agent-chat-blink { 50% { opacity: 0; } }
 .agent-chat-report { display: grid; gap: 8px; min-width: 0; }
-.agent-chat-report-headline { color: var(--text-strong); font-size: 12.5px; font-weight: 600; line-height: 1.65; white-space: normal; }
+.agent-chat-report-headline { color: var(--text-strong); font-size: 13px; font-weight: 600; line-height: 1.65; white-space: normal; }
 .agent-chat-report-section { display: grid; gap: 2px; padding-left: 8px; border-left: 2px solid var(--accent-wash); }
 .agent-chat-report-section h3 { margin: 0; color: var(--accent-ink); font-size: 10px; }
-.agent-chat-report-section ul { display: grid; gap: 1px; margin: 0; padding-left: 15px; color: var(--text); font-size: 11.5px; line-height: 1.65; }
+.agent-chat-report-section ul { display: grid; gap: 1px; margin: 0; padding-left: 15px; color: var(--text); font-size: 11px; line-height: 1.65; }
 .agent-chat-activity {
   display: grid;
   gap: 1px;
@@ -160,7 +160,7 @@
   line-height: 1.5;
 }
 .agent-chat-activity .agent-chat-activity-label { color: var(--text); font-weight: 600; }
-.agent-chat-activity code { font-size: 9.5px; overflow-wrap: anywhere; }
+.agent-chat-activity code { font-size: 9px; overflow-wrap: anywhere; }
 /*
  * The activity state colours live in agent-activity.css and use the semantic
  * tokens, because the same list renders inside the product surface where the
@@ -191,5 +191,5 @@
  */
 .agent-chat-composer textarea { min-height: 50px; max-height: none; resize: none; }
 .agent-chat-send { width: 36px; height: 36px; padding: 0; font-size: 16px; }
-.agent-chat-composer-hint { margin: 0; color: var(--text-muted); font-size: 9.5px; }
+.agent-chat-composer-hint { margin: 0; color: var(--text-muted); font-size: 9px; }
 

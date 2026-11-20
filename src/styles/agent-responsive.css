@@ -36,6 +36,6 @@
   .agent-page-note { display: none; }
   .agent-thread-area .agent-chat-thread { padding: 6px 16px 18px; }
   .agent-thread-area .agent-chat-composer { margin: 0 16px 14px; }
-  .agent-thread-area .agent-chat-message-assistant p { font-size: 15.5px; }
+  .agent-thread-area .agent-chat-message-assistant p { font-size: 15px; }
   .agent-inline-error { margin: 10px 16px 0; }
 }

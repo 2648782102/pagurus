@@ -43,7 +43,7 @@
 .organization-project-row.is-selected { background: var(--steel-wash); box-shadow: inset 2px 0 0 var(--steel); }
 .organization-project-row code { color: var(--muted); font: 9px/1.4 var(--font-mono); overflow-wrap: anywhere; }
 .organization-project-row strong, .organization-project-row small { min-width: 0; overflow-wrap: anywhere; }
-.organization-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10.5px; }
+.organization-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; }
 .organization-toggle input { width: 13px; height: 13px; accent-color: var(--rust); }
 .organization-threads { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
 

@@ -88,11 +88,11 @@
 
 .agent-context-facts { display: grid; gap: 5px; margin: 0; }
 .agent-context-facts > div { display: flex; justify-content: space-between; gap: 10px; }
-.agent-context-facts dt { flex: 0 0 auto; color: var(--text-muted); font-size: 10.5px; }
-.agent-context-facts dd { margin: 0; color: var(--text-strong); font-size: 10.5px; overflow-wrap: anywhere; text-align: right; }
+.agent-context-facts dt { flex: 0 0 auto; color: var(--text-muted); font-size: 10px; }
+.agent-context-facts dd { margin: 0; color: var(--text-strong); font-size: 10px; overflow-wrap: anywhere; text-align: right; }
 .agent-context-facts code { color: var(--text); font: 10.5px var(--font-mono); }
 
-.agent-context-empty { margin: 0; color: var(--text-muted); font-size: 10.5px; line-height: 1.65; }
+.agent-context-empty { margin: 0; color: var(--text-muted); font-size: 10px; line-height: 1.65; }
 .agent-context-grant { margin-bottom: 8px; }
 .agent-context-grant > span { display: block; margin-bottom: 4px; color: var(--text-faint); font-size: 10px; }
 .agent-context-grant ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
@@ -118,12 +118,12 @@
 .agent-context-activity li.is-waiting_approval { border-left-color: var(--state-caution-line); }
 .agent-context-activity-label { color: var(--text-strong); font-size: 11px; }
 .agent-context-activity-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.agent-context-activity-state { flex: 0 0 auto; color: var(--text-faint); font-size: 9.5px; }
+.agent-context-activity-state { flex: 0 0 auto; color: var(--text-faint); font-size: 9px; }
 .agent-context-activity li.is-running .agent-context-activity-state { color: var(--accent-ink); }
 .agent-context-activity li.is-succeeded .agent-context-activity-state { color: var(--state-signal); }
 .agent-context-activity li.is-failed .agent-context-activity-state { color: var(--state-danger); }
 .agent-context-activity li.is-waiting_approval .agent-context-activity-state { color: var(--state-caution-ink); font-weight: 600; }
-.agent-context-activity-kind { color: var(--text-faint); font-size: 9.5px; }
+.agent-context-activity-kind { color: var(--text-faint); font-size: 9px; }
 .agent-context-activity code { color: var(--text-muted); font: 9.5px var(--font-mono); overflow-wrap: anywhere; }
 .agent-context-count { color: var(--text-faint); font-size: 10px; }
 

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { AgentChatConversation } from '../shared/api/agent-chat.js';
 import type { CapabilitySummary } from './useAgentCapabilities.js';
 import { buildTimeline, timelineSummary, type TimelineKind } from './conversation-timeline.js';
+import { FactList } from '../shared/ui/primitives.js';
 
 /**
  * What the conversation is, in facts rather than prose.
@@ -53,13 +54,13 @@ export function AgentContextPanel({
           <>
             <section className="agent-context-section" aria-labelledby="ctx-pinned">
               <h3 id="ctx-pinned">固定版本</h3>
-              <dl className="agent-context-facts">
-                <div><dt>模型</dt><dd>{conversation.providerId}:{conversation.modelId}</dd></div>
-                <div><dt>思考强度</dt><dd>{EFFORT[conversation.reasoningEffort] ?? conversation.reasoningEffort}</dd></div>
-                <div><dt>Agent 版本</dt><dd><code title={conversation.agentRevisionId}>{shortId(conversation.agentRevisionId)}</code></dd></div>
-                <div><dt>配置版本</dt><dd><code title={conversation.configurationRevisionId}>{shortId(conversation.configurationRevisionId)}</code></dd></div>
-                <div><dt>会话</dt><dd><code title={conversation.id}>{shortId(conversation.id)}</code></dd></div>
-              </dl>
+              <FactList className="agent-context-facts" facts={[
+                { label: '模型', value: `${conversation.providerId}:${conversation.modelId}` },
+                { label: '思考强度', value: EFFORT[conversation.reasoningEffort] ?? conversation.reasoningEffort },
+                { label: 'Agent 版本', value: shortId(conversation.agentRevisionId), code: true, title: conversation.agentRevisionId },
+                { label: '配置版本', value: shortId(conversation.configurationRevisionId), code: true, title: conversation.configurationRevisionId },
+                { label: '会话', value: shortId(conversation.id), code: true, title: conversation.id },
+              ]} />
             </section>
 
             <section className="agent-context-section" aria-labelledby="ctx-capability">

@@ -136,6 +136,59 @@ export function Section({
   );
 }
 
+export interface FactEntry {
+  readonly label: ReactNode;
+  readonly value: ReactNode;
+  /** Renders the value in the monospaced voice — ids, paths, digests. */
+  readonly code?: boolean;
+  /** Full value for a truncated display, shown on hover. */
+  readonly title?: string;
+}
+
+/**
+ * A labelled list of facts: database path, model, revision ids.
+ *
+ * Nine panels wrote this markup out by hand — a `<dl>`, a `<div>` per row, a
+ * `<dt>` and a `<dd>` — which is where the row markup drifted (some wrap the
+ * value in `<code>`, some do not; some pass a title attribute, some do not).
+ * The list is the same idea every time, so it is one component.
+ *
+ * Only the structure is shared. The panels lay these out differently — a
+ * two-column grid with cell borders, a label/value row, a stacked block — and
+ * those are real differences, not drift. Passing `className` keeps each
+ * panel's own layout; the base rule below only resets the browser's `<dl>`
+ * margins and row margins, which is the part every one of them had to repeat.
+ */
+export function FactList({
+  facts,
+  className,
+  id,
+  label,
+}: {
+  readonly facts: readonly FactEntry[];
+  readonly className?: string;
+  readonly id?: string;
+  /** An accessible name, when the list is not introduced by a heading. */
+  readonly label?: string;
+}) {
+  return (
+    <dl className={cx('ui-facts', className)} id={id} aria-label={label}>
+      {facts.map((fact, index) => (
+        <div key={index}>
+          <dt>{fact.label}</dt>
+          <dd>
+            {fact.code
+              ? <code title={fact.title}>{fact.value}</code>
+              : fact.title !== undefined
+                ? <span title={fact.title}>{fact.value}</span>
+                : fact.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function Disclosure({
   summary,
   children,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { formatSupportBundle, type DiagnosticCheck } from '../../shared/api/operations.js';
-import { Button, Section, StatusDot, Tag } from '../../shared/ui/primitives.js';
+import { Button, FactList, Section, StatusDot, Tag } from '../../shared/ui/primitives.js';
 import { useRuntimeData } from './use-runtime-data.js';
 
 /**
@@ -53,12 +53,12 @@ export function RuntimeDataPanel({ runtime }: { readonly runtime: RuntimeInfo | 
 
       {phase === 'ready' && data && (
         <>
-          <dl className="history-detail-grid">
-            <div><dt>数据库</dt><dd><code>{data.databasePath}</code></dd></div>
-            <div><dt>体积</dt><dd>{formatBytes(data.sizeBytes)}</dd></div>
-            <div><dt>schema 版本</dt><dd>{data.schemaVersion}</dd></div>
-            <div><dt>状态</dt><dd>{data.exists ? '存在' : '尚未创建'}</dd></div>
-          </dl>
+          <FactList className="history-detail-grid" facts={[
+            { label: '数据库', value: data.databasePath, code: true },
+            { label: '体积', value: formatBytes(data.sizeBytes) },
+            { label: 'schema 版本', value: data.schemaVersion },
+            { label: '状态', value: data.exists ? '存在' : '尚未创建' },
+          ]} />
 
           <h4 className="runtime-data-subhead">环境检查</h4>
           {checks.length === 0

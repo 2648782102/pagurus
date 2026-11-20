@@ -79,7 +79,7 @@
   flex: 0 0 auto;
   padding: 6px 4px;
   color: var(--text-muted);
-  font-size: 11.5px;
+  font-size: 11px;
   text-decoration: none;
   border-bottom: 1px solid transparent;
 }
@@ -120,12 +120,12 @@
   border-radius: var(--radius-control);
   background: var(--state-danger-wash);
   color: var(--state-danger-strong);
-  font-size: 11.5px;
+  font-size: 11px;
 }
 .agent-stream-note {
   margin: 8px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;
   color: var(--text-muted);
-  font-size: 10.5px;
+  font-size: 10px;
 }
 
 /* Blocked state: no Runtime, or a Runtime without the Agent contract. */
@@ -146,7 +146,7 @@
 .agent-blocked p { margin: 0; color: var(--text); font-size: 13px; line-height: 1.7; }
 /* Scoped to the paragraph rule above so specificity wins by structure, not by
    !important: two classes beat one class plus an element. */
-.agent-blocked p.agent-blocked-detail { color: var(--text-muted); font-size: 11.5px; }
+.agent-blocked p.agent-blocked-detail { color: var(--text-muted); font-size: 11px; }
 .agent-blocked-actions { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
 
 /*

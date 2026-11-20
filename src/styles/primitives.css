@@ -201,3 +201,14 @@
 .ui-notice-body p { margin: 0; }
 .ui-notice-body code { font-size: 10px; }
 .ui-notice-action { flex: 0 0 auto; }
+
+/*
+ * Structure only. Every `<dl>` in the app had to reset the browser's margin and
+ * the default `<dd>` indent; that part is identical everywhere, so it lives
+ * here. How the rows are laid out — stacked, a label/value row, a bordered
+ * grid — stays with each panel, because those differences are deliberate.
+ */
+.ui-facts { margin: 0; }
+.ui-facts > div { margin: 0; }
+.ui-facts dd { margin: 0; overflow-wrap: anywhere; }
+.ui-facts code { font-family: var(--font-mono); }

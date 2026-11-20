@@ -18,7 +18,7 @@
   padding: 0;
   list-style: none;
   font-family: var(--font-code);
-  font-size: 10.5px;
+  font-size: 10px;
   line-height: 1.6;
 }
 .agent-chat-activity > li {

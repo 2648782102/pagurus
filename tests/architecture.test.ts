@@ -598,4 +598,21 @@ describe('front-end architecture boundaries', () => {
     expect(offences, `the composer's height is set in script; CSS must not cap or resize it:\n${offences.join('\n')}`)
       .toEqual([]);
   });
+
+  it('sizes text in whole pixels', () => {
+    /*
+     * A half-pixel step is indistinguishable at 1x and rounds differently at
+     * 2x, so it never reads as a deliberate rank — it is what a size becomes
+     * when someone nudges one value instead of choosing a step. The app had
+     * thirty-six of them (9.5, 10.5, 11.5, 12.5), each within a pixel of a
+     * neighbour, so four steps were doing the work of one.
+     *
+     * The dense scale in `semantic-tokens.css` has four whole-pixel rungs now.
+     * This keeps the next nudge from bringing the halves back.
+     */
+    const halves = styleFiles().flatMap((file) =>
+      [...withoutComments(read(file)).matchAll(/font-size:\s*(\d+\.\d+)px/g)]
+        .map((match) => `${file}: font-size: ${match[1]}px`));
+    expect(halves, `text sizes must be whole pixels:\n${halves.join('\n')}`).toEqual([]);
+  });
 });

@@ -118,14 +118,14 @@
 .agent-thread-area .agent-chat-message-user p {
   color: var(--text-strong);
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.7;
 }
 .agent-thread-area .agent-chat-message-user .agent-chat-message-author { color: var(--text-muted); }
 
 .agent-thread-area .agent-chat-report-headline { font: 600 15.5px/1.5 var(--font-reading); }
 .agent-thread-area .agent-chat-report-section h3 { color: var(--text-strong); font: 600 12px var(--font-body); }
-.agent-thread-area .agent-chat-report-section li { font-family: var(--font-reading); font-size: 14.5px; line-height: 1.75; }
+.agent-thread-area .agent-chat-report-section li { font-family: var(--font-reading); font-size: 15px; line-height: 1.75; }
 .agent-thread-area .agent-chat-empty { color: var(--text-muted); }
 .agent-thread-area .agent-chat-empty-title { color: var(--text-strong); font: 400 20px var(--font-reading); }
 
@@ -282,7 +282,7 @@
 .agent-chat-composer-notice {
   margin: 6px 0 0;
   color: var(--text-muted);
-  font-size: 10.5px;
+  font-size: 10px;
   line-height: 1.6;
 }
 

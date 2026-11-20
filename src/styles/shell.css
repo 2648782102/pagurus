@@ -92,7 +92,7 @@
 .nav-link.is-active .nav-icon { color: #e7a383; }
 .nav-copy { display: grid; gap: 1px; min-width: 0; }
 .nav-copy strong { color: inherit; font-size: 12px; font-weight: 600; }
-.nav-copy small { overflow: hidden; color: #82979b; font-size: 9.5px; text-overflow: ellipsis; white-space: nowrap; }
+.nav-copy small { overflow: hidden; color: #82979b; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .nav-link.is-active .nav-copy small { color: #a9bdc0; }
 .sidebar-foot {
   margin-top: auto;
@@ -130,7 +130,7 @@
   padding: 3px 8px;
   border: 1px solid var(--line-strong);
   color: var(--steel-ink);
-  font-size: 10.5px;
+  font-size: 10px;
   text-decoration: none;
 }
 .topbar-surface-link:hover { border-color: var(--steel); background: var(--steel-wash); }

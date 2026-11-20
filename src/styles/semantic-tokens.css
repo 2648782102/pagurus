@@ -104,9 +104,17 @@
   --focus-ring: rgba(47, 107, 99, .11);
 
   /*
-   * Type scale: six steps and no halves. A label, a helper, interface text,
-   * the reading body, a section title, a page title. Everything else resolves
-   * to one of them, which is what makes a hierarchy readable at a glance.
+   * The reading scale: six steps for prose and headings, no halves.
+   *
+   * This was documented as the scale for the whole app. It is not. It fits the
+   * reading column — a label, a helper, interface text, the answer body, a
+   * section heading, a page title — and only `--type-body` is used elsewhere,
+   * by the three places that set an answer's text size.
+   *
+   * The dense surfaces carry their own steps, declared below: 111 declarations
+   * across the console and the app's chrome sit between 9px and 12px, which is
+   * where an instrument panel lives. Forcing those onto a scale that starts at
+   * 12px would not make them consistent, it would make them wrong.
    */
   --type-label: 12px;
   --type-helper: 13px;
@@ -116,6 +124,24 @@
   --type-title: 30px;
   --tracking-title: -0.02em;
   --tracking-label: 0.06em;
+
+  /*
+   * The dense scale: four steps for instrument surfaces — a caption under a
+   * value, a control's own label, body text in a table, a heading above a
+   * group. Four steps, integers only.
+   *
+   * The app had grown twenty-two distinct font sizes, thirty-six of them on
+   * halves (9.5, 10.5, 11.5, 12.5). A half-pixel step is indistinguishable at
+   * 1x and rounds differently at 2x, so it never reads as a deliberate rank —
+   * it is what a size becomes when someone nudges one value instead of choosing
+   * a rung. The halved values collapse into their nearest step below.
+   *
+   * Named by role, not by number, so a rule says what the text *is*.
+   */
+  --dense-fine: 9px;
+  --dense-small: 10px;
+  --dense-label: 11px;
+  --dense-body: 13px;
 
   /* Surface depth: a hairline plus a shallow shadow reads as a solid panel;
      a bare 1px border reads as a drawn box. */

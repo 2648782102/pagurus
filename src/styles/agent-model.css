@@ -39,14 +39,14 @@
 .agent-model-facts > div { display: flex; justify-content: space-between; gap: 12px; }
 .agent-model-facts dt { color: var(--text-muted); font-size: 11px; }
 .agent-model-facts dd { margin: 0; color: var(--text-strong); font: 11px var(--font-body); overflow-wrap: anywhere; }
-.agent-model-note { margin: 0 0 10px; color: var(--text-muted); font-size: 10.5px; line-height: 1.65; }
+.agent-model-note { margin: 0 0 10px; color: var(--text-muted); font-size: 10px; line-height: 1.65; }
 .agent-model-capability {
   margin: 0 0 12px;
   padding: 9px 10px;
   border-radius: var(--radius-control);
   background: var(--accent-wash);
   color: var(--accent-ink);
-  font-size: 10.5px;
+  font-size: 10px;
   line-height: 1.65;
 }
 .agent-model-new {

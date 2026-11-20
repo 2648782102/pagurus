@@ -84,6 +84,6 @@
 h2 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
 h3 { margin: 0 0 10px; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
 h4 { margin: 0 0 8px; font-size: 12px; font-weight: 650; }
-.muted-label, .connection-note, .task-hint, .task-note, .detail-label { color: var(--muted); font-size: 10.5px; }
+.muted-label, .connection-note, .task-hint, .task-note, .detail-label { color: var(--muted); font-size: 10px; }
 .error-message { color: var(--danger); font-size: 11px; }
 

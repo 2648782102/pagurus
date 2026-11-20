@@ -1,5 +1,5 @@
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
-import { Button } from '../../shared/ui/primitives.js';
+import { Button, FactList } from '../../shared/ui/primitives.js';
 import { AgentChatComposer } from './AgentChatComposer.js';
 import { AgentChatThread } from './AgentChatThread.js';
 import { useAgentChat } from './useAgentChat.js';
@@ -74,11 +74,15 @@ export function AgentChatPanel({ runtime }: AgentChatPanelProps) {
           </header>
 
           {chat.detailsOpen && (
-            <dl className="history-detail-grid agent-chat-pins" id="agent-chat-details">
-              <div><dt>Agent revision</dt><dd><code>{chat.conversation.agentRevisionId}</code></dd></div>
-              <div><dt>Configuration</dt><dd><code>{chat.conversation.configurationRevisionId}</code></dd></div>
-              <div><dt>Conversation</dt><dd><code>{chat.conversation.id}</code></dd></div>
-            </dl>
+            <FactList
+              className="history-detail-grid agent-chat-pins"
+              id="agent-chat-details"
+              facts={[
+                { label: 'Agent revision', value: chat.conversation.agentRevisionId, code: true },
+                { label: 'Configuration', value: chat.conversation.configurationRevisionId, code: true },
+                { label: 'Conversation', value: chat.conversation.id, code: true },
+              ]}
+            />
           )}
           {chat.conversation.agentId === 'boss-agent' && (
             <p className="agent-chat-mode-note">老板 Agent：直接对话；需要时由 Runtime 校验组织动作。当前未接入网页搜索、本机文件或设备查询。</p>

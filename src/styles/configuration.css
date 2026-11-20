@@ -2,7 +2,7 @@
    Configuration and capabilities
    --------------------------------------------------------------------------- */
 
-.config-intro { max-width: 720px; margin: 10px 0 12px; color: var(--ink-soft); font-size: 11.5px; line-height: 1.65; }
+.config-intro { max-width: 720px; margin: 10px 0 12px; color: var(--ink-soft); font-size: 11px; line-height: 1.65; }
 .config-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-strong); }
 .config-section-head {
   display: flex;
@@ -12,7 +12,7 @@
   margin-bottom: 10px;
 }
 .config-section-head h3 { margin: 0 0 3px; font-size: 13px; }
-.config-section-head p { margin: 0; color: var(--muted); font-size: 10.5px; line-height: 1.55; }
+.config-section-head p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .config-dirty {
   flex: 0 0 auto;
   padding: 2px 7px;
@@ -36,7 +36,7 @@
 .config-facts > div:nth-child(3n) { border-right: 0; }
 .config-facts dt { color: var(--muted); font-size: 10px; }
 .config-facts dd { margin: 0; color: var(--ink-soft); font-size: 11px; overflow-wrap: anywhere; }
-.config-gate { margin: 8px 0 0; color: var(--signal); font-size: 10.5px; }
+.config-gate { margin: 8px 0 0; color: var(--signal); font-size: 10px; }
 .config-revisions { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line-strong); }
 .config-revisions li {
   display: grid;
@@ -48,7 +48,7 @@
 }
 .config-revisions li > div { display: grid; gap: 2px; min-width: 0; }
 .config-revisions strong { font-size: 11px; font-weight: 650; }
-.config-revisions code { color: var(--muted); font-size: 9.5px; overflow-wrap: anywhere; }
+.config-revisions code { color: var(--muted); font-size: 9px; overflow-wrap: anywhere; }
 .config-revisions li > span { color: var(--muted); font-size: 10px; white-space: nowrap; }
 .config-revisions li.is-current { background: var(--steel-wash); }
 .config-revisions li.is-current > span { color: var(--steel-ink); font-weight: 650; }
@@ -69,7 +69,7 @@
 .runtime-data-subhead {
   margin: 18px 0 8px;
   color: var(--text-strong);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 650;
 }
 .runtime-data-checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
@@ -82,7 +82,7 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-.runtime-data-checks > li code { flex: 0 0 auto; color: var(--text-strong); font-size: 10.5px; }
+.runtime-data-checks > li code { flex: 0 0 auto; color: var(--text-strong); font-size: 10px; }
 .runtime-data-checks > li span { min-width: 0; overflow-wrap: anywhere; }
 
 

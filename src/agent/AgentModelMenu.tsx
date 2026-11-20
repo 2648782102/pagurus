@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AgentChatModel } from '../shared/api/agent-chat.js';
 import type { CapabilitySummary } from './useAgentCapabilities.js';
+import { FactList } from '../shared/ui/primitives.js';
 
 interface AgentModelMenuProps {
   readonly pinned: { readonly provider: string; readonly model: string; readonly effort: string } | null;
@@ -75,11 +76,11 @@ export function AgentModelMenu({
       {open && (
         <div className="agent-model-popover" role="dialog" aria-label="模特信息">
           <p className="agent-model-popover-title">本次对话固定使用</p>
-          <dl className="agent-model-facts">
-            <div><dt>供应商</dt><dd>{pinned?.provider ?? '未知'}</dd></div>
-            <div><dt>模型</dt><dd>{pinned?.model ?? '未知'}</dd></div>
-            <div><dt>思考强度</dt><dd>{pinned ? EFFORT_LABELS[pinned.effort] ?? pinned.effort : '未知'}</dd></div>
-          </dl>
+          <FactList className="agent-model-facts" facts={[
+            { label: '供应商', value: pinned?.provider ?? '未知' },
+            { label: '模型', value: pinned?.model ?? '未知' },
+            { label: '思考强度', value: pinned ? EFFORT_LABELS[pinned.effort] ?? pinned.effort : '未知' },
+          ]} />
           <p className="agent-model-note">
             模型在对话创建时固定；换模型需要新开一段对话。当前目录共 {models.length} 个可选模型。
           </p>

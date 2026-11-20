@@ -1,6 +1,6 @@
 import { useConfiguration } from './useConfiguration.js';
 import type { ConfigurationDocument } from '../../shared/api/configuration.js';
-import { Button, Field, Notice, Section, Textarea } from '../../shared/ui/primitives.js';
+import { Button, FactList, Field, Notice, Section, Textarea } from '../../shared/ui/primitives.js';
 import { formatConfigurationSummary } from './configuration-summary.js';
 
 /**
@@ -164,12 +164,10 @@ function ConfigurationLive({
         </div>
         <span className="config-dirty">schemaVersion {document.schemaVersion}</span>
       </header>
-      <dl className="config-facts">
-        <div><dt>名称</dt><dd>{document.name}</dd></div>
-        {summary.map((entry) => (
-          <div key={entry.label}><dt>{entry.label}</dt><dd>{entry.value}</dd></div>
-        ))}
-      </dl>
+      <FactList className="config-facts" facts={[
+        { label: '名称', value: document.name },
+        ...summary.map((entry) => ({ label: entry.label, value: entry.value })),
+      ]} />
     </section>
   );
 }
