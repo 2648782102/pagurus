@@ -264,6 +264,38 @@ describe('Agent Chat panel', () => {
     expect(onDecision).not.toHaveBeenCalled();
   });
 
+  it('says so when a message was asked while the previous reply was being written', () => {
+    /*
+     * Two concurrent tasks each receive the transcript as it stood when they
+     * were asked, so neither reply knows about the other. Side by side they
+     * read as one exchange, which is a false claim about what each reply knew.
+     * The timestamps are the shape the Runtime actually produces (measured):
+     * the first answer's last update lands after the second question.
+     */
+    const messages: readonly AgentChatMessage[] = [
+      { id: 'u1', sequence: 1, author: 'user', body: '先看 A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
+      { id: 'a1', sequence: 2, author: 'assistant', body: '这是 A 的回复', state: 'replied', taskId: 'task_a', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:09.000Z', replyToId: 'u1', activity: [] },
+      { id: 'u2', sequence: 3, author: 'user', body: '顺便也看 B', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:01.000Z', replyToId: null, activity: [] },
+      { id: 'a2', sequence: 4, author: 'assistant', body: '这是 B 的回复', state: 'replied', taskId: 'task_b', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:03.000Z', replyToId: 'u2', activity: [] },
+    ];
+    render(<AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />);
+    const notes = screen.getAllByText(/发出时，上一条回复还在生成/);
+    // Only the second question was asked mid-reply; the first waited for nothing.
+    expect(notes).toHaveLength(1);
+    expect(notes[0]?.textContent).toContain('第 2 条');
+  });
+
+  it('does not annotate a conversation where every question waited', () => {
+    const messages: readonly AgentChatMessage[] = [
+      { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
+      { id: 'a1', sequence: 2, author: 'assistant', body: '答 A', state: 'replied', taskId: 'task_a', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:02.000Z', replyToId: 'u1', activity: [] },
+      { id: 'u2', sequence: 3, author: 'user', body: 'B', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:04.000Z', replyToId: null, activity: [] },
+      { id: 'a2', sequence: 4, author: 'assistant', body: '答 B', state: 'replied', taskId: 'task_b', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:06.000Z', replyToId: 'u2', activity: [] },
+    ];
+    render(<AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />);
+    expect(screen.queryByText(/发出时，上一条回复还在生成/)).toBeNull();
+  });
+
   it('keeps Shift Enter as a newline and hides technical details by default', async () => {
     render(<AgentChatPanel runtime={runtime} />);
     fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));

@@ -1,10 +1,19 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, type ReactNode } from 'react';
 import type {
   AgentChatActivity,
   AgentChatMessage,
   AgentChatMessageState,
 } from '../../shared/api/agent-chat.js';
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
+import { blockingReply, concurrentTurnIds } from './concurrent-turns.js';
+
+/**
+ * A short handle for a message in the thread, so a note can point at a
+ * specific earlier turn without quoting it.
+ */
+function turnLabel(message: AgentChatMessage): string {
+  return `第 ${message.sequence} 条`;
+}
 
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
@@ -212,6 +221,13 @@ export function AgentChatThread({
 }: AgentChatThreadProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
+  /*
+   * A question asked while an earlier reply was still being written is shown
+   * as such, because the two replies were each written without the other and
+   * would otherwise read as one exchange. Derived from published timestamps, so
+   * it survives a reload. See `concurrent-turns.ts`.
+   */
+  const concurrentIds = useMemo(() => concurrentTurnIds(messages), [messages]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -261,9 +277,10 @@ export function AgentChatThread({
       )}
       {messages.map((message) => {
         const parts = pendingApprovalParts(message);
+        const concurrent = concurrentIds.has(message.id);
         return (
           <article
-            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}`}
+            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}`}
             key={message.id}
             aria-busy={isWorking(message.state)}
           >
@@ -271,6 +288,20 @@ export function AgentChatThread({
               <span className="agent-chat-message-author">
                 {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
               </span>
+              {/*
+               * Said plainly, because the alternative is a reader assuming the
+               * later reply had read the earlier one. It does not say "still
+               * generating": by the time this renders, both have finished.
+               */}
+              {concurrent && (
+                <span className="agent-chat-concurrent-note">
+                  发出时，上一条回复还在生成
+                  {(() => {
+                    const reply = blockingReply(messages, message.id);
+                    return reply ? `（${turnLabel(reply)}）` : '';
+                  })()}
+                </span>
+              )}
               {STATE_LABELS[message.state] && (
                 <span className="agent-chat-state-label" role="status">
                   <StatusDot tone={statusTone(message.state)} />

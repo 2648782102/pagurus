@@ -71,6 +71,18 @@
 }
 .agent-thread-area .agent-chat-state-label { font: 500 10.5px var(--font-body); }
 
+/*
+ * A turn asked mid-reply. The note is quiet — it explains a fact about the
+ * transcript, it is not a warning — but it has to be legible, because without
+ * it the two replies read as one exchange.
+ */
+.agent-chat-concurrent-note {
+  color: var(--text-muted);
+  font: 400 10.5px var(--font-body);
+  border-bottom: 1px dotted var(--border-strong);
+  cursor: help;
+}
+
 .agent-thread-area .agent-chat-message-assistant .agent-chat-message-author {
   color: var(--accent-ink);
   font-weight: 600;
