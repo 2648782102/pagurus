@@ -1,0 +1,53 @@
+/*
+ * Motion tokens: duration, easing, and distance in one place.
+ *
+ * Before this file, durations were written per rule — `.12s` fourteen times,
+ * plus .1s, .14s, .16s, .18s, .32s and .9s scattered across six sheets. None of
+ * those numbers were wrong on their own, but together they made speed feel
+ * arbitrary: two controls that animate together finished at different times.
+ *
+ * Three durations, chosen by what the movement *says* rather than by how big
+ * the element is:
+ *
+ *   --motion-quick    state that the pointer is over, or focus arriving
+ *   --motion-settle   something appearing or leaving in place
+ *   --motion-travel   something crossing a distance — a drawer, a panel
+ *
+ * `--motion-attention` is the one deliberate outlier: a looping cue that must
+ * stay readable while it repeats, so it is slow on purpose.
+ *
+ * Easing follows the same logic. Anything that starts and stops on screen uses
+ * an ease-out curve, because the eye reads the deceleration as arrival;
+ * `--ease` (the existing cubic-bezier(.4,0,.2,1)) is kept for continuity with
+ * the console surface.
+ */
+:root {
+  --motion-quick: 120ms;
+  --motion-settle: 190ms;
+  --motion-travel: 280ms;
+  --motion-attention: 1400ms;
+
+  /*
+   * Decelerating curves. --ease-out is the general one; --ease-out-soft has a
+   * gentler tail for larger travel, where a sharp stop reads as a snap.
+   */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-out-soft: cubic-bezier(.16, 1, .3, 1);
+
+  /*
+   * Distance for travel motion. One value, so a drawer and a sheet move the
+   * same visual distance instead of each picking a pixel count.
+   */
+  --motion-shift: 14px;
+}
+
+/*
+ * Stagger spacing for lists that appear as a group.
+ *
+ * Applied as `animation-delay: calc(var(--motion-stagger) * var(--i))`, where
+ * the list sets `--i` per row. Small enough that a full drawer settles well
+ * inside a second; large enough that the eye sees an order rather than a flash.
+ */
+:root {
+  --motion-stagger: 26ms;
+}

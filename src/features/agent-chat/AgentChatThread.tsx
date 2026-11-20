@@ -250,9 +250,30 @@ export function AgentChatThread({
    */
   const concurrentIds = useMemo(() => concurrentTurnIds(messages), [messages]);
 
+  /*
+   * Follow the newest turn, but only when the reader is already at the bottom.
+   *
+   * A new message scrolls smoothly, because the jump is the only part of the
+   * arrival the reader can feel; a streaming update sets the position directly,
+   * because a smooth scroll restarted on every frame never finishes and reads
+   * as the view bouncing while text is appended.
+   *
+   * `reducedMotion` disables the smooth variant — the OS setting is about not
+   * being moved, and a scroll animation counts.
+   */
+  const previousCountRef = useRef(messages.length);
   useEffect(() => {
     const container = containerRef.current;
+    const previousCount = previousCountRef.current;
+    previousCountRef.current = messages.length;
     if (!container || !nearBottomRef.current) return;
+    const grew = messages.length > previousCount;
+    const reduced = typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (grew && !reduced && typeof container.scrollTo === 'function') {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      return;
+    }
     container.scrollTop = container.scrollHeight;
   }, [messages]);
 

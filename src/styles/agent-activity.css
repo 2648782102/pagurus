@@ -112,3 +112,31 @@
   opacity: .45;
   cursor: not-allowed;
 }
+
+/*
+ * A message arriving.
+ *
+ * It rises a short distance and fades in, which reads as "this appeared in the
+ * thread" rather than "the page repainted". The distance is deliberately under
+ * one line height: a long slide on every message would make a fast exchange
+ * feel like it is stuttering.
+ *
+ * This is an `animation`, not a `transition`, because the element is inserted
+ * rather than changed — and it must not replay while a reply streams. Streaming
+ * updates replace the text inside an element that is already mounted, so it
+ * animates once and then stays put.
+ */
+@keyframes agent-message-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.agent-thread-area .agent-chat-message {
+  animation: agent-message-arrive var(--motion-settle) var(--ease-out) both;
+}

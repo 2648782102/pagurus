@@ -1,4 +1,5 @@
 import { RuntimeStatusPanel } from '../features/runtime-status/RuntimeStatusPanel.js';
+import { WorkspaceIcon } from './WorkspaceIcon.js';
 import type {
   RuntimeConnectionError,
   RuntimeConnectionState,
@@ -49,7 +50,7 @@ export function OverviewContent({
               if (!entry) return null;
               return (
                 <a className="overview-quick-link" href={entry.href} key={entry.id}>
-                  <span className="overview-quick-icon" aria-hidden="true">{entry.icon}</span>
+                  <span className="overview-quick-icon"><WorkspaceIcon id={entry.id} size={20} /></span>
                   <span>
                     <strong>{entry.label}</strong>
                     <small>{entry.hint}</small>
@@ -79,7 +80,7 @@ export function OverviewContent({
                   if (!entry) return null;
                   return (
                     <a className="directory-link" href={entry.href} key={entry.id}>
-                      <span className="directory-icon" aria-hidden="true">{entry.icon}</span>
+                      <span className="directory-icon"><WorkspaceIcon id={entry.id} size={16} /></span>
                       <span className="directory-copy">
                         <strong>{group.labels?.[entry.id] ?? entry.label}</strong>
                         <small>{entry.hint}</small>

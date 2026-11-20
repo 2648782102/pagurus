@@ -155,7 +155,7 @@
     background: var(--surface-raised);
     box-shadow: -10px 0 30px rgba(20, 28, 25, .12);
   }
-  .agent-workspace.has-context .agent-page { transition: opacity .12s ease; }
+  .agent-workspace.has-context .agent-page { transition: opacity var(--motion-quick) var(--ease-out); }
 }
 
 @media (prefers-reduced-motion: reduce) {
