@@ -59,10 +59,21 @@
 .organization-panel,
 .runtime-panel {
   padding: 20px 22px;
-  border: 1px solid var(--line);
+  /*
+   * Depth instead of a drawn box: a hairline plus a very shallow shadow reads
+   * as a solid panel lifting off the page. A bare 1px border reads as a
+   * rectangle someone drew, which is the flat look this replaces.
+   */
+  border: 0;
+  box-shadow: var(--lift-1), var(--edge);
   background: var(--paper);
 }
-.overview-directory { padding: 20px 22px 22px; border: 1px solid var(--line); background: var(--paper); }
+.overview-directory {
+  padding: 20px 22px 22px;
+  border: 0;
+  box-shadow: var(--lift-1), var(--edge);
+  background: var(--paper);
+}
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
 .eyebrow {
   margin: 0 0 6px;

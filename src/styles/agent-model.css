@@ -1,0 +1,66 @@
+/* ---------------------------------------------------------------------------
+   Model picker: the popover, pinned facts, and the new-conversation action.
+   Split from agent-chat.css to keep each layer reviewable.
+   --------------------------------------------------------------------------- */
+
+.agent-model-menu { position: relative; }
+.agent-model-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: 500 10.5px var(--font-body);
+  transition: background-color .12s ease, border-color .12s ease;
+}
+.agent-model-trigger:hover { border-color: var(--border-strong); background: var(--surface-sunk); }
+.agent-model-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.agent-model-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-model-effort { color: var(--text-muted); }
+
+.agent-model-popover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  padding: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  box-shadow: 0 10px 30px rgba(20, 28, 25, .13);
+}
+.agent-model-popover-title { margin: 0 0 10px; color: var(--text-strong); font: 600 11.5px var(--font-body); }
+.agent-model-facts { display: grid; gap: 5px; margin: 0 0 10px; }
+.agent-model-facts > div { display: flex; justify-content: space-between; gap: 12px; }
+.agent-model-facts dt { color: var(--text-muted); font-size: 11px; }
+.agent-model-facts dd { margin: 0; color: var(--text-strong); font: 11px var(--font-body); overflow-wrap: anywhere; }
+.agent-model-note { margin: 0 0 10px; color: var(--text-muted); font-size: 10.5px; line-height: 1.65; }
+.agent-model-capability {
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  border-radius: var(--radius-control);
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  font-size: 10.5px;
+  line-height: 1.65;
+}
+.agent-model-new {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  color: var(--text-strong);
+  cursor: pointer;
+  font: 600 11.5px var(--font-body);
+}
+.agent-model-new:hover { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-ink); }
+
+/* --- message actions ----------------------------------------------------- */
+
+.agent-message-actions { display: flex; gap: 6px; margin-top: 10px; opacity: 0; transition: opacity .12s ease; }

@@ -66,6 +66,28 @@
   --measure-reading: var(--ag-measure);
   --interaction-hover: rgba(20, 28, 25, .06);
   --focus-ring: rgba(47, 107, 99, .11);
+
+  /*
+   * Type scale: six steps and no halves. A label, a helper, interface text,
+   * the reading body, a section title, a page title. Everything else resolves
+   * to one of them, which is what makes a hierarchy readable at a glance.
+   */
+  --type-label: 12px;
+  --type-helper: 13px;
+  --type-ui: 15px;
+  --type-body: 17px;
+  --type-section: 22px;
+  --type-title: 30px;
+  --tracking-title: -0.02em;
+  --tracking-label: 0.06em;
+
+  /* Surface depth: a hairline plus a shallow shadow reads as a solid panel;
+     a bare 1px border reads as a drawn box. */
+  --edge: 0 0 0 1px rgba(20, 28, 25, .06);
+  --lift-1: 0 1px 2px rgba(20, 28, 25, .05);
+  --lift-2: 0 2px 8px rgba(20, 28, 25, .07), 0 0 0 1px rgba(20, 28, 25, .05);
+  --inset-well: inset 0 1px 2px rgba(20, 28, 25, .05);
+  --ease: cubic-bezier(.4, 0, .2, 1);
   --on-accent: var(--ag-on-accent);
   --state-caution-line: var(--ag-caution-line);
   --state-caution-ink: var(--ag-caution-ink);
@@ -126,6 +148,19 @@
   --measure-reading: var(--content-width);
   --interaction-hover: rgba(23, 33, 36, .06);
   --focus-ring: rgba(54, 107, 122, .14);
+  --type-label: 12px;
+  --type-helper: 13px;
+  --type-ui: 15px;
+  --type-body: 17px;
+  --type-section: 22px;
+  --type-title: 30px;
+  --tracking-title: -0.02em;
+  --tracking-label: 0.06em;
+  --edge: 0 0 0 1px rgba(23, 33, 36, .07);
+  --lift-1: 0 1px 2px rgba(23, 33, 36, .06);
+  --lift-2: 0 2px 8px rgba(23, 33, 36, .09), 0 0 0 1px rgba(23, 33, 36, .06);
+  --inset-well: inset 0 1px 2px rgba(23, 33, 36, .06);
+  --ease: cubic-bezier(.4, 0, .2, 1);
   --on-accent: #f7faf8;
   --state-caution-line: var(--amber);
   --state-caution-ink: var(--amber);
