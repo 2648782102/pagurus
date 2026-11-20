@@ -3,23 +3,18 @@ import {
   createAgentChatConversation,
   decideAgentChatApproval,
   getAgentChatConversation,
-  isBossAgent,
   isPendingAgentChatState,
-  listAgentChatAgents,
-  listAgentChatModels,
-  listAgentChatConversations,
+
   postAgentChatMessage,
   supportsAgentChat,
-  type AgentChatAgent,
   type AgentChatConversation,
-  type AgentChatConversationSummary,
-  type AgentChatModel,
-  type AgentChatReasoningEffort,
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 import { useAgentChatStream } from './useAgentChatStream.js';
 import { replaceWith } from './merge-conversation.js';
+import { loadCatalogSnapshot, pickFirstAgent, pickModelReference, useAgentCatalog } from './use-agent-catalog.js';
+import { useConversationDraft } from './use-conversation-draft.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 
 function errorText(cause: unknown): string {
@@ -40,35 +35,15 @@ export function useAgentChat(
 ) {
   const autoResume = options.autoResume ?? false;
   const supported = supportsAgentChat(runtime);
-  const [agents, setAgents] = useState<readonly AgentChatAgent[]>([]);
-  const [selectedAgentId, setSelectedAgentId] = useState('');
-  const [models, setModels] = useState<readonly AgentChatModel[]>([]);
-  const [selectedModelReference, setSelectedModelReference] = useState('');
-  const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('medium');
-  const [recent, setRecent] = useState<readonly AgentChatConversationSummary[]>([]);
+  const catalog = useAgentCatalog();
+  const {
+    agents, selectedAgentId, models, selectedModelReference, reasoningEffort, recent,
+    setAgents, setSelectedAgentId, setModels, setSelectedModelReference, setReasoningEffort, setRecent,
+  } = catalog;
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
-  const [draft, setDraft] = useState('');
-  /*
-   * A draft belongs to the conversation it was written in.
-   *
-   * Switching to history and back used to discard whatever was half-written,
-   * which is the one loss a reader cannot undo. Kept in memory only: the
-   * client boundary forbids browser storage, so a reload still starts empty.
-   * The key is the conversation id, or '' for the not-yet-created draft.
-   */
-  const draftsByConversation = useRef<Map<string, string>>(new Map());
-  const draftKey = conversation?.id ?? '';
-
-  const updateDraft = useCallback((value: string) => {
-    setDraft(value);
-    if (value.length === 0) draftsByConversation.current.delete(draftKey);
-    else draftsByConversation.current.set(draftKey, value);
-  }, [draftKey]);
-
-  /** Restore the draft that belongs to the conversation now becoming active. */
-  const restoreDraft = useCallback((conversationId: string | null) => {
-    setDraft(draftsByConversation.current.get(conversationId ?? '') ?? '');
-  }, []);
+  const { draft, setDraft: updateDraft, clearDraftFor, restoreDraft } = useConversationDraft(
+    conversation?.id ?? null,
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -89,12 +64,8 @@ export function useAgentChat(
   const loadAgents = useCallback(async (options: { restoreLatest?: boolean } = {}) => {
     if (!supported) return;
     try {
-      const [list, catalog, history] = await Promise.all([
-        listAgentChatAgents(),
-        listAgentChatModels().catch(() => [] as readonly AgentChatModel[]),
-        listAgentChatConversations().catch(() => null),
-      ]);
-      const available = list.filter((agent) => !agent.archived);
+      const snapshot = await loadCatalogSnapshot();
+      const available = snapshot.agents.filter((agent) => !agent.archived);
       setAgents(available);
       // Pick the identity in the same commit that publishes the list.
       //
@@ -104,20 +75,16 @@ export function useAgentChat(
       // so the landing prompt claimed the Runtime returned no usable Agent and
       // disabled the input. Both reads describe one snapshot; publish them
       // together.
-      setSelectedAgentId((current) => current || available.find((agent) => isBossAgent(agent))?.id
-        || available.find((agent) => agent.isDefault)?.id
-        || available[0]?.id || '');
-      setModels(catalog);
-      const preferred = history?.defaultModelId
-        ? catalog.find((model) => model.modelId === history.defaultModelId)
-        : undefined;
-      setSelectedModelReference((current) => current || preferred?.reference || catalog[0]?.reference || '');
-      setRecent(history?.conversations ?? []);
+      setSelectedAgentId((current) => current || pickFirstAgent(available));
+      setModels(snapshot.models);
+      setSelectedModelReference((current) => current
+        || pickModelReference(snapshot.models, snapshot.history?.defaultModelId ?? null));
+      setRecent(snapshot.history?.conversations ?? []);
       // Restore the newest thread that contains messages. The Runtime lists
       // newest-created first, so its head is often a conversation the user
       // opened and abandoned; resuming that would look like a broken screen.
       const resumable = options.restoreLatest
-        ? history?.conversations.find((entry) => entry.messageCount > 0)
+        ? snapshot.history?.conversations.find((entry) => entry.messageCount > 0)
         : undefined;
       if (resumable) {
         try {
@@ -140,15 +107,7 @@ export function useAgentChat(
    * connected, so the landing list needs a low-frequency refresh to show the
    * new last-message preview. An open conversation is handled by its stream.
    */
-  const refreshRecent = useCallback(async () => {
-    if (!supported) return;
-    try {
-      const history = await listAgentChatConversations();
-      setRecent(history.conversations);
-    } catch {
-      // A history refresh is opportunistic: never surface it as a chat error.
-    }
-  }, [supported]);
+  const refreshRecent = catalog.refreshRecent;
 
   useVisiblePolling(
     () => refreshRecent(),
@@ -275,8 +234,7 @@ export function useAgentChat(
         text,
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
       });
-      draftsByConversation.current.delete(current.id);
-      setDraft('');
+      clearDraftFor(current.id);
       applyConversation(await getAgentChatConversation(current.id));
       void refreshRecent();
     } catch (cause) {
@@ -284,7 +242,7 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [applyConversation, busy, draft, refreshRecent]);
+  }, [applyConversation, busy, clearDraftFor, draft, refreshRecent]);
 
   const decideApproval = useCallback(async (
     assistantMessageId: string,
