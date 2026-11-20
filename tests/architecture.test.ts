@@ -37,12 +37,6 @@ function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
 }
 
-/**
- * Palette entries that carry no theme: a typeface, a monospace alias, or a
- * corner radius. They cannot leak a colour, so the guard ignores them.
- */
-const THEME_NEUTRAL = new Set(['font-sans', 'font-mono', 'mono', 'radius-lg', 'radius-md', 'radius-sm']);
-
 /** The scope the product surface renders inside, in either theme. */
 const PRODUCT_SCOPE = /\.agent-app(?:-blocked)?\b/;
 
@@ -51,40 +45,53 @@ const PRODUCT_SCOPE = /\.agent-app(?:-blocked)?\b/;
  * they can be compared against the identifiers inside `var(--…)`.
  */
 function declaredBy(rule: CssRule): string[] {
-  return [...rule.body.matchAll(/(?:^|;)[ \t]*--([\w-]+)[ \t]*:/gm)].map((match) => match[1]!);
+  /*
+   * The `;` is a lookbehind, not part of the match. Consuming it would stop
+   * back-to-back declarations from matching: every second custom property in a
+   * block would be skipped.
+   */
+  return [...rule.body.matchAll(/(?<=^|;)\s*--([\w-]+)\s*:/g)].map((match) => match[1]!);
 }
 
 /**
- * The palette entries a product-facing rule must not read.
+ * The console-only values a product-facing rule must not read.
  *
- * A palette token is only a leak when the product surface inherits the console
- * value. `--rust` is safe because the dark Agent theme redefines it; `--steel`
- * is not, because nothing does, so a rule inside the dark chat resolves it to
- * the light teal that was meant for the console. Deriving the set instead of
- * hard-coding it means the guard follows the theme rather than a stale list,
- * and stops objecting the moment a token is properly themed.
+ * Decision rule: a value declared on the console entry is off-limits unless the
+ * product surface adopts it explicitly — by re-declaring it under `.agent-app`,
+ * or by aliasing it from a product-scoped block, the way `--font-code` and
+ * `--radius-control` replace the console `--font-mono` and `--radius-md`.
+ *
+ * That makes one test cover three different failures without a hand-kept list:
+ * a colour that was never themed (`--steel` resolving to light teal on a
+ * near-black ground), a seam colour left behind when its partner was themed
+ * (`--rust-wash`), and the product borrowing the console's layout grid
+ * (`--content-width`, `--rail-width`), which differ between the two surfaces
+ * by design. A value stops being flagged the moment it is properly adopted.
  */
 function unthemedPalette(): Set<string> {
   const rules = styleFiles().flatMap(cssRules);
-  /*
-   * The palette is what the console entry declares on the document root. A
-   * shared scale like `--space-2` also lives there, but it is not themed by
-   * design — it is a length, identical on both surfaces — so it never leaks.
-   */
-  const palette = new Set(
+  const declared = new Set(
     rules
       .filter((rule) => rule.file === 'src/styles/tokens.css')
       .filter((rule) => rule.selectors.includes(':root'))
       .flatMap(declaredBy),
   );
-  const themed = new Set<string>();
 
   for (const rule of rules) {
     if (!rule.selectors.some((selector) => PRODUCT_SCOPE.test(selector))) continue;
-    for (const name of declaredBy(rule)) themed.add(name);
+    for (const name of declaredBy(rule)) declared.delete(name);
+    /*
+     * `--font-code: var(--font-mono)` adopts the console value on purpose.
+     * Only a custom property declaration counts: matching any `: var(--x)`
+     * would let `border-color: var(--paper)` exempt the very value it leaks,
+     * and the guard would pass its own violations.
+     */
+    for (const match of rule.body.matchAll(/(?<=^|;)\s*--[\w-]+\s*:\s*var\(--([\w-]+)\)\s*;/g)) {
+      declared.delete(match[1]!);
+    }
   }
 
-  return new Set([...palette].filter((name) => !themed.has(name) && !THEME_NEUTRAL.has(name)));
+  return declared;
 }
 
 /**
