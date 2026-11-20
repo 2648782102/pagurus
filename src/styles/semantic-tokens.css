@@ -58,10 +58,30 @@
   --accent-rail-strong: #101a16;
   --accent-rail-ink-soft: var(--ag-rail-ink-soft);
 
-  --action-primary: var(--rust);
-  --action-primary-strong: var(--rust-strong);
-  --action-primary-wash: var(--rust-wash);
-  --action-primary-contrast: var(--ag-action-contrast, #ffffff);
+  /*
+   * The product surface uses its own accent for a primary action, not the
+   * console's rust.
+   *
+   * Rust is this app's "something is being changed" mark — it belongs to the
+   * operator console, where every action is a write. In the shipped surface the
+   * common action is "talk to the Agent", and the send button already paints it
+   * with `--accent`. Leaving `--action-primary` on rust made "新对话" an orange
+   * pill beside a teal send button: two primaries, two colours, in one view.
+   */
+  --action-primary: var(--accent);
+  --action-primary-strong: var(--accent-ink);
+  --action-primary-wash: var(--accent-wash);
+  /*
+   * `--ag-on-accent` is the ink defined against the accent fill, and it already
+   * flips with the theme: near-white in light (where the teal is dark) and
+   * near-black in dark (where it is light). That is exactly the pair a filled
+   * control needs, and reusing it is why this works in both themes.
+   *
+   * It replaced `--ag-action-contrast`, the dark brown chosen for the rust
+   * fill. On the light theme's dark teal that measured 2.94:1 — the label was
+   * unreadable, and only in the theme nobody had been looking at.
+   */
+  --action-primary-contrast: var(--ag-on-accent);
   --action-danger-border: var(--ag-danger);
   --action-danger-hover: var(--ag-danger-wash);
   --action-danger-border-strong: var(--ag-danger);

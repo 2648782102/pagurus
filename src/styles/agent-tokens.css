@@ -63,6 +63,28 @@
 }
 
 /*
+ * Light defaults for the tokens the dark block also sets.
+ *
+ * This used to sit *after* the dark block, under a comment claiming it was
+ * "named so dark can override it" — which it could not, being later in the
+ * file with the same specificity. `--ag-on-accent` was the casualty: dark asked
+ * for dark lettering on its light teal, this overwrote it with near-white, and
+ * the send button carried an invisible arrow at 1.75:1.
+ *
+ * Declared before the dark block now, so the dark overrides win the cascade the
+ * way the comment always said they did.
+ */
+.agent-app,
+.agent-app-blocked {
+  --ag-on-rail: #f4f7f4;
+  --ag-on-accent: #f7faf8;
+  --ag-caution-line: #b08b3a;
+  --ag-caution-ink: #8a6a1e;
+  --ag-danger-strong: #743528;
+  --ag-rail-ink-soft: #e8d3c2;
+}
+
+/*
  * Dark theme: blue-violet near-black, not warm charcoal or neutral grey.
  * Semantic tokens (`semantic-tokens.css`) need no changes: they alias `--ag-*`,
  * so overriding the palette here switches the whole Agent surface at once.
@@ -92,7 +114,13 @@
 
   /* Fixed light-on-rail values from the light palette must follow the dark rail. */
   --ag-on-rail: #f2f4fa;
-  --ag-on-accent: #f2f4fa;
+  /*
+   * The accent is a light teal on this ground, so its label has to be dark.
+   * It was light-on-light here — 1.75:1, a send arrow you cannot see. The value
+   * below the dark block used to overwrite this one, which is why the dark
+   * theme never showed a readable primary; see the shared block's comment.
+   */
+  --ag-on-accent: #10201c;
   --ag-caution-line: #c99c4a;
   --ag-caution-ink: #c99c4a;
   --ag-danger-strong: var(--ag-danger);
@@ -117,13 +145,3 @@
   --inset-well: inset 0 1px 3px rgba(0, 0, 0, .45);
 }
 
-/* The light palette's on-rail ink, named so dark can override it. */
-.agent-app,
-.agent-app-blocked {
-  --ag-on-rail: #f4f7f4;
-  --ag-on-accent: #f7faf8;
-  --ag-caution-line: #b08b3a;
-  --ag-caution-ink: #8a6a1e;
-  --ag-danger-strong: #743528;
-  --ag-rail-ink-soft: #e8d3c2;
-}

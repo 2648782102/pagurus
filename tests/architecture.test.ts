@@ -489,4 +489,74 @@ describe('front-end architecture boundaries', () => {
         .map((match) => `${file}: ${match[1]}`));
     expect(missing, `every referenced custom property must be defined:\n${missing.join('\n')}`).toEqual([]);
   });
+
+  it('pairs every primary fill with a label that can be read on it', () => {
+    /*
+     * Colour pairs are chosen once and then edited separately, so the pair can
+     * drift apart without either value looking wrong on its own. That happened
+     * here: the primary fill moved from the console's rust to the product's
+     * teal, and the label stayed the light ink chosen for a dark fill — 1.75:1,
+     * a button whose text is invisible.
+     *
+     * The rule is arithmetic rather than visual. AA for normal text is 4.5:1;
+     * a filled control's label is normal text. Both themes are checked, because
+     * the fill changes between them and only one was looked at.
+     */
+    const hex = (value: string): [number, number, number] | null => {
+      const match = /^#([0-9a-f]{6})$/i.exec(value.trim());
+      if (!match) return null;
+      const raw = match[1]!;
+      return [
+        Number.parseInt(raw.slice(0, 2), 16),
+        Number.parseInt(raw.slice(2, 4), 16),
+        Number.parseInt(raw.slice(4, 6), 16),
+      ];
+    };
+    const luminance = ([r, g, b]: readonly [number, number, number]): number => {
+      const channel = (value: number): number => {
+        const scaled = value / 255;
+        return scaled <= 0.03928 ? scaled / 12.92 : ((scaled + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const contrast = (a: readonly [number, number, number], b: readonly [number, number, number]): number => {
+      const [high, low] = [luminance(a), luminance(b)].sort((left, right) => right - left) as [number, number];
+      return (high + 0.05) / (low + 0.05);
+    };
+    /*
+     * Read a property's literal value from the block that owns it. The file is
+     * split at its block boundaries rather than searched whole: the light
+     * values appear first and the dark overrides later, so a plain search
+     * returns the light one for both.
+     */
+    const darkStart = withoutComments(read('src/styles/agent-tokens.css')).indexOf("[data-agent-theme='dark']");
+    const agentTokens = withoutComments(read('src/styles/agent-tokens.css'));
+    const tokenValue = (name: string, dark: boolean): string | null => {
+      const scoped = dark ? agentTokens.slice(darkStart) : agentTokens.slice(0, darkStart);
+      const match = new RegExp(`${name}:\\s*([^;]+);`).exec(scoped);
+      return match ? match[1]!.trim() : null;
+    };
+
+    /*
+     * The pairs that actually ship: the accent fill and the ink chosen for it,
+     * in both themes. A pair whose values are not both literal hex is skipped
+     * rather than guessed at — this test guards the pair, it does not resolve
+     * the cascade.
+     */
+    const cases: ReadonlyArray<readonly [string, string, boolean]> = [
+      ['--ag-tide', '--ag-on-accent', false],
+      ['--ag-tide', '--ag-on-accent', true],
+    ];
+    const failures: string[] = [];
+    for (const [fillName, inkName, dark] of cases) {
+      const fill = hex(tokenValue(fillName, dark) ?? '');
+      const ink = hex(tokenValue(inkName, dark) ?? '');
+      if (fill === null || ink === null) continue;
+      const ratio = contrast(fill, ink);
+      if (ratio < 4.5) {
+        failures.push(`${dark ? 'dark' : 'light'} ${inkName} on ${fillName} = ${ratio.toFixed(2)}:1 (needs 4.5)`);
+      }
+    }
+    expect(failures, `a filled control's label must be readable on its fill:\n${failures.join('\n')}`).toEqual([]);
+  });
 });
