@@ -228,12 +228,15 @@ export function AgentApp() {
                 models={chat.models}
                 selectedModelReference={chat.selectedModelReference}
                 reasoningEffort={chat.reasoningEffort}
+                permissionLevel={chat.permissionLevel}
+                permissionOptions={chat.permissionOptions}
                 draft={chat.draft}
                 busy={chat.busy}
                 error={chat.error}
                 onSelectAgent={chat.selectAgent}
                 onSelectModel={chat.setSelectedModelReference}
                 onSelectEffort={chat.setReasoningEffort}
+                onSelectPermission={chat.setPermissionLevel}
                 onDraftChange={chat.setDraft}
                 onSubmit={chat.startAndSend}
               />

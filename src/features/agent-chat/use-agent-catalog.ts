@@ -7,6 +7,7 @@ import {
   type AgentChatAgent,
   type AgentChatConversationSummary,
   type AgentChatModel,
+  type AgentChatPermissionLevel,
   type AgentChatReasoningEffort,
 } from '../../shared/api/agent-chat.js';
 
@@ -28,6 +29,13 @@ export interface AgentCatalogState {
   readonly models: readonly AgentChatModel[];
   readonly selectedModelReference: string;
   readonly reasoningEffort: AgentChatReasoningEffort;
+  /**
+   * The approval level a new conversation will ask for.
+   *
+   * Only ever one of `permissionOptions`; the Runtime would clamp anything else
+   * and the reader would see their choice silently changed.
+   */
+  readonly permissionLevel: AgentChatPermissionLevel;
   readonly recent: readonly AgentChatConversationSummary[];
   /*
    * `SetStateAction`, not a plain value: the startup read picks a default only
@@ -39,6 +47,7 @@ export interface AgentCatalogState {
   readonly setModels: Dispatch<SetStateAction<readonly AgentChatModel[]>>;
   readonly setSelectedModelReference: Dispatch<SetStateAction<string>>;
   readonly setReasoningEffort: Dispatch<SetStateAction<AgentChatReasoningEffort>>;
+  readonly setPermissionLevel: Dispatch<SetStateAction<AgentChatPermissionLevel>>;
   readonly setRecent: Dispatch<SetStateAction<readonly AgentChatConversationSummary[]>>;
   /** Re-read the history list; never surfaces a failure. */
   readonly refreshRecent: () => void;
@@ -57,6 +66,12 @@ export function useAgentCatalog(): AgentCatalogState {
    * was actually selected; until then there is no honest value to show.
    */
   const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('');
+  /*
+   * Starts at `standard`, the level an older Runtime behaves as. The real value
+   * is replaced by the Runtime's own on the first read, so a `strict` Runtime
+   * does not begin on a level it would clamp.
+   */
+  const [permissionLevel, setPermissionLevel] = useState<AgentChatPermissionLevel>('standard');
   const [recent, setRecent] = useState<readonly AgentChatConversationSummary[]>([]);
 
   /*
@@ -81,12 +96,14 @@ export function useAgentCatalog(): AgentCatalogState {
     models,
     selectedModelReference,
     reasoningEffort,
+    permissionLevel,
     recent,
     setAgents,
     setSelectedAgentId,
     setModels,
     setSelectedModelReference,
     setReasoningEffort,
+    setPermissionLevel,
     setRecent,
     refreshRecent,
   };

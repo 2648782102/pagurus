@@ -16,6 +16,15 @@ export interface RuntimeInfo {
   state: 'ready';
   capabilities: string[];
   executionMode?: 'restricted' | 'unrestricted';
+  /**
+   * The approval level the Runtime is configured with.
+   *
+   * The ceiling for anything a conversation may request: a conversation can be
+   * stricter, never looser. Absent on a Runtime that predates the field.
+   */
+  permissionLevel?: 'strict' | 'standard' | 'trusted';
+  /** Marks `executionMode` as provenance; accepted so the payload validates. */
+  executionModeIsLegacy?: true;
   loopBudget?: {
     maxIterations: number;
     maxToolCallsPerTurn: number;
@@ -57,6 +66,13 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
       || value.executionMode === 'restricted'
       || value.executionMode === 'unrestricted'
     )
+    && (
+      value.permissionLevel === undefined
+      || value.permissionLevel === 'strict'
+      || value.permissionLevel === 'standard'
+      || value.permissionLevel === 'trusted'
+    )
+    && (value.executionModeIsLegacy === undefined || value.executionModeIsLegacy === true)
     && (value.loopBudget === undefined || isLoopBudget(value.loopBudget))
     && (value.organizationContract === undefined || value.organizationContract === '1.1.0')
     && (value.organizationPaths === undefined || Number.isInteger(value.organizationPaths))
