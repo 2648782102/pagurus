@@ -11,7 +11,6 @@
   inset: 0;
   z-index: 60;
   background: rgba(20, 28, 25, .22);
-  animation: motion-fade-in var(--motion-settle) var(--ease-out) both;
 }
 
 /*
@@ -53,7 +52,6 @@
   border-left: 1px solid var(--border);
   background: var(--surface-canvas);
   box-shadow: -12px 0 40px rgba(20, 28, 25, .12);
-  animation: motion-slide-in var(--motion-travel) var(--ease-out-soft) both;
 }
 .agent-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .agent-drawer-head h2 { margin: 0; color: var(--text-strong); font: 600 14px var(--font-body); }
