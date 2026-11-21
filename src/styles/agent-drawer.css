@@ -11,7 +11,7 @@
   inset: 0;
   z-index: 60;
   background: rgba(20, 28, 25, .22);
-  animation: agent-drawer-fade .14s ease-out;
+  animation: agent-drawer-fade var(--motion-settle) var(--ease-out);
 }
 .agent-drawer {
   position: absolute;
@@ -25,7 +25,7 @@
   border-left: 1px solid var(--border);
   background: var(--surface-canvas);
   box-shadow: -12px 0 40px rgba(20, 28, 25, .12);
-  animation: agent-drawer-slide .18s ease-out;
+  animation: agent-drawer-slide var(--motion-travel) var(--ease-out-soft);
 }
 .agent-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .agent-drawer-head h2 { margin: 0; color: var(--text-strong); font: 600 14px var(--font-body); }

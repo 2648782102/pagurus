@@ -615,4 +615,28 @@ describe('front-end architecture boundaries', () => {
         .map((match) => `${file}: font-size: ${match[1]}px`));
     expect(halves, `text sizes must be whole pixels:\n${halves.join('\n')}`).toEqual([]);
   });
+
+  it('draws workspace icons from one family, not from Unicode characters', () => {
+    /*
+     * The navigation icons were once `⌂ ◎ ✦ ✓ ◉ ↗ ≋ ⌘ ✳ ⚙` — ten characters from
+     * four different Unicode blocks. A browser picks a font per block, so at the
+     * same nominal size they measured between 24px and 40px wide and read as ten
+     * unrelated marks.
+     *
+     * The fix is a single icon family, and this guards it from drifting back:
+     * the workspace definitions carry no glyphs, and the icon map is the only
+     * place a workspace's symbol is decided.
+     */
+    const definitions = read('src/app/useWorkspace.ts');
+    expect(definitions, 'workspace definitions must not carry a glyph').not.toMatch(/\bicon:\s*'/);
+
+    const icons = read('src/app/WorkspaceIcon.tsx');
+    expect(icons).toMatch(/from 'lucide-react'/);
+    // Every workspace id gets an icon; the Record type enforces it at compile
+    // time, so this only guards against the map being emptied or replaced.
+    for (const id of ['overview', 'organization', 'agentChat', 'execution', 'agents',
+      'tasks', 'work', 'capabilities', 'secrets', 'settings']) {
+      expect(icons, `${id} needs an icon`).toMatch(new RegExp(`\\b${id}:\\s*\\w+`));
+    }
+  });
 });

@@ -207,6 +207,35 @@ export function Disclosure({
   );
 }
 
+/**
+ * Placeholder rows for a read that has not landed.
+ *
+ * A panel that renders nothing and then fills in reads as a flicker; one that
+ * renders rows the size of its content reads as arriving. The count is a hint,
+ * not a promise — the real list replaces it wholesale.
+ *
+ * It is `aria-hidden` and carries its own screen-reader label: a reader should
+ * hear "loading", not the shape of an empty box.
+ */
+export function SkeletonRows({
+  rows = 3,
+  label = '正在读取',
+}: {
+  readonly rows?: number;
+  readonly label?: string;
+}) {
+  return (
+    <div className="ui-skeleton">
+      <span className="sr-only" role="status">{label}</span>
+      <div aria-hidden="true" className="ui-skeleton-rows">
+        {Array.from({ length: rows }, (_, index) => (
+          <span className="ui-skeleton-row" key={index} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EmptyState({
   title,
   description,

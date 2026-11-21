@@ -1,3 +1,4 @@
+import { WorkspaceIcon } from './WorkspaceIcon.js';
 import type { WorkspaceDefinition } from './useWorkspace.js';
 
 export function ConsoleSidebar({
@@ -27,7 +28,7 @@ export function ConsoleSidebar({
               aria-current={isActive ? 'page' : undefined}
             >
               <span className="nav-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-              <span className="nav-icon" aria-hidden="true">{entry.icon}</span>
+              <span className="nav-icon"><WorkspaceIcon id={entry.id} size={18} /></span>
               <span className="nav-copy"><strong>{entry.label}</strong><small>{entry.hint}</small></span>
             </a>
           );

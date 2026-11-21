@@ -77,6 +77,21 @@ describe('client boundaries', () => {
   });
 });
 
+/**
+ * The runtime dependencies this client is allowed to ship.
+ *
+ * A whitelist rather than a ban list: adding anything here is a deliberate
+ * decision that has to be argued for in the diff, not a side effect of running
+ * an install. Each entry carries the reason it is here, because "it made the
+ * icon set consistent" and "it manages state for us" are very different
+ * commitments and only the first one has been made.
+ */
+const approvedRuntimeDependencies: Readonly<Record<string, string>> = Object.freeze({
+  react: 'the view layer',
+  'react-dom': 'the view layer',
+  'lucide-react': 'one icon family; the Unicode glyphs it replaces came from four different fonts',
+});
+
 describe('dependency baseline', () => {
   it('does not add an unreviewed runtime or state dependency', () => {
     const manifest = JSON.parse(read('package.json')) as {
@@ -84,11 +99,18 @@ describe('dependency baseline', () => {
       devDependencies?: Record<string, string>;
     };
     const lock = JSON.parse(read('package-lock.json')) as { packages?: Record<string, unknown> };
-    expect(Object.keys(manifest.dependencies ?? {}).sort()).toEqual(['react', 'react-dom']);
+    const declared = Object.keys(manifest.dependencies ?? {}).sort();
+    expect(declared).toEqual(Object.keys(approvedRuntimeDependencies).sort());
     for (const name of forbiddenPackages) {
       expect(manifest.dependencies ?? {}).not.toHaveProperty(name);
       expect(manifest.devDependencies ?? {}).not.toHaveProperty(name);
       expect(Object.keys(lock.packages ?? {}).some((key) => key.endsWith(`/node_modules/${name}`))).toBe(false);
+    }
+  });
+
+  it('gives every approved dependency a stated reason', () => {
+    for (const [name, reason] of Object.entries(approvedRuntimeDependencies)) {
+      expect(reason.trim().length, `${name} needs a reason`).toBeGreaterThan(12);
     }
   });
 });

@@ -236,7 +236,7 @@
   /* The composer is the one thing the reader types into: it should sit slightly
      above the page, and light up rather than only gain an outline. */
   box-shadow: var(--lift-2);
-  transition: box-shadow .12s var(--ease);
+  transition: box-shadow var(--motion-quick) var(--ease);
 }
 .agent-thread-area .agent-chat-composer:focus-within {
   box-shadow: var(--lift-2), 0 0 0 3px var(--focus-ring);

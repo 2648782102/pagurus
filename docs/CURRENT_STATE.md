@@ -19,6 +19,11 @@ Updated: 2026-11-19
 - Typed API modules with response validators and capability-based feature
   gating.
 - No browser storage for Runtime secrets or private state.
+- One icon family (Lucide) with even optical weight, three named motion
+  durations instead of per-rule numbers, one focus ring and press response on
+  every product control, and skeleton rows for a panel's first read. Motion is
+  not load-bearing: reduced motion removes the sweep and the press scale, and
+  nothing conveys state through movement alone.
 
 ## Product gaps
 
