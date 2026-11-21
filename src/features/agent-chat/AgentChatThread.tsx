@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import type {
   AgentChatActivity,
   AgentChatMessage,
@@ -262,6 +262,24 @@ export function AgentChatThread({
    * being moved, and a scroll animation counts.
    */
   const previousCountRef = useRef(messages.length);
+  /*
+   * History is drawn quiet; only what arrives afterwards animates.
+   *
+   * The arrival animation says "this appeared in the thread". Reopening a
+   * conversation mounts every message at once, so all of them played it
+   * together and the whole column faded in and rose 6px — a repaint, not an
+   * arrival. The first render flips this, and CSS keeps quiet for anything
+   * already mounted.
+   */
+  const [settled, setSettled] = useState(false);
+  useEffect(() => { setSettled(true); }, []);
+  /*
+   * The ids present on the first render never animate. Anything else does —
+   * the class is decided per message, so flipping `is-settled` cannot restart
+   * an animation on a row that was already drawn.
+   */
+  const initialIdsRef = useRef<ReadonlySet<string> | null>(null);
+  if (initialIdsRef.current === null) initialIdsRef.current = new Set(messages.map((m) => m.id));
   useEffect(() => {
     const container = containerRef.current;
     const previousCount = previousCountRef.current;
@@ -301,7 +319,7 @@ export function AgentChatThread({
      */
     <div className="agent-thread-column">
       <div
-        className="agent-chat-thread"
+        className={`agent-chat-thread${settled ? ' is-settled' : ''}`}
         ref={containerRef}
       /*
        * `off`, not `polite`: a streaming body changes on every frame, and a live
@@ -327,9 +345,15 @@ export function AgentChatThread({
       {messages.map((message) => {
         const parts = pendingApprovalParts(message);
         const concurrent = concurrentIds.has(message.id);
+        /*
+         * Only a row that was not in the first render may animate. Reopening a
+         * conversation mounts every message in one pass; without this, all of
+         * them play the arrival together and the column reads as a repaint.
+         */
+        const arriving = settled && !(initialIdsRef.current?.has(message.id) ?? true);
         return (
           <article
-            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}`}
+            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}${arriving ? ' is-arriving' : ''}`}
             key={message.id}
             aria-busy={isWorking(message.state)}
           >

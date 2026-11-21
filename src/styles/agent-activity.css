@@ -125,6 +125,12 @@
  * rather than changed — and it must not replay while a reply streams. Streaming
  * updates replace the text inside an element that is already mounted, so it
  * animates once and then stays put.
+ *
+ * `.is-arriving` is set per row by the thread, and only for a message that was
+ * not present on the first render. Applying this to every message made
+ * reopening a conversation animate all sixteen at once: the column faded in
+ * and rose 6px together, which reads as the page repainting rather than as one
+ * reply arriving.
  */
 @keyframes agent-message-arrive {
   from {
@@ -137,6 +143,6 @@
   }
 }
 
-.agent-thread-area .agent-chat-message {
+.agent-thread-area .agent-chat-message.is-arriving {
   animation: agent-message-arrive var(--motion-settle) var(--ease-out) both;
 }

@@ -317,6 +317,46 @@ describe('Agent Chat panel', () => {
     expect(screen.queryByText('正在准备…')).toBeNull();
   });
 
+  it('does not replay the arrival animation for history already on screen', () => {
+    /*
+     * The arrival animation says "this appeared in the thread". Reopening a
+     * conversation mounts every message at once, so all sixteen played it
+     * together — the whole column faded in and rose 6px on load, which reads as
+     * a repaint rather than as one message arriving. Measured on the running
+     * app: sixteen articles, all mid-animation, opacities matching.
+     *
+     * The scroll effect already distinguishes the first render from a later
+     * addition; the animation did not. History is drawn quiet, and only a
+     * message that arrives after the first render animates.
+     */
+    const messages: readonly AgentChatMessage[] = [
+      { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
+      { id: 'a1', sequence: 2, author: 'assistant', body: '答 A', state: 'replied', taskId: 'task_a', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:02.000Z', replyToId: 'u1', activity: [] },
+    ];
+    const { container } = render(
+      <AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />,
+    );
+    expect(container.querySelector('.agent-chat-thread')?.className).toContain('is-settled');
+  });
+
+  it('animates a message that arrives after the thread is open', () => {
+    const first: readonly AgentChatMessage[] = [
+      { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
+    ];
+    const grown: readonly AgentChatMessage[] = [
+      ...first,
+      { id: 'a1', sequence: 2, author: 'assistant', body: '答 A', state: 'replied', taskId: 'task_a', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:02.000Z', replyToId: 'u1', activity: [] },
+    ];
+    const { container, rerender } = render(
+      <AgentChatThread messages={first} agentName="助手" busy={false} onDecision={() => undefined} />,
+    );
+    /* Settled after the first paint, so the next arrival is the only one that moves. */
+    expect(container.querySelector('.agent-chat-thread')?.className).toContain('is-settled');
+    rerender(<AgentChatThread messages={grown} agentName="助手" busy={false} onDecision={() => undefined} />);
+    const arrived = container.querySelectorAll('article.agent-chat-message');
+    expect(arrived).toHaveLength(2);
+  });
+
   it('does not annotate a conversation where every question waited', () => {
     const messages: readonly AgentChatMessage[] = [
       { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
