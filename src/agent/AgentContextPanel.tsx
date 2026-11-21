@@ -3,6 +3,7 @@ import type { AgentChatConversation } from '../shared/api/agent-chat.js';
 import type { CapabilitySummary } from './useAgentCapabilities.js';
 import { buildTimeline, timelineSummary, type TimelineKind } from './conversation-timeline.js';
 import { FactList } from '../shared/ui/primitives.js';
+import { AgentIcon } from '../shared/ui/AgentIcon.js';
 
 /**
  * What the conversation is, in facts rather than prose.
@@ -52,7 +53,7 @@ export function AgentContextPanel({
         <h2>对话上下文</h2>
         <span className="agent-context-mode">Inspect</span>
         <button type="button" className="agent-context-close" onClick={onClose} aria-label="收起上下文">
-          ✕
+          <AgentIcon name="close" size={14} />
         </button>
       </div>
 

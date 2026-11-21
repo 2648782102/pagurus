@@ -4,6 +4,7 @@ import type {
   AgentChatConversationSummary,
 } from '../shared/api/agent-chat.js';
 import { conversationTitle, groupForRail, shortRelativeTime } from './agent-surface-model.js';
+import { AgentIcon } from '../shared/ui/AgentIcon.js';
 
 /**
  * Threads, on demand.
@@ -85,7 +86,7 @@ export function AgentThreadDrawer({
         <div className="agent-drawer-head">
           <h2>对话记录</h2>
           <button type="button" className="agent-drawer-close" onClick={onClose} aria-label="关闭对话记录">
-            ✕
+            <AgentIcon name="close" size={14} />
           </button>
         </div>
 

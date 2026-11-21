@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Textarea } from '../../shared/ui/primitives.js';
+import { AgentIcon } from '../../shared/ui/AgentIcon.js';
 
 interface AgentChatComposerProps {
   readonly draft: string;
@@ -127,7 +128,7 @@ export function AgentChatComposer({
               if (busy || draft.trim().length === 0) event.preventDefault();
             }}
           >
-            ↑
+            <AgentIcon name={busy ? 'stop' : 'send'} />
           </Button>
         </div>
       </div>
