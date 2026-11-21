@@ -57,6 +57,17 @@ export function AgentChatComposer({
     onSend();
   };
 
+  /*
+   * What the toolbar's right end says, if anything.
+   *
+   * A pending send outranks the length: the reader just pressed Enter and is
+   * waiting to hear that it landed, which is a fact about the request rather
+   * than about the box. The length is the quiet default once the draft has
+   * grown long enough for it to be useful, and the keyboard hint is the resting
+   * state — the one line a reader needs the first time and never again.
+   */
+  const status = busy ? '正在发送…' : waiting ? '正在等待回复' : null;
+
   return (
     <form className="agent-chat-composer" onSubmit={(event) => {
       event.preventDefault();
@@ -64,6 +75,16 @@ export function AgentChatComposer({
     }}>
       <label className="sr-only" htmlFor="agent-chat-message">输入消息</label>
       <div className="agent-chat-composer-card">
+        {/*
+         * Above the draft, inside the card: it explains something that already
+         * happened to the box, so it belongs where the reader is looking when
+         * it appears rather than underneath it.
+         */}
+        {pasteNotice && (
+          <p className="agent-chat-composer-notice" role="status">
+            已粘贴一大段内容，输入框会在约 40% 屏高处停止增高；继续添加请向上滚动。
+          </p>
+        )}
         <Textarea
           id="agent-chat-message"
           textareaRef={inputRef}
@@ -104,58 +125,55 @@ export function AgentChatComposer({
         {/*
          * A toolbar row under the text, the way an agent client is laid out:
          * the mode controls sit on the left where a reader looks for "what
-         * applies to this message", the send button on the right where the
-         * action ends. The send button used to be absolutely positioned over
-         * the text, which worked only while the composer stayed one line.
+         * applies to this message"; the readings and the send button sit on the
+         * right where the action ends.
          */}
         <div className="agent-chat-composer-row">
           <div className="agent-chat-composer-tools">
             {children}
           </div>
-          <Button
-            className="agent-chat-send"
-            type="submit"
-            variant="primary"
-            /*
-             * Not `disabled`: a disabled button leaves the tab order, so a
-             * keyboard user typing a message could not reach Send without
-             * shift-tabbing backwards. It stays focusable and refuses the click
-             * instead, which is what "not ready yet" should mean.
-             */
-            aria-disabled={busy || draft.trim().length === 0}
-            aria-label="发送消息"
-            onClick={(event) => {
-              if (busy || draft.trim().length === 0) event.preventDefault();
-            }}
-          >
-            <AgentIcon name={busy ? 'stop' : 'send'} />
-          </Button>
+          {/*
+           * One slot, one line: the hint, the pending state, or the length.
+           * They never appear together, because they answer the same question
+           * and the row would grow to hold three answers nobody reads at once.
+           */}
+          <div className="agent-chat-composer-meta">
+            {status !== null ? (
+              <p className="agent-chat-composer-hint" role="status">{status}</p>
+            ) : characters > LONG_DRAFT ? (
+              /*
+               * Length only appears once it is worth knowing: a count from the
+               * first character is noise on a one-sentence question, and a
+               * warning that arrives only when it matters is a warning people
+               * read.
+               */
+              <p className={`agent-chat-composer-count${characters > VERY_LONG_DRAFT ? ' is-over' : ''}`}>
+                {characters.toLocaleString()} 字
+              </p>
+            ) : (
+              <p className="agent-chat-composer-hint agent-chat-composer-keys">Enter 发送，Shift + Enter 换行</p>
+            )}
+            <Button
+              className="agent-chat-send"
+              type="submit"
+              variant="primary"
+              /*
+               * Not `disabled`: a disabled button leaves the tab order, so a
+               * keyboard user typing a message could not reach Send without
+               * shift-tabbing backwards. It stays focusable and refuses the click
+               * instead, which is what "not ready yet" should mean.
+               */
+              aria-disabled={busy || draft.trim().length === 0}
+              aria-label="发送消息"
+              onClick={(event) => {
+                if (busy || draft.trim().length === 0) event.preventDefault();
+              }}
+            >
+              <AgentIcon name={busy ? 'stop' : 'send'} size={15} />
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="agent-chat-composer-foot">
-        <p className="agent-chat-composer-hint" role="status">
-          {busy
-            ? '正在发送…'
-            : waiting
-              ? '正在等待回复；你可以继续写下一条'
-              : 'Enter 发送，Shift + Enter 换行'}
-        </p>
-        {/*
-         * Length only appears once it is worth knowing: a count from the first
-         * character is noise on a one-sentence question, and a warning that
-         * arrives only when it matters is a warning people read.
-         */}
-        {characters > LONG_DRAFT && (
-          <p className={`agent-chat-composer-count${characters > VERY_LONG_DRAFT ? ' is-over' : ''}`}>
-            {characters.toLocaleString()} 字
-          </p>
-        )}
-      </div>
-      {pasteNotice && (
-        <p className="agent-chat-composer-notice" role="status">
-          已粘贴一大段内容，输入框会在约 40% 屏高处停止增高；继续添加请向上滚动。
-        </p>
-      )}
     </form>
   );
 }

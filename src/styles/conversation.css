@@ -164,7 +164,17 @@
 .task-record { display: grid; gap: 8px; }
 .task-output-block { display: grid; gap: 6px; }
 .agent-chat-message small { color: var(--state-danger); font-size: 10px; overflow-wrap: anywhere; }
-.agent-chat-composer { display: grid; gap: 6px; padding: 10px max(18px, calc((100% - 860px) / 2)) 13px; border-top: 1px solid var(--border-strong); background: var(--surface-raised); }
+/*
+ * The console's placement of the composer. The card inside it paints the
+ * raised fill and the border, so this element carries only the separation from
+ * the thread and the column's side padding; filling it too drew a second,
+ * larger box around the card. The card's own structure lives in
+ * `agent-composer.css`, shared with the product surface.
+ */
+.agent-chat-composer { display: grid; padding: 12px max(18px, calc((100% - 860px) / 2)) 4px; border-top: 1px solid var(--border-strong); background: transparent; }
+/* The textarea's shape is shared in `agent-composer.css`; this rule exists so
+   the console also declares where the height stops being CSS's business. */
+.agent-chat-composer textarea { max-height: none; resize: none; }
 .agent-chat-composer-field { display: grid; grid-template-columns: minmax(0, 1fr) 36px; align-items: end; gap: 7px; }
 /*
  * The composer's height is owned by one place: the script in
@@ -181,7 +191,9 @@
  * `min-height` stays: it is a floor the script does not model, and it keeps an
  * empty composer from collapsing.
  */
-.agent-chat-composer textarea { min-height: 50px; max-height: none; resize: none; }
-.agent-chat-send { width: 36px; height: 36px; padding: 0; font-size: 16px; }
-.agent-chat-composer-hint { margin: 0; color: var(--text-muted); font-size: 9px; }
+/*
+ * The floor overrides `.ui-textarea`'s 60px, which is a box for writing a
+ * paragraph rather than one line of chat. The product surface sets the same
+ * value; it repeats there because its selector is scoped to `.agent-thread-area`.
+ */
 

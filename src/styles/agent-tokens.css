@@ -28,7 +28,13 @@
   --ag-rail-line: #2f423b;
   --ag-ink: #141c19;
   --ag-ink-soft: #45524d;
-  --ag-muted: #6b7772;
+  /*
+   * The third ink. At #6b7772 it landed on exactly 4.50:1 against the raised
+   * card — a pass with no margin, and under 4:1 on the page itself, where most
+   * of it is read. Darkened until it clears AA on all three fills (5.36 on the
+   * card, 4.75 on the page, 4.63 on the sunken well).
+   */
+  --ag-muted: #5f6b66;
   --ag-faint: #8b958f;
   --ag-line: #d9ddd5;
   --ag-line-strong: #c2c8be;

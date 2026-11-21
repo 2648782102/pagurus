@@ -767,4 +767,96 @@ describe('front-end architecture boundaries', () => {
     expect(used.length, `at least one anim-* class must be used; library has ${classNames.join(', ')}`)
       .toBeGreaterThan(0);
   });
+
+  it('keeps composer text at a readable contrast on its own card', () => {
+    /*
+     * The composer sits on `--surface-raised`, which is lighter than the page,
+     * so faint ink is at its worst exactly there. Measured: the chip at 4.50:1
+     * — a value that passes a checker and still reads washed out at 11px — and
+     * the hint at 2.98:1, under AA outright.
+     *
+     * The pairs are asserted rather than the roles, because the roles are the
+     * thing that gets moved around. AA for normal text is 4.5:1.
+     */
+    const tokens = withoutComments(read('src/styles/agent-tokens.css'));
+    const light = tokens.slice(0, tokens.indexOf("[data-agent-theme='dark']"));
+    const value = (name: string): [number, number, number] | null => {
+      const match = new RegExp(`${name}:\\s*#([0-9a-f]{6})`, 'i').exec(light);
+      if (!match) return null;
+      const raw = match[1]!;
+      return [
+        Number.parseInt(raw.slice(0, 2), 16),
+        Number.parseInt(raw.slice(2, 4), 16),
+        Number.parseInt(raw.slice(4, 6), 16),
+      ];
+    };
+    const luminance = ([r, g, b]: readonly [number, number, number]): number => {
+      const channel = (v: number): number => {
+        const scaled = v / 255;
+        return scaled <= 0.03928 ? scaled / 12.92 : ((scaled + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const ratio = (a: readonly [number, number, number], b: readonly [number, number, number]): number => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+      return (hi + 0.05) / (lo + 0.05);
+    };
+
+    const card = value('--ag-paper-raised');
+    /*
+     * The roles the composer actually uses. `--ag-muted` is one step below
+     * `--ag-ink-soft` and lands at exactly 4.50:1 on this fill, which is a pass
+     * and not margin; at 10px the difference is visible.
+     */
+    const pairs: ReadonlyArray<readonly [string, string]> = [
+      ['--ag-ink', 'chip text'],
+      ['--ag-ink-soft', 'hint text'],
+    ];
+    const failures: string[] = [];
+    for (const [ink, label] of pairs) {
+      const foreground = value(ink);
+      if (card === null || foreground === null) continue;
+      const measured = ratio(foreground, card);
+      if (measured < 4.5) failures.push(`${label}: ${ink} on --ag-paper-raised = ${measured.toFixed(2)}:1`);
+    }
+    expect(failures, `composer text must clear AA on its card:\n${failures.join('\n')}`).toEqual([]);
+  });
+
+  it('gives both surfaces the same composer, not just the product one', () => {
+    /*
+     * The composer is mounted twice: in the product surface and inside the
+     * console's Agent panel. Every rule that gives the card its shape used to
+     * be scoped to `.agent-thread-area`, which only the product renders — so
+     * the console got a bare textarea with the send button stacked underneath
+     * it, and nobody noticed because the surface nobody was designing had no
+     * one looking at it.
+     *
+     * The structure rules must therefore be unscoped, and only the page-level
+     * placement may belong to the product.
+     */
+    const rules = cssRules('src/styles/agent-composer.css');
+    const structural = [
+      '.agent-chat-composer-card',
+      '.agent-chat-composer-row',
+      '.agent-chat-composer-tools',
+      '.agent-chat-send',
+    ];
+    /*
+     * "Unscoped" means the class starts the selector. A compound like
+     * `.agent-chat-composer-card:focus-within` is still global; a descendant
+     * like `.agent-thread-area .agent-chat-composer-card` is not.
+     */
+    const startsWithClass = (selector: string, base: string): boolean =>
+      selector.startsWith(base) && !/[\w-]/.test(selector.slice(base.length, base.length + 1));
+    const scoped = structural
+      .filter((base) => rules.some((rule) => rule.selectors.some((selector) => selector.includes(base)
+        && !startsWithClass(selector, base))))
+      .map((base) => `${base} must not be nested under a surface scope`);
+    expect(scoped, `the composer must render the same on both surfaces:\n${scoped.join('\n')}`).toEqual([]);
+
+    for (const selector of structural) {
+      const present = rules.some((rule) => rule.selectors.includes(selector));
+      expect(present, `${selector} must have an unscoped rule`).toBe(true);
+    }
+  });
 });

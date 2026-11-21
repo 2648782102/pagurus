@@ -226,28 +226,4 @@
 
 /* --- composer ------------------------------------------------------------ */
 
-.agent-thread-area .agent-chat-composer-hint { color: var(--text-faint); font-size: 10px; }
-.agent-chat-composer-foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  /* The card ends above this line, so the row needs its own breathing space;
-     6px read as the hint belonging to the toolbar rather than to the box. */
-  margin-top: 10px;
-}
-.agent-chat-composer-count {
-  margin: 0;
-  color: var(--text-faint);
-  font: 10px var(--font-code);
-  font-variant-numeric: tabular-nums;
-}
-.agent-chat-composer-count.is-over { color: var(--state-caution-ink); }
-.agent-chat-composer-notice {
-  margin: 6px 0 0;
-  color: var(--text-muted);
-  font-size: 10px;
-  line-height: 1.6;
-}
-
 /* --- model indicator ----------------------------------------------------- */

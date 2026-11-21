@@ -1,120 +1,215 @@
 /* ---------------------------------------------------------------------------
-   The composer: one card, three bands.
+   The composer: two bands, one card.
 
-   Text, then a toolbar of mode controls, then the hint. The card supplies the
-   surface and the inset; each band owns its own padding, because the toolbar
-   has to reach the card's edges — controls inset by the paragraph's margin read
-   as part of the paragraph.
+       card  ┌──────────────────────────────────────┐
+             │ draft                                │  auto
+             │ [pin]        hint / count      [send] │  auto  ← flex row
+             └──────────────────────────────────────┘
 
-   The shape follows what agent clients converged on: mode controls left, the
-   action right, and the action unshrinkable so a narrow card drops it to its
-   own line rather than letting the last chip run under it.
+   The card is a grid so the draft and the toolbar stack without either one
+   knowing the other's height. The toolbar is a flex row because it holds two
+   groups that must sit at opposite ends and shrink independently.
+
+   There is no third band. The hint used to own a row under the toolbar, which
+   made a three-line card out of a one-line message; it now shares the toolbar's
+   right edge, where it is read once and then ignored.
+
+   These rules are unscoped on purpose. The console (`AgentChatPanel`) mounts the
+   same composer, and when the structure lived behind `.agent-thread-area` the
+   console got a bare textarea with the send button stacked underneath it.
+   Only the page-level placement below is the product surface's own.
    --------------------------------------------------------------------------- */
 
 .agent-thread-area .agent-chat-composer {
   flex: 0 0 auto;
-  margin: 0 max(24px, calc((100% - var(--measure-reading)) / 2)) 24px;
+  margin: 0 max(24px, calc((100% - var(--measure-reading)) / 2)) 20px;
+  min-width: 0;
+  /* Undo the console's box on this element; see the note below. */
   padding: 0;
   border: 0;
-  border-radius: 10px;
-  background: var(--surface-raised);
-  /* The composer is the one thing the reader types into: it should sit slightly
-     above the page, and light up rather than only gain an outline. */
-  box-shadow: var(--lift-2);
-  transition: box-shadow var(--motion-quick) var(--ease);
+  background: transparent;
+  box-shadow: none;
 }
-.agent-thread-area .agent-chat-composer:focus-within {
+
+.agent-chat-composer-card {
+  display: grid;
+  grid-auto-rows: auto;
+  row-gap: 4px;
+  padding: 12px 12px 9px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  box-shadow: var(--lift-2);
+  transition: border-color var(--motion-quick) var(--ease), box-shadow var(--motion-quick) var(--ease);
+}
+/* Focus is the card's own state, not the textarea's outline: the textarea has
+   no box of its own, so the ring has to be drawn on the thing the reader sees. */
+.agent-chat-composer-card:focus-within {
+  border-color: var(--border-strong);
   box-shadow: var(--lift-2), 0 0 0 3px var(--focus-ring);
 }
-/*
- * Three bands inside one card: the text, a toolbar row, and the hint.
- *
- * The text and the toolbar are siblings with their own padding rather than one
- * padded box, because the toolbar needs to reach the card's edges — a row of
- * controls inset by the text's margin reads as belonging to the paragraph. The
- * card supplies the surface; each band supplies its own insets.
- */
-.agent-thread-area .agent-chat-composer-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 12px 8px;
-}
-.agent-thread-area .agent-chat-composer-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-  /* Wraps rather than squeezing: the mode chips and the send button are both
-     unshrinkable, so on a narrow card the send button drops to its own line
-     instead of overlapping the last chip. */
-  flex-wrap: wrap;
-}
-.agent-thread-area .agent-chat-composer-tools {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-.agent-thread-area .agent-chat-composer-tools:empty { display: none; }
-.agent-thread-area .agent-chat-composer textarea {
-  min-height: 24px;
+
+/* One rule for both surfaces. It has to outrank `.ui-textarea`'s 60px box,
+   which is the shape for writing a paragraph, not a line of chat. */
+.agent-chat-composer textarea {
+  min-height: 26px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--text-strong);
-  font: 14px/1.65 var(--font-body);
+  font: 14px/1.7 var(--font-body);
   resize: none;
 }
-.agent-thread-area .agent-chat-composer textarea:focus-visible { outline: none; }
-.agent-thread-area .agent-chat-send {
-  width: 32px;
-  height: 32px;
+.agent-chat-composer textarea:focus-visible { outline: none; }
+/* `--text-faint` is 2.98:1 on the card — a placeholder you have to hunt for. */
+.agent-chat-composer textarea::placeholder { color: var(--text-muted); }
+
+/*
+ * The toolbar. One row, two ends: what this message is pinned to on the left,
+ * what happens when it is sent on the right. `min-height` matches the send
+ * button so the card's second band never changes height as the hint swaps for
+ * the length count.
+ */
+.agent-chat-composer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  min-height: 28px;
+}
+
+.agent-chat-composer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.agent-chat-composer-tools:empty { display: none; }
+
+/* The readings sit immediately left of the action, sharing one slot. */
+.agent-chat-composer-meta {
+  display: flex;
   flex: none;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
   margin-left: auto;
+}
+
+.agent-chat-send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  /* `.ui-button` sets a 32px floor; without this the circle is an ellipse in
+     a 28px row. */
+  min-height: 0;
+  padding: 0;
   border-radius: 50%;
+  box-shadow: none;
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
-  font-size: 14px;
 }
-.agent-thread-area .agent-chat-send:hover:not([aria-disabled='true']) { background: var(--accent-ink); border-color: var(--accent-ink); }
+.agent-chat-send:hover:not([aria-disabled='true']) {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  box-shadow: none;
+}
 /* `aria-disabled` keeps the control in the tab order, so it must still look
-   unavailable without disappearing from the keyboard path. */
-.agent-thread-area .agent-chat-send[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
+   unavailable without disappearing from the keyboard path. An empty draft is
+   the resting state, not an error: it dims rather than disables. */
+.agent-chat-send[aria-disabled='true'] { opacity: .38; cursor: not-allowed; }
 
 /*
  * A mode chip states a fact about this conversation; it is not a menu.
  *
  * The model and the effort are fixed when the conversation is created, so the
- * chip reads as one line of context rather than a control — muted, no caret,
- * no hover fill that would suggest a dropdown. The action chip beside them is
- * the one thing that can change, and it says what it does.
+ * chip reads as one line of context rather than a control — no border, no
+ * caret, no hover fill that would suggest a dropdown. It used to wear the same
+ * 32px pill as the send button, which made two facts and one action look like
+ * three equal buttons.
+ *
+ * The action chip beside them is the one thing that can change, and it is drawn
+ * as a quiet text button so the row still has one visual primary: Send.
  */
 .agent-composer-chip {
   display: inline-flex;
   align-items: center;
   flex: none;
   max-width: 18ch;
-  /* Matches the send button's 32px so the row reads as one band; a chip two
-     pixels shorter makes the action look like it belongs to another line. */
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  height: 22px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 5px;
   background: transparent;
-  color: var(--text-muted);
+  /*
+   * `--text-muted` on the card measured 4.50:1 — exactly at AA, which is the
+   * value that passes a checker and still reads as washed out at 11px. `--text`
+   * is the body ink and reads on the same fill.
+   */
+  color: var(--text);
   font: 11px var(--font-body);
   white-space: nowrap;
 }
+/* A hairline divider marks where the pinned facts stop and the action starts,
+   so "换模型" is not read as a third fact of the same kind. */
+.agent-composer-chip-action {
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+.agent-composer-chip-action::before {
+  content: '';
+  width: 1px;
+  height: 10px;
+  margin-right: 7px;
+  background: var(--border-strong);
+}
+.agent-composer-chip-action:hover { background: var(--accent-wash); }
 /* Truncation needs a block formatting context; on the flex parent it does
    nothing, because the flex item's own width is unbounded. */
 .agent-composer-chip-text { overflow: hidden; text-overflow: ellipsis; }
-.agent-composer-chip-action {
-  color: var(--accent-ink);
-  border-color: var(--border-strong);
-  cursor: pointer;
+
+/*
+ * The hint and the length share one slot at the right end of the toolbar: they
+ * answer the same question — "what happens if I keep going" — and only one of
+ * them is ever worth reading. The hint is the resting state and fades out as
+ * soon as the draft grows a length worth reporting.
+ */
+.agent-chat-composer-hint {
+  margin: 0;
+  /*
+   * `--text-faint` measured 2.98:1 here and `--text-muted` 4.50:1 — the first
+   * under AA, the second exactly on the line. The card is lighter than the
+   * page, so faint ink is at its worst exactly here, and a 10px line needs
+   * margin rather than a pass. `--text` is the body ink.
+   */
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
 }
-.agent-composer-chip-action:hover { background: var(--accent-wash); }
+.agent-chat-composer-count {
+  margin: 0;
+  color: var(--text);
+  font: 11px var(--font-code);
+  font-variant-numeric: tabular-nums;
+}
+.agent-chat-composer-count.is-over { color: var(--state-caution-ink); }
+
+/*
+ * The paste notice takes its own row above the card's content, because it
+ * explains something that has already happened to the box rather than
+ * something about to happen to the draft.
+ */
+.agent-chat-composer-notice {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--state-caution);
+  color: var(--state-caution-ink);
+  font-size: 10px;
+  line-height: 1.6;
+}
