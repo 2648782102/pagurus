@@ -35,9 +35,18 @@ export function AgentContextPanel({
       className="agent-context"
       id="agent-context"
       aria-label="对话上下文"
-      /* Kept mounted so the chrome's aria-controls has a real target; hidden
-         from layout and from assistive tech while closed. */
-      hidden={!open}
+      /*
+       * Kept mounted so the chrome's aria-controls has a real target.
+       *
+       * `hidden` is not used: it sets `display: none`, which ends the closing
+       * transition on the first frame — the panel would open smoothly and
+       * vanish instantly. `inert` plus `aria-hidden` take the panel out of the
+       * accessibility tree and out of the tab order, which is what `hidden`
+       * was for, while `data-open` lets the stylesheet animate both directions.
+       */
+      data-open={open ? 'true' : 'false'}
+      inert={!open}
+      aria-hidden={!open}
     >
       <div className="agent-context-head">
         <h2>对话上下文</h2>

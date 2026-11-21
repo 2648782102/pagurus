@@ -59,8 +59,26 @@
     overflow: hidden;
   }
 }
-/* `hidden` must win over the display above; a flex panel would otherwise show. */
-.agent-context[hidden] { display: none; }
+/*
+ * Closed, but still in the box.
+ *
+ * `visibility` rather than `display`: the panel is kept mounted so the chrome's
+ * `aria-controls` has a real target, and `display: none` would end the closing
+ * transition on the first frame. `visibility: hidden` still removes it from hit
+ * testing and from the accessibility tree; the `inert` attribute on the element
+ * removes it from the tab order.
+ *
+ * The delay only applies while closing, so the panel stays painted until the
+ * track has narrowed, then stops taking space.
+ */
+.agent-context[data-open='false'] {
+  visibility: hidden;
+  transition: visibility 0s linear var(--motion-travel);
+}
+.agent-context[data-open='true'] {
+  visibility: visible;
+  transition: visibility 0s;
+}
 .agent-context-head {
   display: flex;
   flex: 0 0 auto;
