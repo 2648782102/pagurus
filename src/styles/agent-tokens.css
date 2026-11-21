@@ -102,6 +102,33 @@
  * so overriding the palette here switches the whole Agent surface at once.
  * See the semantic color tokens.
  */
+
+/*
+ * The theme switch is one cross-fade, then everything goes back to normal.
+ *
+ * Every colour on the surface is a variable, so flipping the theme repaints
+ * all of them in a single frame — the screen snaps from paper to near-black.
+ * A permanent transition on colour would fix the snap but slow every hover and
+ * every panel to the theme's duration.
+ *
+ * `data-theme-switching` is set by `useAgentTheme` for one frame plus the
+ * fade, so the broad transition is armed only while the palette changes.
+ *
+ * No `!important`: a component with its own colour transition keeps its own
+ * timing during the switch. That is a small inconsistency for a third of a
+ * second, and it is the right trade — an `!important` here would be the first
+ * one outside reduced motion, and the guard against that is worth more than a
+ * perfectly uniform fade.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-theme-switching] :where(.agent-app, .agent-app *, .agent-app-blocked, .agent-app-blocked *) {
+    transition:
+      background-color var(--motion-travel) var(--ease-out),
+      border-color var(--motion-travel) var(--ease-out),
+      color var(--motion-travel) var(--ease-out),
+      fill var(--motion-travel) var(--ease-out);
+  }
+}
 :root[data-agent-theme='dark'] .agent-app,
 :root[data-agent-theme='dark'] .agent-app-blocked {
   --ag-paper: #10121a;
