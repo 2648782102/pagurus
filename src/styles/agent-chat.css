@@ -226,51 +226,15 @@
 
 /* --- composer ------------------------------------------------------------ */
 
-.agent-thread-area .agent-chat-composer {
-  flex: 0 0 auto;
-  margin: 0 max(24px, calc((100% - var(--measure-reading)) / 2)) 24px;
-  padding: 12px 14px 10px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface-raised);
-  /* The composer is the one thing the reader types into: it should sit slightly
-     above the page, and light up rather than only gain an outline. */
-  box-shadow: var(--lift-2);
-  transition: box-shadow var(--motion-quick) var(--ease);
-}
-.agent-thread-area .agent-chat-composer:focus-within {
-  box-shadow: var(--lift-2), 0 0 0 3px var(--focus-ring);
-}
-.agent-thread-area .agent-chat-composer textarea {
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-strong);
-  font: 14px/1.65 var(--font-body);
-  resize: none;
-}
-.agent-thread-area .agent-chat-composer textarea:focus-visible { outline: none; }
-.agent-thread-area .agent-chat-composer-field { grid-template-columns: minmax(0, 1fr) 32px; gap: 10px; align-items: end; }
-.agent-thread-area .agent-chat-send {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-  font-size: 14px;
-}
-.agent-thread-area .agent-chat-send:hover:not([aria-disabled='true']) { background: var(--accent-ink); border-color: var(--accent-ink); }
-/* `aria-disabled` keeps the control in the tab order, so it must still look
-   unavailable without disappearing from the keyboard path. */
-.agent-thread-area .agent-chat-send[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
 .agent-thread-area .agent-chat-composer-hint { color: var(--text-faint); font-size: 10px; }
 .agent-chat-composer-foot {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  /* The card ends above this line, so the row needs its own breathing space;
+     6px read as the hint belonging to the toolbar rather than to the box. */
+  margin-top: 10px;
 }
 .agent-chat-composer-count {
   margin: 0;

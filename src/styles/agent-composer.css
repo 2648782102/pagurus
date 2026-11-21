@@ -1,0 +1,121 @@
+/* ---------------------------------------------------------------------------
+   The composer: one card, three bands.
+
+   Text, then a toolbar of mode controls, then the hint. The card supplies the
+   surface and the inset; each band owns its own padding, because the toolbar
+   has to reach the card's edges — controls inset by the paragraph's margin read
+   as part of the paragraph.
+
+   The shape follows what agent clients converged on: mode controls left, the
+   action right, and the action unshrinkable so a narrow card drops it to its
+   own line rather than letting the last chip run under it.
+   --------------------------------------------------------------------------- */
+
+.agent-thread-area .agent-chat-composer {
+  flex: 0 0 auto;
+  margin: 0 max(24px, calc((100% - var(--measure-reading)) / 2)) 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-raised);
+  /* The composer is the one thing the reader types into: it should sit slightly
+     above the page, and light up rather than only gain an outline. */
+  box-shadow: var(--lift-2);
+  transition: box-shadow var(--motion-quick) var(--ease);
+}
+.agent-thread-area .agent-chat-composer:focus-within {
+  box-shadow: var(--lift-2), 0 0 0 3px var(--focus-ring);
+}
+/*
+ * Three bands inside one card: the text, a toolbar row, and the hint.
+ *
+ * The text and the toolbar are siblings with their own padding rather than one
+ * padded box, because the toolbar needs to reach the card's edges — a row of
+ * controls inset by the text's margin reads as belonging to the paragraph. The
+ * card supplies the surface; each band supplies its own insets.
+ */
+.agent-thread-area .agent-chat-composer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 8px;
+}
+.agent-thread-area .agent-chat-composer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  /* Wraps rather than squeezing: the mode chips and the send button are both
+     unshrinkable, so on a narrow card the send button drops to its own line
+     instead of overlapping the last chip. */
+  flex-wrap: wrap;
+}
+.agent-thread-area .agent-chat-composer-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+.agent-thread-area .agent-chat-composer-tools:empty { display: none; }
+.agent-thread-area .agent-chat-composer textarea {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: 14px/1.65 var(--font-body);
+  resize: none;
+}
+.agent-thread-area .agent-chat-composer textarea:focus-visible { outline: none; }
+.agent-thread-area .agent-chat-send {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+}
+.agent-thread-area .agent-chat-send:hover:not([aria-disabled='true']) { background: var(--accent-ink); border-color: var(--accent-ink); }
+/* `aria-disabled` keeps the control in the tab order, so it must still look
+   unavailable without disappearing from the keyboard path. */
+.agent-thread-area .agent-chat-send[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
+
+/*
+ * A mode chip states a fact about this conversation; it is not a menu.
+ *
+ * The model and the effort are fixed when the conversation is created, so the
+ * chip reads as one line of context rather than a control — muted, no caret,
+ * no hover fill that would suggest a dropdown. The action chip beside them is
+ * the one thing that can change, and it says what it does.
+ */
+.agent-composer-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  max-width: 18ch;
+  /* Matches the send button's 32px so the row reads as one band; a chip two
+     pixels shorter makes the action look like it belongs to another line. */
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: 11px var(--font-body);
+  white-space: nowrap;
+}
+/* Truncation needs a block formatting context; on the flex parent it does
+   nothing, because the flex item's own width is unbounded. */
+.agent-composer-chip-text { overflow: hidden; text-overflow: ellipsis; }
+.agent-composer-chip-action {
+  color: var(--accent-ink);
+  border-color: var(--border-strong);
+  cursor: pointer;
+}
+.agent-composer-chip-action:hover { background: var(--accent-wash); }

@@ -12,6 +12,7 @@ import { AgentContextPanel } from './AgentContextPanel.js';
 import { AgentAnswer } from './AgentAnswer.js';
 import { AgentMessageActions } from './AgentMessageActions.js';
 import { AgentModelMenu } from './AgentModelMenu.js';
+import { ComposerModes } from '../features/agent-chat/ComposerModes.js';
 import { AgentPrompt } from './AgentPrompt.js';
 import { FirstRunGuide } from './FirstRunGuide.js';
 import { AgentThreadDrawer } from './AgentThreadDrawer.js';
@@ -307,7 +308,13 @@ export function AgentApp() {
                   onSend={chat.sendMessage}
                   /* Only an empty thread: a resumed one is being read. */
                   autoFocus={chat.conversation.messages.length === 0}
-                />
+                >
+                  <ComposerModes
+                    model={`${chat.conversation.providerId}:${chat.conversation.modelId}`}
+                    effort={chat.conversation.reasoningEffort}
+                    onNewThread={chat.restart}
+                  />
+                </AgentChatComposer>
               </div>
             </>
           )}

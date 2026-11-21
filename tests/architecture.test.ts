@@ -416,10 +416,17 @@ describe('front-end architecture boundaries', () => {
     const measure = /--ag-measure:\s*([^;]+);/.exec(tokens)?.[1]?.trim() ?? '';
     expect(measure, 'the reading measure must be a length, not a ch-unit').toMatch(/rem|px$/);
 
-    const chat = read('src/styles/agent-chat.css');
-    // Both the thread and the composer must use the same symmetric padding.
+    /*
+     * The thread and the composer must use the same symmetric padding, so the
+     * text column and the box under it share one edge. They live in different
+     * layers now — the composer moved to `agent-composer.css` when the toolbar
+     * row arrived — so this counts across both rather than within one file.
+     */
     const symmetric = /max\(24px, calc\(\(100% - var\(--measure-reading\)\) \/ 2\)\)/g;
-    expect((chat.match(symmetric) ?? []).length).toBeGreaterThanOrEqual(2);
+    const layout = ['src/styles/agent-chat.css', 'src/styles/agent-composer.css']
+      .map((file) => (read(file).match(symmetric) ?? []).length)
+      .reduce((total, count) => total + count, 0);
+    expect(layout, 'thread and composer must share the reading column').toBeGreaterThanOrEqual(2);
   });
 
   it('disables motion centrally instead of per file', () => {

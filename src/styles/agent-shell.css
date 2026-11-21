@@ -35,7 +35,17 @@
   justify-content: space-between;
   gap: 20px;
   height: 52px;
-  padding: 0 20px 0 18px;
+  /*
+   * Aligned with the reading column, not with the window.
+   *
+   * The column centres itself with `max(24px, (100% - measure) / 2)`, so on a
+   * wide window its text starts well inside the edge — measured at 61.5px. The
+   * bar used a flat `0 20px 0 18px`, which put the product name far to the left
+   * of the thread below it and was also asymmetric by two pixels for no stated
+   * reason. Same measure, same insets, so the two left edges line up at any
+   * width.
+   */
+  padding: 0 max(20px, calc((100% - var(--measure-reading)) / 2));
   border-bottom: 1px solid var(--border);
   background: var(--surface-canvas);
 }

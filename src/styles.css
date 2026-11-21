@@ -1,5 +1,4 @@
-/* Pagurus stylesheet entry point. Layer order is the cascade order: palettes,
- * then semantic tokens, then primitives, then surfaces. Append, don't reorder. */
+/* Entry point. Import order is cascade order. Append; never reorder. */
 @import "./styles/tokens.css";
 @import "./styles/agent-tokens.css";
 @import "./styles/semantic-tokens.css";
@@ -18,6 +17,7 @@
 @import "./styles/agent-shell.css";
 @import "./styles/agent-entry.css";
 @import "./styles/agent-chat.css";
+@import "./styles/agent-composer.css";
 @import "./styles/agent-activity.css";
 @import "./styles/agent-markdown.css";
 @import "./styles/agent-model.css";

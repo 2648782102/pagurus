@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button, Textarea } from '../../shared/ui/primitives.js';
 
@@ -13,10 +13,19 @@ interface AgentChatComposerProps {
    * thread is being read, and stealing focus there jumps the reader's place.
    */
   readonly autoFocus?: boolean;
+  /**
+   * The mode controls for this message — model, effort, and whatever else
+   * applies — rendered on the toolbar's left.
+   *
+   * The composer owns the row's geometry, not its contents: which controls a
+   * surface offers is a question about the product, and the console and the
+   * shipped app answer it differently.
+   */
+  readonly children?: ReactNode;
 }
 
 export function AgentChatComposer({
-  draft, busy, waiting, onDraftChange, onSend, autoFocus = false,
+  draft, busy, waiting, onDraftChange, onSend, autoFocus = false, children,
 }: AgentChatComposerProps) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const characters = draft.length;
@@ -53,7 +62,7 @@ export function AgentChatComposer({
       submit();
     }}>
       <label className="sr-only" htmlFor="agent-chat-message">输入消息</label>
-      <div className="agent-chat-composer-field">
+      <div className="agent-chat-composer-card">
         <Textarea
           id="agent-chat-message"
           textareaRef={inputRef}
@@ -91,24 +100,36 @@ export function AgentChatComposer({
            */
           placeholder={busy ? '正在发送上一句…' : '说点什么…'}
         />
-        <Button
-          className="agent-chat-send"
-          type="submit"
-          variant="primary"
-          /*
-           * Not `disabled`: a disabled button leaves the tab order, so a
-           * keyboard user typing a message could not reach Send without
-           * shift-tabbing backwards. It stays focusable and refuses the click
-           * instead, which is what "not ready yet" should mean.
-           */
-          aria-disabled={busy || draft.trim().length === 0}
-          aria-label="发送消息"
-          onClick={(event) => {
-            if (busy || draft.trim().length === 0) event.preventDefault();
-          }}
-        >
-          ↑
-        </Button>
+        {/*
+         * A toolbar row under the text, the way an agent client is laid out:
+         * the mode controls sit on the left where a reader looks for "what
+         * applies to this message", the send button on the right where the
+         * action ends. The send button used to be absolutely positioned over
+         * the text, which worked only while the composer stayed one line.
+         */}
+        <div className="agent-chat-composer-row">
+          <div className="agent-chat-composer-tools">
+            {children}
+          </div>
+          <Button
+            className="agent-chat-send"
+            type="submit"
+            variant="primary"
+            /*
+             * Not `disabled`: a disabled button leaves the tab order, so a
+             * keyboard user typing a message could not reach Send without
+             * shift-tabbing backwards. It stays focusable and refuses the click
+             * instead, which is what "not ready yet" should mean.
+             */
+            aria-disabled={busy || draft.trim().length === 0}
+            aria-label="发送消息"
+            onClick={(event) => {
+              if (busy || draft.trim().length === 0) event.preventDefault();
+            }}
+          >
+            ↑
+          </Button>
+        </div>
       </div>
       <div className="agent-chat-composer-foot">
         <p className="agent-chat-composer-hint" role="status">
