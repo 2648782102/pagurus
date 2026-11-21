@@ -76,3 +76,208 @@
 /* --- message actions ----------------------------------------------------- */
 
 .agent-message-actions { display: flex; gap: 6px; margin-top: 10px; opacity: 0; transition: opacity var(--motion-settle) var(--ease-out); }
+
+/* --- reasoning strength -------------------------------------------------- */
+
+/*
+ * The effort control: a chip that opens a list drawn from the product's own
+ * tokens.
+ *
+ * It replaced a native `<select>` stretched invisibly over the chip. The select
+ * was honest about the value, but what it opened was the operating system's
+ * menu — 13px, square, grey, with the system accent on the highlighted row —
+ * hanging under a 22px pill in a reading app. Nothing about it belonged to the
+ * page it was opened in.
+ *
+ * The chip keeps the toolbar's geometry: same height, same padding, same font.
+ * What changes is the affordance — a caret and a hover fill, because this one
+ * really does open something.
+ */
+.effort-menu {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.effort-trigger {
+  gap: 5px;
+  padding-right: 6px;
+  cursor: pointer;
+}
+.effort-trigger:hover,
+.effort-trigger[aria-expanded='true'] {
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+}
+.effort-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+/* The caret rotates rather than being swapped for a second glyph, so the
+   control cannot jump by a pixel when it opens. */
+.effort-caret {
+  width: 5px;
+  height: 5px;
+  margin-top: -2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  opacity: .65;
+  transition: transform var(--motion-quick) var(--ease);
+}
+.effort-trigger[aria-expanded='true'] .effort-caret {
+  margin-top: 2px;
+  transform: rotate(-135deg);
+}
+
+/*
+ * The list.
+ *
+ * It opens upward: the composer sits at the bottom of the window, so a list
+ * below it would either be clipped or push the card. `bottom: 100%` anchors it
+ * to the chip and grows away from the page edge; `transform-origin` moves to
+ * match so the arrival animation starts at the control rather than the corner
+ * of a box 200px away.
+ *
+ * Width is content-driven with a floor, because a level is one or two words and
+ * a fixed 320px panel would be mostly empty space.
+ */
+.effort-list {
+  position: absolute;
+  z-index: 30;
+  bottom: calc(100% + 8px);
+  left: 0;
+  /*
+   * A floor wide enough for the longest hint on one line — the hints are the
+   * widest thing here, and wrapping one to two lines would make every row a
+   * different height. The cap keeps a long hint from stretching the panel wider
+   * than the composer it belongs to.
+   */
+  min-width: 224px;
+  max-width: 280px;
+  /*
+   * A cap, because the list grows with whatever the gateway publishes.
+   *
+   * Six levels today is about 240px, which fits above the composer. Nothing
+   * stops a model from publishing ten, and at that point an uncapped list would
+   * run off the top of the window — unreachable, since a list that opens upward
+   * cannot be scrolled toward by the page. Beyond the cap the list scrolls on
+   * its own instead.
+   */
+  max-height: min(60vh, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-raised);
+  box-shadow: var(--lift-2), 0 16px 34px rgba(20, 28, 25, .14);
+  transform-origin: bottom left;
+}
+.effort-list:focus { outline: none; }
+
+/*
+ * One row: how strong this step is, what it is called, what it means.
+ *
+ * The meter is the only thing that says "more" — the words are names, not
+ * ranks, and six one-word options in a column tell a reader nothing about what
+ * changes between them. It is drawn as segments rather than a number so it
+ * reads at a glance without measuring.
+ */
+.effort-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  /*
+   * Rows are taller than a menu row usually is, and that is deliberate: each
+   * one carries a name and a sentence, and 28px of padding between them read as
+   * a dense list of labels rather than a set of choices. 38px fits both lines
+   * with air and keeps three rows inside 130px.
+   */
+  padding: 8px 9px;
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color var(--motion-quick) var(--ease);
+}
+.effort-option.is-active { background: var(--accent-wash); }
+.effort-option.is-selected .effort-option-label { color: var(--accent-ink); }
+.effort-option-meter {
+  display: flex;
+  align-items: flex-end;
+  /*
+   * 3px bars on a 3px gap, at a size a reader can actually count.
+   *
+   * The first pass drew them 2px wide on a 1.75px gap, which at 1x rendered as
+   * a smudge: the shape was there, the rank was not. Bars are also lighter than
+   * the labels on purpose — this is orientation, not a data display.
+   */
+  gap: 3px;
+  height: 14px;
+}
+.effort-option-meter > span {
+  width: 3px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--border-strong);
+}
+/* A taller bar for each step, so the shape itself carries the rank. */
+.effort-option-meter > span:nth-child(2) { height: 6px; }
+.effort-option-meter > span:nth-child(3) { height: 8px; }
+.effort-option-meter > span:nth-child(4) { height: 10px; }
+.effort-option-meter > span:nth-child(5) { height: 12px; }
+.effort-option-meter > span:nth-child(6) { height: 14px; }
+.effort-option-meter > span.is-on { background: var(--accent); }
+.effort-option-copy { display: grid; gap: 2px; min-width: 0; }
+.effort-option-label { font: 500 12px/1.3 var(--font-body); }
+.effort-option-hint {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.effort-option-check { color: var(--accent-ink); font-size: 12px; }
+
+
+/*
+ * The hint and the length share one slot at the right end of the toolbar: they
+ * answer the same question — "what happens if I keep going" — and only one of
+ * them is ever worth reading. The hint is the resting state and fades out as
+ * soon as the draft grows a length worth reporting.
+ */
+.agent-chat-composer-hint {
+  margin: 0;
+  /*
+   * `--text-faint` measured 2.98:1 here and `--text-muted` 4.50:1 — the first
+   * under AA, the second exactly on the line. The card is lighter than the
+   * page, so faint ink is at its worst exactly here, and a 10px line needs
+   * margin rather than a pass. `--text` is the body ink.
+   */
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.agent-chat-composer-count {
+  margin: 0;
+  color: var(--text);
+  font: 11px var(--font-code);
+  font-variant-numeric: tabular-nums;
+}
+.agent-chat-composer-count.is-over { color: var(--state-caution-ink); }
+
+/*
+ * The paste notice takes its own row above the card's content, because it
+ * explains something that has already happened to the box rather than
+ * something about to happen to the draft.
+ */
+.agent-chat-composer-notice {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--state-caution);
+  color: var(--state-caution-ink);
+  font-size: 10px;
+  line-height: 1.6;
+}

@@ -13,7 +13,13 @@ import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
 import { useAgentChatStream } from './useAgentChatStream.js';
 import { replaceWith } from './merge-conversation.js';
-import { loadCatalogSnapshot, pickFirstAgent, pickModelReference, useAgentCatalog } from './use-agent-catalog.js';
+import {
+  loadCatalogSnapshot,
+  pickFirstAgent,
+  pickModelReference,
+  reconcileEffort,
+  useAgentCatalog,
+} from './use-agent-catalog.js';
 import { useConversationDraft } from './use-conversation-draft.js';
 import { errorMessage } from '../../shared/ui/errors.js';
 
@@ -106,8 +112,21 @@ export function useAgentChat(
       // together.
       setSelectedAgentId((current) => current || pickFirstAgent(available));
       setModels(snapshot.models);
-      setSelectedModelReference((current) => current
-        || pickModelReference(snapshot.models, snapshot.history?.defaultModelId ?? null));
+      const modelReference = pickModelReference(
+        snapshot.models,
+        snapshot.history?.defaultModelId ?? null,
+      );
+      setSelectedModelReference((current) => current || modelReference);
+      /*
+       * Seed the effort from the model that was just selected. It starts empty
+       * rather than at a constant, because which levels exist is the model's
+       * answer — a Boss that runs on a `none/low/high/max` model has no
+       * `medium` to start from.
+       */
+      setReasoningEffort((current) => reconcileEffort(
+        current,
+        snapshot.models.find((model) => model.reference === modelReference)?.reasoningLevels,
+      ));
       setRecent(snapshot.history?.conversations ?? []);
       // Restore the newest thread that contains messages. The Runtime lists
       // newest-created first, so its head is often a conversation the user

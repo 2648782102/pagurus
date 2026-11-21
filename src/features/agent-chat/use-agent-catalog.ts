@@ -49,7 +49,14 @@ export function useAgentCatalog(): AgentCatalogState {
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [models, setModels] = useState<readonly AgentChatModel[]>([]);
   const [selectedModelReference, setSelectedModelReference] = useState('');
-  const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('medium');
+  /*
+   * Starts empty, not `medium`.
+   *
+   * `medium` used to be a constant here, and it is a level several models do not
+   * publish at all. The first catalogue read fills this in from the model that
+   * was actually selected; until then there is no honest value to show.
+   */
+  const [reasoningEffort, setReasoningEffort] = useState<AgentChatReasoningEffort>('');
   const [recent, setRecent] = useState<readonly AgentChatConversationSummary[]>([]);
 
   /*
@@ -108,6 +115,28 @@ export function pickModelReference(
     ? catalog.find((model) => model.modelId === defaultModelId)
     : undefined;
   return preferred?.reference ?? catalog[0]?.reference ?? '';
+}
+
+/**
+ * The level to start from, given what the chosen model publishes.
+ *
+ * Keeps the reader's current level when the model accepts it, otherwise falls
+ * back to the middle step of the model's own list — the same rule the Runtime
+ * applies when a conversation is created without one. Returns `''` for a model
+ * with no levels, which the launcher renders as a disabled field rather than a
+ * menu that would change nothing.
+ */
+export function reconcileEffort(
+  current: AgentChatReasoningEffort,
+  levels: readonly string[] | undefined,
+): AgentChatReasoningEffort {
+  if (levels === undefined || levels.length === 0) return '';
+  if (current.length > 0 && levels.includes(current)) return current;
+  // `none` is a level, not a step: it must not become the default just because
+  // it sorts first.
+  const steps = levels.filter((level) => level !== 'none');
+  const candidates = steps.length > 0 ? steps : levels;
+  return candidates[Math.floor((candidates.length - 1) / 2)]!;
 }
 
 /** The three reads a startup needs, settled together. */

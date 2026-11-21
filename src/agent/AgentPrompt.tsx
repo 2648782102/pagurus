@@ -5,6 +5,8 @@ import type {
   AgentChatReasoningEffort,
 } from '../shared/api/agent-chat.js';
 import { agentErrorText } from './agent-error-text.js';
+import { effortLabel } from '../shared/ui/effort-label.js';
+import { reconcileEffort } from '../features/agent-chat/use-agent-catalog.js';
 
 export interface AgentPromptProps {
   readonly agents: readonly AgentChatAgent[];
@@ -21,12 +23,6 @@ export interface AgentPromptProps {
   readonly onDraftChange: (value: string) => void;
   readonly onSubmit: () => void;
 }
-
-const EFFORT_OPTIONS: readonly { value: AgentChatReasoningEffort; label: string }[] = [
-  { value: 'low', label: '快速' },
-  { value: 'medium', label: '均衡' },
-  { value: 'high', label: '深入' },
-];
 
 /**
  * The entry moment: one question in the middle of an empty page.
@@ -53,6 +49,14 @@ export function AgentPrompt({
 }: AgentPromptProps) {
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId);
   const canSend = draft.trim().length > 0 && !busy && selectedAgentId.length > 0;
+  /*
+   * What the chosen model offers, not what this surface used to assume. The
+   * first screen creates the conversation, so the level chosen here is the one
+   * the Runtime validates against the catalogue — a fixed list can be wrong
+   * before the request is even sent.
+   */
+  const effortLevels = models.find((model) => model.reference === selectedModelReference)
+    ?.reasoningLevels ?? [];
 
   const submit = () => {
     if (!canSend) return;
@@ -115,7 +119,19 @@ export function AgentPrompt({
               <span>模型</span>
               <select
                 value={selectedModelReference}
-                onChange={(event) => onSelectModel(event.target.value)}
+                onChange={(event) => {
+                  const reference = event.target.value;
+                  onSelectModel(reference);
+                  /*
+                   * A level that belongs to the previous model is not a choice
+                   * for this one; fall back to what the new model offers. Same
+                   * rule the launcher and the Runtime use.
+                   */
+                  onSelectEffort(reconcileEffort(
+                    reasoningEffort,
+                    models.find((model) => model.reference === reference)?.reasoningLevels,
+                  ));
+                }}
                 disabled={busy || models.length === 0}
               >
                 {models.length === 0 && <option value="">暂无模型</option>}
@@ -129,10 +145,17 @@ export function AgentPrompt({
               <select
                 value={reasoningEffort}
                 onChange={(event) => onSelectEffort(event.target.value as AgentChatReasoningEffort)}
-                disabled={busy}
+                disabled={busy || effortLevels.length === 0}
               >
-                {EFFORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                {/*
+                 * The list belongs to the selected model. A fixed three was the
+                 * same bug the composer had: it offered `medium` to models that
+                 * publish `none/low/high/max`, and creation was refused for a
+                 * value the reader had no way to know was invalid.
+                 */}
+                {effortLevels.length === 0 && <option value="">无档位</option>}
+                {effortLevels.map((level) => (
+                  <option key={level} value={level}>{effortLabel(level)}</option>
                 ))}
               </select>
             </label>

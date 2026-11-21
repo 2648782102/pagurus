@@ -1,27 +1,6 @@
 import type { AgentChatModel, AgentChatReasoningEffort } from '../../shared/api/agent-chat.js';
-
-/**
- * How a published level reads in Chinese.
- *
- * Only the levels that have a natural word are translated. Everything else —
- * `xhigh`, `max`, `ultra`, and whatever the gateway adds next — is shown as the
- * token the gateway uses, because a wrong translation is worse than a literal
- * one: a reader who sees "极深" cannot tell whether that is stronger than
- * "深入".
- */
-const EFFORT_LABELS: Readonly<Record<string, string>> = {
-  none: '不思考',
-  low: '快速',
-  medium: '均衡',
-  high: '深入',
-  xhigh: '极深',
-  max: '最强',
-  ultra: '极限',
-};
-
-export function effortLabel(effort: string): string {
-  return EFFORT_LABELS[effort] ?? effort;
-}
+import { effortLabel } from '../../shared/ui/effort-label.js';
+import { EffortMenu } from './EffortMenu.js';
 
 /**
  * What this message will run with, shown where the reader types.
@@ -31,10 +10,10 @@ export function effortLabel(effort: string): string {
  * menu.
  *
  * The effort is a choice. The Runtime accepts a per-turn override and adopts it
- * as the conversation's new default, so this is a real control — a native
- * `<select>` over exactly the levels this model publishes. When the model
- * publishes none, there is nothing to choose and the chip says so instead of
- * offering a menu that would change nothing.
+ * as the conversation's new default, so this is a real control over exactly the
+ * levels this model publishes. When the model publishes none, there is nothing
+ * to choose and the chip says so instead of offering a menu that would change
+ * nothing.
  */
 export function ComposerModes({
   model,
@@ -58,36 +37,8 @@ export function ComposerModes({
       <span className="agent-composer-chip" title="模型在对话创建时固定">
         <span className="agent-composer-chip-text">{shortModel(model)}</span>
       </span>
-      {/*
-       * A native `<select>` carrying the chip's styling.
-       *
-       * Native because the alternatives are worse here: a custom listbox has to
-       * re-implement keyboard navigation, type-ahead, and screen-reader
-       * announcement, and this control sits inside a form where arrow keys are
-       * already spoken for. The select is the one element every browser and
-       * assistive technology agrees on.
-       */}
       {canChoose && effort !== null ? (
-        <label className="agent-composer-chip agent-composer-chip-select">
-          {/*
-           * The visible text is the label's own, not the select's: the select is
-           * stretched over the chip and fully transparent so the native popup
-           * still opens from anywhere in it, while the chip keeps the row's
-           * height, font, and alignment. Without this span the control would be
-           * an invisible select on an empty pill.
-           */}
-          <span className="agent-composer-chip-text">{effortLabel(effort)}</span>
-          <select
-            className="agent-composer-effort"
-            value={effort}
-            aria-label="思考强度"
-            onChange={(event) => onEffortChange(event.target.value)}
-          >
-            {levels.map((level) => (
-              <option key={level} value={level}>{effortLabel(level)}</option>
-            ))}
-          </select>
-        </label>
+        <EffortMenu effort={effort} levels={levels} onChange={onEffortChange} />
       ) : (
         <span
           className="agent-composer-chip"

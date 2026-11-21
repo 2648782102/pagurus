@@ -5,6 +5,8 @@ import type {
   AgentChatReasoningEffort,
 } from '../../shared/api/agent-chat.js';
 import { Button, EmptyState, Field, Section, Select, Tag } from '../../shared/ui/primitives.js';
+import { effortHint, effortLabel } from '../../shared/ui/effort-label.js';
+import { reconcileEffort } from './use-agent-catalog.js';
 
 export interface AgentLandingView {
   readonly agents: readonly AgentChatAgent[];
@@ -38,6 +40,15 @@ export function AgentPanelLanding({
   readonly actions: AgentLandingActions;
 }) {
   const selectedAgent = view.agents.find((agent) => agent.id === view.selectedAgentId);
+  /*
+   * The effort options belong to the model the reader just picked, not to a
+   * fixed list of three. The console's launcher offered `low/medium/high` while
+   * the catalogue it had already loaded said `none/low/high/max` — so creating
+   * a conversation from the console could ask for a level the model does not
+   * have, and the Runtime would refuse it.
+   */
+  const selectedModel = view.models.find((model) => model.reference === view.selectedModelReference);
+  const effortLevels = selectedModel?.reasoningLevels ?? [];
   const history = view.recent.filter((entry) => entry.agentId === view.selectedAgentId);
 
   return (
@@ -107,7 +118,20 @@ export function AgentPanelLanding({
               <Select
                 id="agent-chat-model"
                 value={view.selectedModelReference}
-                onChange={(event) => actions.setSelectedModelReference(event.target.value)}
+                onChange={(event) => {
+                  const reference = event.target.value;
+                  actions.setSelectedModelReference(reference);
+                  /*
+                   * The level belongs to the model. Switching to a model that
+                   * does not publish the current one would leave the form
+                   * holding an unsubmittable value — the reader would press
+                   * "开启新对话" and get a refusal about a field they never
+                   * touched.
+                   */
+                  const nextLevels = view.models.find((model) => model.reference === reference)
+                    ?.reasoningLevels;
+                  actions.setReasoningEffort(reconcileEffort(view.reasoningEffort, nextLevels));
+                }}
                 disabled={view.busy}
               >
                 {view.models.length === 0 && <option value="">暂无可用模型</option>}
@@ -123,11 +147,14 @@ export function AgentPanelLanding({
                 id="agent-chat-reasoning"
                 value={view.reasoningEffort}
                 onChange={(event) => actions.setReasoningEffort(event.target.value as AgentChatReasoningEffort)}
-                disabled={view.busy}
+                disabled={view.busy || effortLevels.length === 0}
               >
-                <option value="low">低 · 更快</option>
-                <option value="medium">中 · 平衡</option>
-                <option value="high">高 · 更深</option>
+                {effortLevels.length === 0 && <option value="">该模型无思考强度档位</option>}
+                {effortLevels.map((level) => (
+                  <option key={level} value={level}>
+                    {effortLabel(level)}{effortHint(level) === null ? '' : ` · ${effortHint(level)}`}
+                  </option>
+                ))}
               </Select>
               </Field>
               <p className="agent-chat-setup-note">

@@ -233,13 +233,29 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    const effort = screen.getByLabelText('思考强度') as HTMLSelectElement;
-    // Only the levels this model publishes, not a fixed set of three.
-    expect([...effort.options].map((option) => option.value)).toEqual(['low', 'medium', 'high']);
-    expect(effort.value).toBe('medium');
+    /*
+     * Driven the way a reader drives it: open the chip, read the rows, pick one.
+     * Asserting on a `<select>`'s `.options` was the old test, and it passed
+     * while the control opened a system menu that looked like nothing else on
+     * the page — the assertions described the DOM, not the experience.
+     */
+    const trigger = screen.getByRole('button', { name: /^思考强度：/ });
+    expect(trigger.textContent).toContain('均衡');
+    fireEvent.click(trigger);
 
-    fireEvent.change(effort, { target: { value: 'high' } });
-    expect(effort.value).toBe('high');
+    const list = screen.getByRole('listbox', { name: '思考强度' });
+    // Only the levels this model publishes, in the gateway's order.
+    expect(within(list).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      expect.stringContaining('快速'),
+      expect.stringContaining('均衡'),
+      expect.stringContaining('深入'),
+    ]);
+    expect(within(list).getByRole('option', { selected: true }).textContent).toContain('均衡');
+
+    fireEvent.mouseDown(within(list).getByText('深入'));
+    // Choosing closes the list and returns focus to the chip that opened it.
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(trigger.textContent).toContain('深入');
 
     fireEvent.change(screen.getByLabelText('输入消息'), { target: { value: '再问一句' } });
     fireEvent.click(screen.getByRole('button', { name: '发送消息' }));
