@@ -254,11 +254,8 @@
       transparent 80%
     );
     background-size: 220% 100%;
-    animation: ui-skeleton-sweep var(--motion-attention) ease-in-out infinite;
+    animation: motion-sweep var(--motion-attention) ease-in-out infinite;
   }
 }
 
-@keyframes ui-skeleton-sweep {
-  from { background-position: 140% 0; }
-  to { background-position: -40% 0; }
-}
+

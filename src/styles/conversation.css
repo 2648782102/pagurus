@@ -136,24 +136,10 @@
  * from the cycle instead of hard-coded, so changing the tempo keeps the wave
  * even.
  */
-.agent-chat-typing i { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: .4; animation: agent-chat-pulse var(--motion-attention) ease-in-out infinite; }
+.agent-chat-typing i { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: .4; animation: motion-pulse var(--motion-attention) ease-in-out infinite; }
 .agent-chat-typing i:nth-child(2) { animation-delay: calc(var(--motion-attention) / 6); }
 .agent-chat-typing i:nth-child(3) { animation-delay: calc(var(--motion-attention) / 3); }
-@keyframes agent-chat-pulse { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
-.agent-chat-caret { display: inline-block; width: 5px; height: 1em; margin-left: 2px; vertical-align: text-bottom; background: var(--accent); animation: agent-chat-blink calc(var(--motion-attention) * .64) steps(2, start) infinite; }
-@keyframes agent-chat-blink { 50% { opacity: 0; } }
-.agent-chat-report { display: grid; gap: 8px; min-width: 0; }
-.agent-chat-report-headline { color: var(--text-strong); font-size: 13px; font-weight: 600; line-height: 1.65; white-space: normal; }
-.agent-chat-report-section { display: grid; gap: 2px; padding-left: 8px; border-left: 2px solid var(--accent-wash); }
-.agent-chat-report-section h3 { margin: 0; color: var(--accent-ink); font-size: 10px; }
-.agent-chat-report-section ul { display: grid; gap: 1px; margin: 0; padding-left: 15px; color: var(--text); font-size: 11px; line-height: 1.65; }
-.agent-chat-activity {
-  display: grid;
-  gap: 1px;
-  margin: 1px 0 0;
-  padding: 0;
-  list-style: none;
-}
+
 .agent-chat-activity li {
   display: flex;
   flex-wrap: wrap;

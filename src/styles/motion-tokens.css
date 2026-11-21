@@ -50,4 +50,196 @@
  */
 :root {
   --motion-stagger: 26ms;
+  /*
+   * Per-row index for `.anim-stagger`. Declared here so the property has a
+   * definition even when a list forgets to set it — a `var()` that resolves to
+   * nothing invalidates the whole `animation-delay`, which would drop the
+   * stagger silently rather than failing visibly.
+   */
+  --i: 0;
+}
+
+/* ===========================================================================
+   The motion library.
+
+   Eight keyframes had accumulated across six sheets, each named for the place
+   it was written in — `agent-drawer-fade`, `agent-model-popover-in`,
+   `agent-inline-error-in` — so the next surface that needed "something rising
+   into place" wrote a ninth. These are the same movements, named for what they
+   do, and the class names say which duration and curve they pair with.
+
+   Every class animates `opacity` and `transform` only. Nothing here reads or
+   changes layout, so adding one to an element cannot move anything else.
+
+   Naming: `motion-<name>` for the keyframe, `.anim-<name>` for a class that
+   applies it. A component joins the library by adding the class; it does not
+   copy the keyframes.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Being here: an element arriving in place.
+
+   `rise` is the default for content that appears where it will stay — a
+   message, a row, a panel. 6px is under one line height: a longer slide on every
+   item makes a fast exchange feel like it is stuttering.
+   --------------------------------------------------------------------------- */
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A smaller rise for dense rows, where a full 6px would read as a bounce. */
+@keyframes motion-rise-tight {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Crossing a distance: a sheet or drawer entering from an edge.
+
+   The travel distance is `--motion-shift`, and the origin is set by the
+   component — a drawer from the right, a toast from the bottom.
+   --------------------------------------------------------------------------- */
+@keyframes motion-slide-in {
+  from {
+    opacity: .6;
+    transform: translateX(var(--motion-shift));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-lift-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-shift));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Growing from the control that owns it.
+
+   A popover or menu should appear to come from its trigger, not from its own
+   centre. Pair with `transform-origin` at the trigger's corner.
+   --------------------------------------------------------------------------- */
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Plain fades, for a scrim or a cross-fade underlay.
+   --------------------------------------------------------------------------- */
+@keyframes motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------------
+   Attention: looping cues that must read while they repeat.
+
+   These are the only infinite animations in the library. Nothing conveys state
+   through them alone — each pairs with text or position — so reduced motion can
+   remove them without losing information.
+   --------------------------------------------------------------------------- */
+@keyframes motion-pulse {
+  0%, 60%, 100% { opacity: .3; }
+  30% { opacity: 1; }
+}
+
+@keyframes motion-blink {
+  50% { opacity: 0; }
+}
+
+/* A background sweep, for a placeholder that is waiting on data. */
+@keyframes motion-sweep {
+  from { background-position: 140% 0; }
+  to { background-position: -40% 0; }
+}
+
+/* ===========================================================================
+   The classes.
+
+   Each pairs one keyframe with the duration and curve that movement wants, so a
+   component writes `.anim-rise` and gets the house timing — it cannot pick a
+   400ms rise because it felt right in that file.
+
+   `animation-fill-mode: both` throughout: content that rises must not flash at
+   its final position for the first frame before the `from` styles apply.
+   =========================================================================== */
+
+.anim-rise {
+  animation: motion-rise var(--motion-settle) var(--ease-out) both;
+}
+
+.anim-rise-tight {
+  animation: motion-rise-tight var(--motion-settle) var(--ease-out) both;
+}
+
+.anim-slide-in {
+  animation: motion-slide-in var(--motion-travel) var(--ease-out-soft) both;
+}
+
+.anim-lift-in {
+  animation: motion-lift-in var(--motion-travel) var(--ease-out-soft) both;
+}
+
+.anim-pop {
+  animation: motion-pop var(--motion-settle) var(--ease-out) both;
+  transform-origin: top left;
+}
+
+.anim-fade-in {
+  animation: motion-fade-in var(--motion-settle) var(--ease-out) both;
+}
+
+/*
+ * A group that arrives in order.
+ *
+ * The list sets `--i` per row (its index), and each row joins with
+ * `.anim-rise-tight`. The delay caps at ten rows: past that the last item would
+ * wait most of a second, which reads as lag rather than as sequence.
+ *
+ * `--motion-stagger` is small on purpose — the eye needs to see an order, not
+ * to count the steps.
+ */
+.anim-stagger > * {
+  animation: motion-rise-tight var(--motion-settle) var(--ease-out) both;
+  animation-delay: calc(var(--motion-stagger) * min(var(--i, 0), 10));
+}
+
+/*
+ * Looping cues. Named `anim-` like the rest so a reader looking for "what
+ * animates here" finds one prefix.
+ */
+.anim-pulse {
+  animation: motion-pulse var(--motion-attention) ease-in-out infinite;
+}
+
+.anim-blink {
+  animation: motion-blink calc(var(--motion-attention) * .64) steps(2, start) infinite;
 }
