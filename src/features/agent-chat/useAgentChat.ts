@@ -11,6 +11,7 @@ import {
 } from '../../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useVisiblePolling } from '../../shared/ui/use-poll.js';
+import { defaultPermissionLevel, permissionOptionsFor } from './permission-choice.js';
 import { useAgentChatStream } from './useAgentChatStream.js';
 import { replaceWith } from './merge-conversation.js';
 import {
@@ -44,7 +45,9 @@ export function useAgentChat(
   const catalog = useAgentCatalog();
   const {
     agents, selectedAgentId, models, selectedModelReference, reasoningEffort, recent,
+    permissionLevel,
     setAgents, setSelectedAgentId, setModels, setSelectedModelReference, setReasoningEffort, setRecent,
+    setPermissionLevel,
   } = catalog;
   const [conversation, setConversation] = useState<AgentChatConversation | null>(null);
   const { draft, setDraft: updateDraft, clearDraftFor, restoreDraft } = useConversationDraft(
@@ -199,6 +202,18 @@ export function useAgentChat(
 
   useEffect(() => { void loadAgents({ restoreLatest: autoResume }); }, [autoResume, loadAgents]);
 
+  /*
+   * Start the permission control at the Runtime's own level.
+   *
+   * Reading it rather than assuming `standard` matters: a `strict` Runtime would
+   * otherwise begin on a value it clamps, so the reader's first message would
+   * run under a level different from the one shown.
+   */
+  const runtimePermissionLevel = runtime?.permissionLevel ?? null;
+  useEffect(() => {
+    setPermissionLevel(defaultPermissionLevel(runtimePermissionLevel));
+  }, [runtimePermissionLevel, setPermissionLevel]);
+
   /**
    * A Runtime notice can arrive without a user message (for example when an
    * idle project converges). While no conversation is open, SSE is not
@@ -234,6 +249,7 @@ export function useAgentChat(
       const created = await createAgentChatConversation({
         agentId: selectedAgentId,
         reasoningEffort,
+        permissionLevel,
         ...(selectedModel
           ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
           : {}),
@@ -247,7 +263,7 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [applyConversation, busy, models, reasoningEffort, refreshRecent, restoreDraft, selectedAgentId, selectedModelReference, supported]);
+  }, [applyConversation, busy, models, permissionLevel, reasoningEffort, refreshRecent, restoreDraft, selectedAgentId, selectedModelReference, supported]);
 
   const resetConversation = useCallback(() => {
     applyConversation(null);
@@ -273,6 +289,7 @@ export function useAgentChat(
       const created = await createAgentChatConversation({
         agentId: selectedAgentId,
         reasoningEffort,
+        permissionLevel,
         ...(selectedModel
           ? { modelOverride: { providerId: selectedModel.providerId, modelId: selectedModel.modelId } }
           : {}),
@@ -290,7 +307,7 @@ export function useAgentChat(
     } finally {
       setBusy(false);
     }
-  }, [applyConversation, busy, draft, models, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
+  }, [applyConversation, busy, draft, models, permissionLevel, reasoningEffort, refreshRecent, selectedAgentId, selectedModelReference, supported]);
 
   /**
    * Opens an existing conversation from the history list. Selecting history is
@@ -452,6 +469,11 @@ export function useAgentChat(
     decideApproval,
     reasoningEffort,
     setReasoningEffort,
+    permissionLevel,
+    setPermissionLevel,
+    /** Only the levels this Runtime allows; see `permissionOptionsFor`. */
+    permissionOptions: permissionOptionsFor(runtimePermissionLevel),
+    runtimePermissionLevel,
     recent,
   };
 }

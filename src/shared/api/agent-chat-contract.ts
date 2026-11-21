@@ -174,6 +174,14 @@ export interface AgentChatConversation {
    * `null` is a fact about the model, not an unset field.
    */
   readonly reasoningEffort: AgentChatReasoningEffort | null;
+  /**
+   * The approval level actually in force for this conversation.
+   *
+   * Not necessarily what was requested: the Runtime clamps a request to its own
+   * level, so a client that asked for `trusted` against a `standard` Runtime
+   * must render `standard`. Absent on a Runtime that predates the field.
+   */
+  readonly permissionLevel?: AgentChatPermissionLevel;
   readonly messages: readonly AgentChatMessage[];
 }
 
@@ -185,6 +193,7 @@ export interface AgentChatConversation {
  * no published levels. A union of three could not name most of those.
  */
 export type AgentChatReasoningEffort = string;
+export type AgentChatPermissionLevel = 'strict' | 'standard' | 'trusted';
 
 export interface AgentChatConversationSummary {
   readonly id: string;
@@ -289,6 +298,12 @@ export function isAgentChatConversation(value: unknown): value is AgentChatConve
     && typeof value.modelId === 'string'
     && typeof value.configurationRevisionId === 'string'
     && (value.reasoningEffort === null || typeof value.reasoningEffort === 'string')
+    && (
+      value.permissionLevel === undefined
+      || value.permissionLevel === 'strict'
+      || value.permissionLevel === 'standard'
+      || value.permissionLevel === 'trusted'
+    )
     && Array.isArray(value.messages) && value.messages.every(isAgentChatMessage);
 }
 

@@ -13,6 +13,7 @@ import {
   type AgentChatMessageResult,
   type AgentChatModel,
   type AgentChatReasoningEffort,
+  type AgentChatPermissionLevel,
 } from './agent-chat-contract.js';
 import { isRecord } from './guards.js';
 import { jsonBody, requestJson } from './http.js';
@@ -70,6 +71,13 @@ export function createAgentChatConversation(
     readonly agentId?: string;
     readonly modelOverride?: { readonly providerId: string; readonly modelId: string };
     readonly reasoningEffort?: AgentChatReasoningEffort;
+    /**
+     * A level at or below the Runtime's own.
+     *
+     * The Runtime clamps a looser request instead of rejecting it, so the
+     * response is the authority on what applied.
+     */
+    readonly permissionLevel?: AgentChatPermissionLevel;
   } = {},
   signal?: AbortSignal,
 ): Promise<AgentChatConversation> {

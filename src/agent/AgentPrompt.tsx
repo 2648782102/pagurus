@@ -2,6 +2,7 @@ import type { KeyboardEvent } from 'react';
 import type {
   AgentChatAgent,
   AgentChatModel,
+  AgentChatPermissionLevel,
   AgentChatReasoningEffort,
 } from '../shared/api/agent-chat.js';
 import { agentErrorText } from './agent-error-text.js';
@@ -14,12 +15,21 @@ export interface AgentPromptProps {
   readonly models: readonly AgentChatModel[];
   readonly selectedModelReference: string;
   readonly reasoningEffort: AgentChatReasoningEffort;
+  readonly permissionLevel: AgentChatPermissionLevel;
+  /**
+   * Only the levels this Runtime allows, most restrictive first.
+   *
+   * A list containing a level the Runtime would clamp turns the control into a
+   * choice that silently does not apply.
+   */
+  readonly permissionOptions: readonly { readonly value: AgentChatPermissionLevel; readonly label: string }[];
   readonly draft: string;
   readonly busy: boolean;
   readonly error: string | null;
   readonly onSelectAgent: (agentId: string) => void;
   readonly onSelectModel: (reference: string) => void;
   readonly onSelectEffort: (effort: AgentChatReasoningEffort) => void;
+  readonly onSelectPermission: (level: AgentChatPermissionLevel) => void;
   readonly onDraftChange: (value: string) => void;
   readonly onSubmit: () => void;
 }
@@ -38,12 +48,15 @@ export function AgentPrompt({
   models,
   selectedModelReference,
   reasoningEffort,
+  permissionLevel,
+  permissionOptions,
   draft,
   busy,
   error,
   onSelectAgent,
   onSelectModel,
   onSelectEffort,
+  onSelectPermission,
   onDraftChange,
   onSubmit,
 }: AgentPromptProps) {
@@ -159,6 +172,26 @@ export function AgentPrompt({
                 ))}
               </select>
             </label>
+            {/*
+              * Hidden when the Runtime allows exactly one level: a select with a
+              * single option is a control that cannot do anything, and showing
+              * it invites a reader to try.
+              */}
+            {permissionOptions.length > 1 && (
+              <label className="agent-prompt-pick">
+                <span>权限</span>
+                <select
+                  value={permissionLevel}
+                  onChange={(event) => onSelectPermission(event.target.value as AgentChatPermissionLevel)}
+                  disabled={busy}
+                  title="只影响新开的对话；已开的对话保持它创建时的等级"
+                >
+                  {permissionOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
           <button type="submit" className="agent-prompt-send" disabled={!canSend} aria-label="发送消息">
             {busy ? '…' : '↑'}
