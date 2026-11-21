@@ -695,4 +695,35 @@ describe('front-end architecture boundaries', () => {
     const armed = /:root\[data-theme-switching\]/.test(tokens);
     expect(armed, 'the broad colour transition must be scoped to the marker').toBe(true);
   });
+
+  it('keeps every motion in one library, named for what it does', () => {
+    /*
+     * Eight keyframes had accumulated across six sheets, each named for the
+     * place it was written in — `agent-drawer-fade`, `agent-model-popover-in`,
+     * `agent-inline-error-in` — so the next surface needing "something rising
+     * into place" wrote a ninth.
+     *
+     * They now live in `motion-tokens.css` and are named for the movement. This
+     * keeps a new one from being defined next to the rule that first wanted it.
+     */
+    const library = read('src/styles/motion-tokens.css');
+    const elsewhere = styleFiles()
+      .filter((file) => file !== 'src/styles/motion-tokens.css')
+      .filter((file) => /@keyframes/.test(withoutComments(read(file))));
+    expect(elsewhere, `keyframes belong in motion-tokens.css:\n${elsewhere.join('\n')}`).toEqual([]);
+
+    // Every animation a component applies must name a keyframe the library defines.
+    const defined = new Set(
+      [...library.matchAll(/@keyframes\s+([a-z-]+)/g)].map((match) => match[1]!),
+    );
+    const used = new Set<string>();
+    for (const file of styleFiles()) {
+      for (const match of withoutComments(read(file)).matchAll(/animation:\s*([a-z-]+)/g)) {
+        // `animation: none` and shorthand with a keyword are not names.
+        if (match[1] !== 'none') used.add(match[1]!);
+      }
+    }
+    const missing = [...used].filter((name) => !defined.has(name));
+    expect(missing, `undefined keyframes: ${missing.join(', ')}`).toEqual([]);
+  });
 });

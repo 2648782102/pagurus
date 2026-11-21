@@ -132,19 +132,8 @@
  * and rose 6px together, which reads as the page repainting rather than as one
  * reply arriving.
  */
-@keyframes agent-message-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .agent-thread-area .agent-chat-message.is-arriving {
-  animation: agent-message-arrive var(--motion-settle) var(--ease-out) both;
+  animation: motion-rise var(--motion-settle) var(--ease-out) both;
 }
 
 /*
