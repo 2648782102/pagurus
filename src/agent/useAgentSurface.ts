@@ -26,12 +26,21 @@ export function useAgentSurface(runtime: RuntimeInfo | null) {
 
   const pinSummary = useMemo(() => {
     if (chat.conversation === null) return null;
+    /*
+     * The *chosen* model, not the stored one.
+     *
+     * These differ between picking a model and sending the message that applies
+     * it, and for that gap the header said one thing while the composer said
+     * another. The composer is the control, so the read-out follows it.
+     */
+    const [provider, ...rest] = chat.modelDraft.split(':');
+    const switching = rest.length > 0;
     return {
-      provider: chat.conversation.providerId,
-      model: chat.conversation.modelId,
-      effort: chat.conversation.reasoningEffort,
+      provider: switching ? provider : chat.conversation.providerId,
+      model: switching ? rest.join(':') : chat.conversation.modelId,
+      effort: chat.effortDraft ?? chat.conversation.reasoningEffort,
     };
-  }, [chat.conversation]);
+  }, [chat.conversation, chat.modelDraft, chat.effortDraft]);
 
   const restart = useCallback(() => {
     resetConversation();

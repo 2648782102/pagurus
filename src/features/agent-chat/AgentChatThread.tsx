@@ -26,6 +26,15 @@ interface AgentChatThreadProps {
    * The default keeps every existing caller byte-for-byte unchanged.
    */
   readonly renderBody?: (message: AgentChatMessage, body: string) => ReactNode;
+  /**
+   * Turns a message's `modelReference` into the name shown beside the author.
+   *
+   * Passed in rather than looked up here: the thread has no catalogue, and the
+   * caller already holds one. Returning `null` hides the note, which is what a
+   * reply without a recorded model gets — inventing the conversation's current
+   * model would misattribute every older turn after a switch.
+   */
+  readonly renderModelNote?: (message: AgentChatMessage) => ReactNode;
   /** Reports whether the reader is still following the newest turn. */
   readonly onPinnedChange?: (pinned: boolean) => void;
   /**
@@ -237,6 +246,7 @@ export function AgentChatThread({
   onDecision,
   renderMessageActions,
   renderBody,
+  renderModelNote,
   onPinnedChange,
   overlay,
 }: AgentChatThreadProps) {
@@ -367,6 +377,13 @@ export function AgentChatThread({
               <span className="agent-chat-message-author">
                 {message.author === 'user' ? '你' : message.author === 'assistant' ? agentName : 'Runtime'}
               </span>
+              {/*
+               * Which model wrote this one. A conversation can switch models
+               * between turns, so the answer above a switch was written by a
+               * different model than the one the composer now shows; without
+               * this the transcript silently re-attributes every earlier reply.
+               */}
+              {renderModelNote?.(message)}
               {/*
                * Facts only, and one that stayed true when the Runtime changed:
                * this question was submitted while the reply above it was still

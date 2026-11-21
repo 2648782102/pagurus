@@ -113,6 +113,11 @@ export function postAgentChatMessage(
      * conversation's new default. Omit it to keep what the chip shows.
      */
     reasoningEffort?: AgentChatReasoningEffort;
+    /**
+     * Switches the conversation to another model for this turn and every turn
+     * after it. Omit it to keep the current one.
+     */
+    modelOverride?: { readonly providerId: string; readonly modelId: string };
   },
   signal?: AbortSignal,
 ): Promise<AgentChatMessageResult> {

@@ -11,7 +11,13 @@ interface AgentModelMenuProps {
     readonly effort: string | null;
   } | null;
   readonly models: readonly AgentChatModel[];
-  /** Starts a fresh conversation, the only way to change the pinned model. */
+  /**
+   * Starts a fresh conversation.
+   *
+   * No longer the way to change models — the composer does that in place — but
+   * still offered here, because starting over is its own intent and a reader
+   * looking at "what is this conversation running on" is where they look for it.
+   */
   readonly onStartNew: () => void;
   readonly capabilities: CapabilitySummary;
   /** Called the first time the popover opens, so grants load on demand. */
@@ -25,12 +31,12 @@ const EFFORT_LABELS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Shows which model the current conversation is pinned to.
+ * States what this conversation is running on.
  *
- * Conchbase pins provider/model/effort when a conversation is created, and the
- * published contract has no "change model of an existing conversation" write.
- * The menu therefore offers the truthful action — start a new conversation —
- * instead of a dropdown that would look functional and do nothing.
+ * The model is changeable now, from the composer's model chip; this popover is
+ * the read-out, not the control. It still offers "start a new conversation",
+ * because that is a different intent: clearing the transcript rather than
+ * continuing it on another model.
  */
 export function AgentModelMenu({
   pinned,
@@ -82,7 +88,7 @@ export function AgentModelMenu({
 
       {open && (
         <div className="agent-model-popover anim-pop" role="dialog" aria-label="模特信息">
-          <p className="agent-model-popover-title">本次对话固定使用</p>
+          <p className="agent-model-popover-title">当前使用</p>
           <FactList className="agent-model-facts" facts={[
             { label: '供应商', value: pinned?.provider ?? '未知' },
             { label: '模型', value: pinned?.model ?? '未知' },
@@ -96,7 +102,7 @@ export function AgentModelMenu({
             },
           ]} />
           <p className="agent-model-note">
-            模型在对话创建时固定；思考强度可以随时在输入框里改。换模型需要新开一段对话。
+            模型和思考强度都可以在输入框里随时切换，从下一条消息开始生效。
             当前目录共 {models.length} 个可选模型。
           </p>
           <CapabilityLine capabilities={capabilities} />
@@ -108,7 +114,7 @@ export function AgentModelMenu({
               onStartNew();
             }}
           >
-            用新模型开新对话
+            开新对话
           </button>
         </div>
       )}

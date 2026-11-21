@@ -1,42 +1,44 @@
 import type { AgentChatModel, AgentChatReasoningEffort } from '../../shared/api/agent-chat.js';
 import { effortLabel } from '../../shared/ui/effort-label.js';
 import { EffortMenu } from './EffortMenu.js';
+import { ModelChip } from './ModelChip.js';
 
 /**
  * What this message will run with, shown where the reader types.
  *
- * The model is a fact: it is fixed when the conversation is created, and
- * changing it means a new conversation, so the chip does not pretend to be a
- * menu.
+ * Both are choices, and both apply to the next message.
  *
- * The effort is a choice. The Runtime accepts a per-turn override and adopts it
- * as the conversation's new default, so this is a real control over exactly the
- * levels this model publishes. When the model publishes none, there is nothing
- * to choose and the chip says so instead of offering a menu that would change
- * nothing.
+ * The model used to be fixed at conversation creation, which made changing it
+ * throw the transcript away. It is now a quiet menu: switching takes effect on
+ * the next turn, and each reply records the model that produced it.
+ *
+ * The effort menu is built from exactly the levels the current model publishes.
+ * When it publishes none, there is nothing to choose and the chip says so
+ * instead of offering a menu that would change nothing.
  */
 export function ComposerModes({
   model,
+  models,
   effort,
   levels,
+  onChangeModel,
   onEffortChange,
-  onNewThread,
 }: {
   /** `magpie:deepseek-flash` or similar; the Runtime's reference for the model. */
   readonly model: string;
+  /** Every model a conversation may switch to. */
+  readonly models: readonly AgentChatModel[];
   /** The level the next message will use, or null when the model has none. */
   readonly effort: AgentChatReasoningEffort | null;
   /** The levels this conversation's model publishes, weakest first. */
   readonly levels: readonly string[];
+  readonly onChangeModel: (model: AgentChatModel) => void;
   readonly onEffortChange: (effort: string) => void;
-  readonly onNewThread: () => void;
 }) {
   const canChoose = levels.length > 1;
   return (
     <>
-      <span className="agent-composer-chip" title="模型在对话创建时固定">
-        <span className="agent-composer-chip-text">{shortModel(model)}</span>
-      </span>
+      <ModelChip reference={model} models={models} onSelect={onChangeModel} />
       {canChoose && effort !== null ? (
         <EffortMenu effort={effort} levels={levels} onChange={onEffortChange} />
       ) : (
@@ -49,25 +51,11 @@ export function ComposerModes({
           </span>
         </span>
       )}
-      <button
-        type="button"
-        className="agent-composer-chip agent-composer-chip-action"
-        onClick={onNewThread}
-        title="换模型需要新开一段对话"
-      >
-        换模型
-      </button>
     </>
   );
 }
 
-/** The model's own name, without the provider prefix the Runtime stores. */
-function shortModel(reference: string): string {
-  const separator = reference.indexOf(':');
-  return separator >= 0 ? reference.slice(separator + 1) : reference;
-}
-
-/** The reference a conversation was created with, from the catalogue. */
+/** The reference a conversation is pinned to, from the catalogue. */
 export function modelReferenceOf(
   models: readonly AgentChatModel[],
   providerId: string,

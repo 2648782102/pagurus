@@ -68,6 +68,14 @@ export function useAgentChat(
   conversationRef.current = conversation;
 
   /*
+   * The catalogue, readable from callbacks that must not re-create themselves
+   * when it changes. `models` is a new array on every load, so depending on it
+   * directly would rebuild the send path on each refresh.
+   */
+  const modelCatalogRef = useRef(models);
+  modelCatalogRef.current = models;
+
+  /*
    * What the composer's effort control currently shows.
    *
    * Kept apart from the conversation because the two are allowed to differ:
@@ -94,6 +102,48 @@ export function useAgentChat(
 
   const setEffortDraft = useCallback((effort: string) => {
     setEffortChoice({ conversationId: conversationRef.current?.id ?? null, effort });
+  }, []);
+
+  /*
+   * Same shape for the model: a choice that belongs to one conversation only.
+   *
+   * The conversation already stores its model, but that value only moves when a
+   * turn succeeds. Holding the choice here means the chip reflects the intended
+   * model immediately, and a switch that is refused leaves the conversation
+   * showing what it actually runs on rather than a value that never applied.
+   */
+  const [modelChoice, setModelChoice] = useState<{ conversationId: string | null; reference: string }>(
+    { conversationId: null, reference: '' },
+  );
+  const modelDraft = modelChoice.conversationId === conversationId
+    ? modelChoice.reference
+    : conversation === null
+      ? ''
+      : `${conversation.providerId}:${conversation.modelId}`;
+  const modelDraftRef = useRef(modelDraft);
+  modelDraftRef.current = modelDraft;
+
+  /**
+   * Point the next turn at another model.
+   *
+   * Nothing is written here: the switch travels with the next message, so
+   * choosing a model and then not sending anything leaves the conversation
+   * exactly as it was. A pending reply is untouched — it keeps running, and
+   * keeps the model it started on.
+   */
+  const selectModel = useCallback((reference: string) => {
+    const id = conversationRef.current?.id ?? null;
+    setModelChoice({ conversationId: id, reference });
+    /*
+     * The level belonged to the old model. Reset it to the new model's middle
+     * step so the chip beside this one cannot show a level the next turn will
+     * not use.
+     */
+    const levels = modelCatalogRef.current.find((model) => model.reference === reference)?.reasoningLevels;
+    setEffortChoice({
+      conversationId: id,
+      effort: reconcileEffort('', levels),
+    });
   }, []);
 
   const loadAgents = useCallback(async (options: { restoreLatest?: boolean } = {}) => {
@@ -285,10 +335,30 @@ export function useAgentChat(
        * the new default, so the chip and the transcript cannot drift apart.
        */
       const effort = effortDraftRef.current;
+      /*
+       * The model switch travels the same way. Sending it only when it differs
+       * keeps an untouched conversation from re-validating the catalogue on
+       * every message.
+       */
+      const modelReference = modelDraftRef.current;
+      const chosen = modelCatalogRef.current.find((model) => model.reference === modelReference);
+      const switching = chosen !== undefined
+        && (chosen.providerId !== current.providerId || chosen.modelId !== current.modelId);
       await postAgentChatMessage(current.id, {
         text,
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
-        ...(effort !== null && effort !== current.reasoningEffort ? { reasoningEffort: effort } : {}),
+        /*
+         * When the model changes, the level is always sent even if it looks
+         * unchanged: it belongs to the model, and the Runtime would otherwise
+         * carry over a level the new model may not publish. The chip already
+         * shows the new model's level, so this keeps the two in step.
+         */
+        ...(effort !== null && (switching || effort !== current.reasoningEffort)
+          ? { reasoningEffort: effort }
+          : {}),
+        ...(switching
+          ? { modelOverride: { providerId: chosen.providerId, modelId: chosen.modelId } }
+          : {}),
       });
       clearDraftFor(current.id);
       applyConversation(await getAgentChatConversation(current.id));
@@ -335,9 +405,16 @@ export function useAgentChat(
    */
   const effortLevels = useMemo(() => {
     if (conversation === null) return [] as readonly string[];
-    const reference = `${conversation.providerId}:${conversation.modelId}`;
+    /*
+     * Read from the *chosen* model, not from the conversation's stored one.
+     * After a switch and before the next message, the two differ, and the menu
+     * must describe what the next turn will actually run on.
+     */
+    const reference = modelDraft.length > 0
+      ? modelDraft
+      : `${conversation.providerId}:${conversation.modelId}`;
     return models.find((model) => model.reference === reference)?.reasoningLevels ?? [];
-  }, [conversation, models]);
+  }, [conversation, modelDraft, models]);
 
   return {
     supported,
@@ -356,6 +433,8 @@ export function useAgentChat(
     setDetailsOpen,
     activeAgent,
     hasPending,
+    modelDraft,
+    selectModel,
     effortDraft,
     setEffortDraft,
     effortLevels,

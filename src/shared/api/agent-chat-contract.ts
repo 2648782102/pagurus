@@ -94,6 +94,14 @@ export interface AgentChatMessage {
   readonly updatedAt: string;
   readonly replyToId: string | null;
   readonly activity: readonly AgentChatActivity[];
+  /**
+   * The model that produced this reply, as `providerId:modelId`.
+   *
+   * A conversation may switch models between turns, so each answer says which
+   * one wrote it. `null` for a reply not produced by a model, and for messages
+   * written before this field existed.
+   */
+  readonly modelReference?: string | null;
 }
 
 export type AgentChatActivityKind = 'turn' | 'tool' | 'approval' | 'output';
@@ -254,6 +262,9 @@ export function isAgentChatMessage(value: unknown): value is AgentChatMessage {
       && (value.progress as number) >= 0 && (value.progress as number) <= 100))
     && typeof value.updatedAt === 'string'
     && (value.replyToId === null || typeof value.replyToId === 'string')
+    && (value.modelReference === undefined
+      || value.modelReference === null
+      || typeof value.modelReference === 'string')
     && Array.isArray(value.activity) && value.activity.every(isAgentChatActivity);
 }
 

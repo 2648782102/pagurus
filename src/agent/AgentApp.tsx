@@ -19,6 +19,7 @@ import { AgentThreadDrawer } from './AgentThreadDrawer.js';
 import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
 import { agentErrorText } from './agent-error-text.js';
+import { modelName } from '../shared/ui/model-label.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -280,6 +281,18 @@ export function AgentApp() {
                   busy={chat.busy}
                   onDecision={chat.decideApproval}
                   renderMessageActions={(message) => <AgentMessageActions message={message} />}
+                  /*
+                   * The model that produced each reply, shown only when it is
+                   * known. A message written before replies recorded their
+                   * model shows nothing rather than the conversation's current
+                   * one, which would be a claim about a turn it never saw.
+                   */
+                  renderModelNote={(message) => {
+                    if (message.author !== 'assistant') return null;
+                    const reference = message.modelReference ?? null;
+                    if (reference === null) return null;
+                    return <span className="agent-chat-message-model">{modelName(reference, chat.models)}</span>;
+                  }}
                   renderBody={(message, body) =>
                   message.author === 'assistant'
                     ? <AgentAnswer body={body} streaming={STREAMING.has(message.state)} />
@@ -310,11 +323,14 @@ export function AgentApp() {
                   autoFocus={chat.conversation.messages.length === 0}
                 >
                   <ComposerModes
-                    model={`${chat.conversation.providerId}:${chat.conversation.modelId}`}
+                    model={chat.modelDraft.length > 0
+                      ? chat.modelDraft
+                      : `${chat.conversation.providerId}:${chat.conversation.modelId}`}
+                    models={chat.models}
                     effort={chat.effortDraft}
                     levels={chat.effortLevels}
+                    onChangeModel={(model) => chat.selectModel(model.reference)}
                     onEffortChange={chat.setEffortDraft}
-                    onNewThread={chat.restart}
                   />
                 </AgentChatComposer>
               </div>

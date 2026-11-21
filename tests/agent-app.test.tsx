@@ -71,6 +71,14 @@ describe('shipped Agent surface', () => {
           reference: 'magpie:fixture/chat-model', displayName: 'Fixture', capabilities: ['chat'],
           /* Published levels are what make the composer's effort menu real. */
           reasoningLevels: ['low', 'medium', 'high'],
+        }, {
+          /*
+           * A second model with a *different* level set, so a switch test can
+           * tell "the chip moved" from "the chip re-rendered".
+           */
+          providerId: 'magpie', modelId: 'fixture/alt-model',
+          reference: 'magpie:fixture/alt-model', displayName: 'Alt', capabilities: ['chat'],
+          reasoningLevels: ['none', 'low', 'high', 'max'],
         }] }));
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
@@ -207,18 +215,24 @@ describe('shipped Agent surface', () => {
     expect(screen.queryByText('没有匹配的对话。')).toBeNull();
   });
 
-  it('states the pinned model and offers a new conversation instead of a fake switch', async () => {
+  it('states the current model and keeps a new conversation as its own action', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: '对话模型：fixture/chat-model' }));
-    expect(screen.getByText('本次对话固定使用')).toBeTruthy();
-    expect(screen.getByText(/换模型需要新开一段对话/)).toBeTruthy();
+    expect(screen.getByText('当前使用')).toBeTruthy();
+    /*
+     * The model is switchable from the composer now, so the popover must not
+     * keep telling the reader it is fixed — that wording was the reason a model
+     * change used to throw the transcript away.
+     */
+    expect(screen.getByText(/都可以在输入框里随时切换/)).toBeTruthy();
+    expect(screen.queryByText(/换模型需要新开一段对话/)).toBeNull();
     // Capability boundary is stated in plain language, not as a permission table.
     expect(await screen.findByText(/1 个工具/)).toBeTruthy();
 
-    // The only honest model change starts a new conversation.
-    fireEvent.click(screen.getByRole('button', { name: '用新模型开新对话' }));
+    // Starting over is still offered, as a clear-the-transcript action.
+    fireEvent.click(screen.getByRole('button', { name: '开新对话' }));
     expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
   });
 
@@ -268,6 +282,52 @@ describe('shipped Agent surface', () => {
     expect(JSON.parse(String(sent.init?.body))).toMatchObject({
       text: '再问一句',
       reasoningEffort: 'high',
+    });
+  });
+
+  it('switches model inside the conversation instead of starting a new one', async () => {
+    /*
+     * The behaviour this replaces: changing the model started a fresh
+     * conversation, so the transcript was the price of changing one field. The
+     * switch now travels with the next message, and the thread above it stays.
+     */
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '模型：Fixture' }));
+    const list = screen.getByRole('listbox', { name: '模型' });
+    fireEvent.mouseDown(within(list).getByText('Alt'));
+
+    // The chip reflects the intended model, and nothing has been sent yet.
+    expect(screen.getByRole('button', { name: '模型：Alt' })).toBeTruthy();
+    expect(requests.some((request) => request.url.endsWith('/messages'))).toBe(false);
+
+    /*
+     * The level menu must now describe the *new* model: `none/low/high/max`,
+     * which has no `medium` at all. A stale menu here would let the reader pick
+     * a level the next turn cannot use.
+     */
+    const effortTrigger = screen.getByRole('button', { name: /^思考强度：/ });
+    fireEvent.click(effortTrigger);
+    expect(within(screen.getByRole('listbox', { name: '思考强度' }))
+      .getAllByRole('option').map((option) => option.textContent?.replace(/.*?(不思考|快速|深入|最强).*/, '$1')))
+      .toEqual(['不思考', '快速', '深入', '最强']);
+    fireEvent.keyDown(screen.getByRole('listbox', { name: '思考强度' }), { key: 'Escape' });
+
+    // The same conversation, still on screen.
+    expect(screen.getByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('输入消息'), { target: { value: '换个模型再问' } });
+    fireEvent.click(screen.getByRole('button', { name: '发送消息' }));
+
+    const sent = await vi.waitFor(() => {
+      const found = requests.find((request) => request.url.endsWith('/messages'));
+      expect(found).toBeTruthy();
+      return found!;
+    });
+    expect(JSON.parse(String(sent.init?.body))).toMatchObject({
+      text: '换个模型再问',
+      modelOverride: { providerId: 'magpie', modelId: 'fixture/alt-model' },
     });
   });
 

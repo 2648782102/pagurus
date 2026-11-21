@@ -69,9 +69,19 @@ export function EffortMenu({
       if (menuRef.current?.contains(target) || triggerRef.current?.contains(target)) return;
       close(false);
     };
-    // A scroll moves the card under the menu; keeping it pinned would detach it
-    // from the control it describes.
-    const onScroll = () => close(false);
+    /*
+     * A page scroll moves the card out from under the menu, so the menu closes.
+     * A scroll *inside* the list — which the same capturing listener sees, with
+     * the list as the target — must not: a model with six or eight levels makes
+     * the list scrollable, and closing on that would make the menu unusable at
+     * exactly the moment it has the most to say.
+     */
+    const onScroll = (event: Event) => {
+      const scrolled = event.target;
+      if (scrolled instanceof Node && (menuRef.current?.contains(scrolled)
+        || triggerRef.current?.contains(scrolled))) return;
+      close(false);
+    };
     document.addEventListener('mousedown', onPointerDown);
     window.addEventListener('scroll', onScroll, true);
     return () => {
