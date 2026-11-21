@@ -13,6 +13,19 @@
   flex: 1 1 auto;
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
+  /*
+   * Opening the panel adds a 316px column, so the reading column loses that
+   * width in one frame and every line re-wraps at once. Above 900px the panel
+   * is a real column, so the change is worth animating: the reader sees the
+   * page make room instead of the text jumping.
+   *
+   * `grid-template-columns` is animatable only when both ends are the same
+   * shape — a single track to two tracks is not. The closed state therefore
+   * carries a same-shaped hidden column, so both are `minmax(0, 1fr) 316px` and
+   * only the track's width changes.
+   */
+  grid-template-columns: minmax(0, 1fr) 0px;
+  transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
 }
 .agent-workspace.has-context {
   grid-template-columns: minmax(0, 1fr) 316px;

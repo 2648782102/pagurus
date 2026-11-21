@@ -639,4 +639,27 @@ describe('front-end architecture boundaries', () => {
       expect(icons, `${id} needs an icon`).toMatch(new RegExp(`\\b${id}:\\s*\\w+`));
     }
   });
+
+  it('takes every duration from the motion scale', () => {
+    /*
+     * Durations were scattered as literals — `.12s` fourteen times, plus
+     * `.1s/.14s/.16s/.18s/.32s/.9s` across six files. None was wrong on its
+     * own; together they meant two controls that start moving together finish
+     * at different moments, which reads as one of them being slow.
+     *
+     * `motion-tokens.css` states four: quick, settle, travel, attention. This
+     * holds transitions and animations to them. The reduced-motion overrides
+     * are exempt by design — their job is to collapse every duration, so they
+     * cannot reference the scale they are overriding.
+     */
+    const exempt = new Set(['src/styles/motion.css', 'src/styles/responsive.css']);
+    const literal = /(?:transition|animation)[^;{}]*?\b\d+(?:\.\d+)?m?s\b/g;
+    const offenders = styleFiles()
+      .filter((file) => !exempt.has(file))
+      .flatMap((file) =>
+        [...withoutComments(read(file)).matchAll(literal)]
+          .filter((match) => !match[0].includes('var(--motion'))
+          .map((match) => `${file}: ${match[0].trim().slice(0, 70)}`));
+    expect(offenders, `durations must come from the motion scale:\n${offenders.join('\n')}`).toEqual([]);
+  });
 });

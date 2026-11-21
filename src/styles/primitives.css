@@ -18,11 +18,11 @@
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color .12s var(--ease),
-    border-color .12s var(--ease),
-    color .12s var(--ease),
-    box-shadow .12s var(--ease),
-    transform .12s var(--ease);
+    background-color var(--motion-quick) var(--ease),
+    border-color var(--motion-quick) var(--ease),
+    color var(--motion-quick) var(--ease),
+    box-shadow var(--motion-quick) var(--ease),
+    transform var(--motion-quick) var(--ease);
 }
 /* A press should feel answered. One pixel is enough; anything more reads as a
    bounce and fights the calm typography. */
@@ -254,7 +254,7 @@
       transparent 80%
     );
     background-size: 220% 100%;
-    animation: ui-skeleton-sweep 1400ms ease-in-out infinite;
+    animation: ui-skeleton-sweep var(--motion-attention) ease-in-out infinite;
   }
 }
 
