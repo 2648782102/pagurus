@@ -13,6 +13,34 @@
   background: rgba(20, 28, 25, .22);
   animation: agent-drawer-fade var(--motion-settle) var(--ease-out);
 }
+
+/*
+ * What the sheet covers moves back a little.
+ *
+ * The scrim alone says "something is on top"; it does not say "the page you
+ * were reading is behind it". A shallow scale and a slight dim on the shell
+ * gives the reader that depth without a blur, which at this size reads as a
+ * rendering fault rather than as distance.
+ *
+ * `transform` and `opacity` only: neither triggers layout, so the reading
+ * column does not reflow while the drawer opens — which matters because the
+ * column is where the eye already is.
+ *
+ * The scale is 0.994, small enough that no text is visibly resampled. Motion is
+ * dropped under reduced motion, where the scrim alone carries the state.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .agent-app:has(.agent-drawer-layer) .agent-chrome,
+  .agent-app:has(.agent-drawer-layer) .agent-workspace {
+    transform: scale(.994);
+    opacity: .72;
+    transform-origin: 50% 20%;
+    transition:
+      transform var(--motion-travel) var(--ease-out-soft),
+      opacity var(--motion-travel) var(--ease-out);
+    will-change: transform, opacity;
+  }
+}
 .agent-drawer {
   position: absolute;
   top: 0;

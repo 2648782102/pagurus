@@ -53,4 +53,25 @@ describe('CapabilityPanel', () => {
     expect(screen.queryByRole('button', { name: '保存能力记录' })).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('shows the shape of the list while the first read is in flight', async () => {
+    /*
+     * A panel that renders nothing and then fills in reads as a flicker. The
+     * placeholder rows are the fix, and they must disappear the moment the read
+     * lands — a skeleton left behind would be a lie about what is happening.
+     */
+    const gate: { release: ((value: Response) => void) | null } = { release: null };
+    fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => { gate.release = resolve; }));
+    render(<CapabilityPanel runtime={runtime} />);
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('.ui-skeleton-row').length).toBeGreaterThan(0);
+    });
+
+    gate.release?.(json({ version: 2, capabilities: [capability] }));
+    await waitFor(() => {
+      expect(document.querySelectorAll('.ui-skeleton-row')).toHaveLength(0);
+      expect(screen.getByText(/fixture/)).toBeTruthy();
+    });
+  });
 });
