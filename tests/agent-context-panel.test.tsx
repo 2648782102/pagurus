@@ -10,7 +10,7 @@ function conversationWith(
   activity: AgentChatConversation['messages'][number]['activity'],
 ): AgentChatConversation {
   return {
-    version: '1.8.0',
+    version: '1.9.0',
     id: 'chat_a',
     agentId: 'agt_a',
     agentRevisionId: 'agr_4695c0081f4e42f49d35ea03a434fcbe',

@@ -6,7 +6,7 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.8.0', agentChatPaths: 6,
+  agentChatContract: '1.9.0', agentChatPaths: 7,
 };
 
 const olderConversationId = `chat_${'1'.repeat(24)}`;
@@ -18,7 +18,7 @@ function json(body: unknown, status = 200): Response {
 
 function view(id: string, agentId: string, preview: string) {
   return {
-    version: '1.8.0',
+    version: '1.9.0',
     id,
     agentId,
     agentRevisionId: `agr_${agentId.slice(-4)}`,
@@ -41,7 +41,7 @@ describe('Agent Chat landing panel', () => {
     fetchMock = vi.fn((input: RequestInfo | URL) => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.8.0', agents: [
+        return Promise.resolve(json({ version: '1.9.0', agents: [
           {
             id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
             providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
@@ -60,7 +60,7 @@ describe('Agent Chat landing panel', () => {
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
         return Promise.resolve(json({
-          version: '1.8.0',
+          version: '1.9.0',
           conversations: [
             {
               id: newerConversationId, agentId: 'agt_alpha', reasoningEffort: 'medium',
@@ -133,13 +133,13 @@ describe('Agent Chat landing panel', () => {
       const path = String(input);
       if (path === '/v1/agent-chat/conversations' && init?.method === 'POST') {
         return Promise.resolve(json({
-          version: '1.8.0', id: newerConversationId, agentId: 'agt_alpha',
+          version: '1.9.0', id: newerConversationId, agentId: 'agt_alpha',
           agentRevisionId: 'agr_alpha', providerId: 'magpie', modelId: 'fixture/chat-model',
           configurationRevisionId: 'cfg_alpha', reasoningEffort: 'medium', messages: [],
         }, 201));
       }
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.8.0', agents: [{
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
           id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
           providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
         }] }));
@@ -151,7 +151,7 @@ describe('Agent Chat landing panel', () => {
         }] }));
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
-        return Promise.resolve(json({ version: '1.8.0', conversations: [], defaultModelId: null }));
+        return Promise.resolve(json({ version: '1.9.0', conversations: [], defaultModelId: null }));
       }
       return Promise.resolve(json({ error: 'not found' }, 404));
     });
@@ -170,7 +170,7 @@ describe('Agent Chat landing panel', () => {
       fetchMock.mockImplementation((input: RequestInfo | URL) => {
         const path = String(input);
         if (path === '/v1/agent-chat/agents') {
-          return Promise.resolve(json({ version: '1.8.0', agents: [{
+          return Promise.resolve(json({ version: '1.9.0', agents: [{
             id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
             providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
           }] }));
@@ -180,7 +180,7 @@ describe('Agent Chat landing panel', () => {
         }
         if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
           return Promise.resolve(json({
-            version: '1.8.0',
+            version: '1.9.0',
             conversations: [{
               id: newerConversationId, agentId: 'agt_alpha', reasoningEffort: 'medium',
               createdAt: '2026-11-15T03:00:00.000Z', messageCount: 3,

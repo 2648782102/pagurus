@@ -8,8 +8,8 @@ const runtime = {
   version: '1.0.0',
   state: 'ready',
   capabilities: [],
-  agentChatContract: '1.8.0',
-  agentChatPaths: 6,
+  agentChatContract: '1.9.0',
+  agentChatPaths: 7,
 };
 
 const conversationId = `chat_${'a'.repeat(24)}`;
@@ -20,7 +20,7 @@ function json(body: unknown, status = 200): Response {
 
 function conversation() {
   return {
-    version: '1.8.0',
+    version: '1.9.0',
     id: conversationId,
     agentId: 'agt_alpha',
     agentRevisionId: 'agr_alpha',
@@ -45,13 +45,22 @@ function conversation() {
 }
 
 describe('shipped Agent surface', () => {
+  /*
+   * Every request the surface makes, so a test can assert on what was sent
+   * rather than only on what ended up on screen. The composer's effort control
+   * is only real if the chosen level reaches the wire.
+   */
+  let requests: Array<{ url: string; init?: RequestInit }> = [];
+
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+    requests = [];
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input);
+      requests.push({ url: path, init });
       if (path === '/v1/health') return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
       if (path === '/v1/runtime') return Promise.resolve(json(runtime));
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.8.0', agents: [{
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
           id: 'agt_alpha', name: '研究助手', currentRevisionId: 'agr_alpha',
           providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
         }] }));
@@ -60,11 +69,13 @@ describe('shipped Agent surface', () => {
         return Promise.resolve(json({ models: [{
           providerId: 'magpie', modelId: 'fixture/chat-model',
           reference: 'magpie:fixture/chat-model', displayName: 'Fixture', capabilities: ['chat'],
+          /* Published levels are what make the composer's effort menu real. */
+          reasoningLevels: ['low', 'medium', 'high'],
         }] }));
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
         return Promise.resolve(json({
-          version: '1.8.0',
+          version: '1.9.0',
           conversations: [
             {
               // Newest by creation, but abandoned: the product must skip it.
@@ -83,6 +94,18 @@ describe('shipped Agent surface', () => {
       }
       if (path === `/v1/agent-chat/conversations/${conversationId}`) {
         return Promise.resolve(json(conversation()));
+      }
+      if (path === `/v1/agent-chat/conversations/${conversationId}/messages`) {
+        return Promise.resolve(json({
+          version: '1.9.0',
+          conversationId,
+          userMessage: { id: `amsg_${'e'.repeat(24)}`, sequence: 3, author: 'user', body: '再问一句',
+            state: 'published', taskId: null, error: null, phase: 'accepted', progress: null,
+            updatedAt: '2026-11-16T00:00:02.000Z', replyToId: null, activity: [] },
+          assistantMessage: { id: `amsg_${'f'.repeat(24)}`, sequence: 4, author: 'assistant', body: '',
+            state: 'thinking', taskId: 'task_beta', error: null, phase: 'preparing', progress: null,
+            updatedAt: '2026-11-16T00:00:02.000Z', replyToId: null, activity: [] },
+        }, 202));
       }
       if (path === '/v1/agents/agt_alpha') {
         return Promise.resolve(json({ agent: {
@@ -197,6 +220,72 @@ describe('shipped Agent surface', () => {
     // The only honest model change starts a new conversation.
     fireEvent.click(screen.getByRole('button', { name: '用新模型开新对话' }));
     expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
+  });
+
+  it('lets the reader change the effort and sends the new level with the message', async () => {
+    /*
+     * The bug this guards against: the effort was shown as a chip and described
+     * as fixed at creation, so a reader could see "均衡" but never change it.
+     * The Runtime now takes a per-turn override, and the control has to send it
+     * — a picker that only moves its own label would be the same lie in a new
+     * shape.
+     */
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const effort = screen.getByLabelText('思考强度') as HTMLSelectElement;
+    // Only the levels this model publishes, not a fixed set of three.
+    expect([...effort.options].map((option) => option.value)).toEqual(['low', 'medium', 'high']);
+    expect(effort.value).toBe('medium');
+
+    fireEvent.change(effort, { target: { value: 'high' } });
+    expect(effort.value).toBe('high');
+
+    fireEvent.change(screen.getByLabelText('输入消息'), { target: { value: '再问一句' } });
+    fireEvent.click(screen.getByRole('button', { name: '发送消息' }));
+
+    const sent = await vi.waitFor(() => {
+      const found = requests.find((request) => request.url.endsWith('/messages'));
+      expect(found).toBeTruthy();
+      return found!;
+    });
+    expect(JSON.parse(String(sent.init?.body))).toMatchObject({
+      text: '再问一句',
+      reasoningEffort: 'high',
+    });
+  });
+
+  it('shows no effort menu when the model publishes no levels, and says so', async () => {
+    /*
+     * A model without levels cannot honour a choice. Rendering a menu anyway is
+     * the failure mode this replaces: the reader changes a value, nothing about
+     * the answer changes, and the setting loses credibility.
+     */
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/v1/health') return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
+      if (path === '/v1/runtime') return Promise.resolve(json(runtime));
+      if (path === '/v1/agent-chat/agents') {
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
+          id: 'agt_alpha', name: '研究助手', currentRevisionId: 'agr_alpha',
+          providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
+        }] }));
+      }
+      if (path === '/v1/model-catalog') {
+        // No `reasoningLevels`: the gateway says nothing about effort.
+        return Promise.resolve(json({ models: [{
+          providerId: 'magpie', modelId: 'fixture/chat-model',
+          reference: 'magpie:fixture/chat-model', displayName: 'Fixture', capabilities: ['chat'],
+        }] }));
+      }
+      if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+        return Promise.resolve(json({ version: '1.9.0', conversations: [], defaultModelId: null }));
+      }
+      return Promise.resolve(json({ error: 'not found' }, 404));
+    }));
+    render(<AgentApp />);
+    expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
+    expect(screen.queryByLabelText('思考强度')).toBeNull();
   });
 
   it('offers copy on a settled assistant reply only', async () => {

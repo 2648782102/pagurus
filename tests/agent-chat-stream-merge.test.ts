@@ -27,7 +27,7 @@ function message(id: string, sequence: number, updatedAt: string, body: string):
 
 function conversation(messages: readonly AgentChatMessage[], id = 'chat_a'): AgentChatConversation {
   return {
-    version: '1.8.0',
+    version: '1.9.0',
     id,
     agentId: 'agt_a',
     agentRevisionId: 'agr_a',

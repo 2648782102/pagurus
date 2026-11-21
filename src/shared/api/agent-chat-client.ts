@@ -105,7 +105,15 @@ export function getAgentChatConversation(
 
 export function postAgentChatMessage(
   conversationId: string,
-  input: { text: string; idempotencyKey: string },
+  input: {
+    text: string;
+    idempotencyKey: string;
+    /**
+     * Overrides the conversation's level for this one turn, and becomes the
+     * conversation's new default. Omit it to keep what the chip shows.
+     */
+    reasoningEffort?: AgentChatReasoningEffort;
+  },
   signal?: AbortSignal,
 ): Promise<AgentChatMessageResult> {
   return requestJson(

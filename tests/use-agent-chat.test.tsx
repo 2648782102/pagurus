@@ -16,7 +16,7 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.8.0', agentChatPaths: 6,
+  agentChatContract: '1.9.0', agentChatPaths: 7,
 } as RuntimeInfo;
 
 const AGENT = {
@@ -40,10 +40,10 @@ function serveChat(overrides: (url: string, init?: RequestInit) => Response | un
     const route = url.split('?')[0]!;
     const custom = overrides(route, init);
     if (custom) return Promise.resolve(custom);
-    if (route.endsWith('/v1/agent-chat/agents')) return Promise.resolve(json({ version: '1.8.0', agents: [AGENT] }));
+    if (route.endsWith('/v1/agent-chat/agents')) return Promise.resolve(json({ version: '1.9.0', agents: [AGENT] }));
     if (route.includes('/v1/model-catalog')) return Promise.resolve(json({ models: [MODEL] }));
     if (route.endsWith('/v1/agent-chat/conversations')) {
-      return Promise.resolve(json({ version: '1.8.0', conversations: [] }));
+      return Promise.resolve(json({ version: '1.9.0', conversations: [] }));
     }
     return Promise.resolve(json({}));
   };
@@ -51,7 +51,7 @@ function serveChat(overrides: (url: string, init?: RequestInit) => Response | un
 
 function conversation(id: string, messages: readonly unknown[] = []) {
   return {
-    version: '1.8.0', id, agentId: AGENT.id, agentRevisionId: AGENT.currentRevisionId,
+    version: '1.9.0', id, agentId: AGENT.id, agentRevisionId: AGENT.currentRevisionId,
     providerId: 'magpie', modelId: 'fixture/model', configurationRevisionId: 'cfg_a',
     reasoningEffort: 'medium', messages,
   };
@@ -177,7 +177,7 @@ describe('useAgentChat', () => {
       if (url.endsWith('/v1/agent-chat/conversations/chat_full')) return json(conversation('chat_full'));
       if (url.endsWith('/v1/agent-chat/conversations')) {
         return json({
-          version: '1.8.0',
+          version: '1.9.0',
           defaultModelId: 'fixture/model',
           conversations: [
             { id: 'chat_empty', agentId: AGENT.id, reasoningEffort: 'medium', createdAt: '2026-11-20T02:00:00.000Z', messageCount: 0, unread: false, lastState: 'published', lastMessagePreview: '' },

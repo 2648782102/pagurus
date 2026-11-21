@@ -6,7 +6,7 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.8.0', agentChatPaths: 6,
+  agentChatContract: '1.9.0', agentChatPaths: 7,
 };
 
 const conversationId = `chat_${'a'.repeat(24)}`;
@@ -17,7 +17,7 @@ function json(body: unknown, status = 200): Response {
 
 function conversation(state: 'thinking' | 'replied') {
   return {
-    version: '1.8.0',
+    version: '1.9.0',
     id: conversationId,
     agentId: 'agt_alpha',
     agentRevisionId: 'agr_alpha',
@@ -51,7 +51,7 @@ describe('Agent Chat stream stall recovery', () => {
     vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.8.0', agents: [{
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
           id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
           providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
         }] }));
@@ -64,7 +64,7 @@ describe('Agent Chat stream stall recovery', () => {
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
         return Promise.resolve(json({
-          version: '1.8.0',
+          version: '1.9.0',
           conversations: [{ id: conversationId, agentId: 'agt_alpha', reasoningEffort: 'medium',
             createdAt: '2026-11-15T00:00:00.000Z', messageCount: 2, lastMessagePreview: '你好' }],
           defaultModelId: null,

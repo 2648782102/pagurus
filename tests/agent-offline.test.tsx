@@ -21,10 +21,10 @@ describe('Agent surface when the Runtime is offline', () => {
         return Promise.resolve(json(
           path === '/v1/health'
             ? { status: 'ok', service: 'conchbase', apiVersion: 1 }
-            : { name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [], agentChatContract: '1.8.0', agentChatPaths: 6 },
+            : { name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [], agentChatContract: '1.9.0', agentChatPaths: 7 },
         ));
       }
-      return Promise.resolve(json({ version: '1.8.0', agents: [], conversations: [], models: [] }));
+      return Promise.resolve(json({ version: '1.9.0', agents: [], conversations: [], models: [] }));
     }));
   });
 
@@ -65,11 +65,11 @@ describe('Agent surface when the Runtime is offline', () => {
           releases.push(() => resolve(json(
             path === '/v1/health'
               ? { status: 'ok', service: 'conchbase', apiVersion: 1 }
-              : { name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [], agentChatContract: '1.8.0', agentChatPaths: 6 },
+              : { name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [], agentChatContract: '1.9.0', agentChatPaths: 7 },
           )));
         });
       }
-      return Promise.resolve(json({ version: '1.8.0', agents: [], conversations: [], models: [] }));
+      return Promise.resolve(json({ version: '1.9.0', agents: [], conversations: [], models: [] }));
     }));
 
     render(<AgentApp />);

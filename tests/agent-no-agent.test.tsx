@@ -8,8 +8,8 @@ const runtime = {
   version: '1.0.0',
   state: 'ready',
   capabilities: [],
-  agentChatContract: '1.8.0',
-  agentChatPaths: 6,
+  agentChatContract: '1.9.0',
+  agentChatPaths: 7,
 };
 
 function json(body: unknown, status = 200): Response {
@@ -24,13 +24,13 @@ describe('Agent surface with no usable Agent', () => {
       if (path === '/v1/runtime') return Promise.resolve(json(runtime));
       // A Runtime whose Boss Agent is not configured returns an empty list.
       if (path === '/v1/agent-chat/agents') {
-        return Promise.resolve(json({ version: '1.8.0', agents: [] }));
+        return Promise.resolve(json({ version: '1.9.0', agents: [] }));
       }
       if (path === '/v1/model-catalog') {
         return Promise.resolve(json({ models: [] }));
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
-        return Promise.resolve(json({ version: '1.8.0', conversations: [], defaultModelId: null }));
+        return Promise.resolve(json({ version: '1.9.0', conversations: [], defaultModelId: null }));
       }
       return Promise.resolve(json({}));
     }));
@@ -59,7 +59,7 @@ describe('Agent surface while resuming a conversation', () => {
       if (path === '/v1/runtime') return Promise.resolve(json(runtime));
       if (path === '/v1/agent-chat/agents') {
         return Promise.resolve(json({
-          version: '1.8.0',
+          version: '1.9.0',
           agents: [{
             id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
             providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
@@ -74,7 +74,7 @@ describe('Agent surface while resuming a conversation', () => {
       }
       if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
         return Promise.resolve(json({
-          version: '1.8.0', defaultModelId: null,
+          version: '1.9.0', defaultModelId: null,
           conversations: [{
             id: `chat_${'a'.repeat(24)}`, agentId: 'boss-agent', reasoningEffort: 'medium',
             createdAt: '2026-11-19T00:00:00.000Z', messageCount: 2, lastMessagePreview: '上次的对话',

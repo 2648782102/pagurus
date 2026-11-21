@@ -9,7 +9,7 @@ import type { RuntimeInfo } from '../src/shared/api/runtime.js';
 
 const runtime: RuntimeInfo = {
   name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: [],
-  agentChatContract: '1.8.0', agentChatPaths: 6,
+  agentChatContract: '1.9.0', agentChatPaths: 7,
 };
 
 class FakeEventSource {
@@ -47,9 +47,9 @@ afterEach(() => {
 });
 
 describe('Agent Chat stream client', () => {
-  it('gates on 1.8.0 with six published paths', () => {
-    expect(AGENT_CHAT_CONTRACT_VERSION).toBe('1.8.0');
-    expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(6);
+  it('gates on 1.9.0 with seven published paths', () => {
+    expect(AGENT_CHAT_CONTRACT_VERSION).toBe('1.9.0');
+    expect(AGENT_CHAT_PUBLIC_PATHS).toHaveLength(7);
     expect(supportsAgentChat(runtime)).toBe(true);
     expect(supportsAgentChat({ ...runtime, agentChatPaths: 5 })).toBe(false);
   });
@@ -65,14 +65,14 @@ describe('Agent Chat stream client', () => {
     expect(source.url).toContain('?after=evt_000000000042');
 
     source.emit({
-      version: '1.8.0',
+      version: '1.9.0',
       conversationId: `chat_${'a'.repeat(24)}`,
       kind: 'snapshot',
       eventId: 'evt_000000000042',
       messageId: null,
       message: null,
       conversation: {
-        version: '1.8.0',
+        version: '1.9.0',
         id: `chat_${'a'.repeat(24)}`,
         agentId: 'agt_alpha',
         agentRevisionId: 'agr_alpha',
@@ -97,7 +97,7 @@ describe('Agent Chat stream client', () => {
       onFrame: (frame) => frames.push(frame),
       onError: (cause) => errors.push(cause),
     });
-    FakeEventSource.instances[0]!.emit({ version: '1.8.0', kind: 'message' });
+    FakeEventSource.instances[0]!.emit({ version: '1.9.0', kind: 'message' });
     expect(frames).toHaveLength(0);
     expect(errors).toHaveLength(1);
   });
@@ -111,7 +111,7 @@ describe('Agent Chat stream client', () => {
     });
     const first = FakeEventSource.instances[0]!;
     first.emit({
-      version: '1.8.0',
+      version: '1.9.0',
       conversationId: `chat_${'c'.repeat(24)}`,
       kind: 'message',
       eventId: 'evt_000000000077',
@@ -139,7 +139,7 @@ describe('Agent Chat stream client', () => {
       onFrame: (frame) => frames.push(frame),
     });
     FakeEventSource.instances[0]!.emit({
-      version: '1.8.0',
+      version: '1.9.0',
       conversationId: `chat_${'e'.repeat(24)}`,
       kind: 'health',
       eventId: 'evt_000000000010',

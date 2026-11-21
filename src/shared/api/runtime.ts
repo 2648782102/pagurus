@@ -29,7 +29,7 @@ export interface RuntimeInfo {
   executionRunPaths?: number;
   conversationContract?: '1.4.0';
   conversationPaths?: number;
-  agentChatContract?: '1.8.0';
+  agentChatContract?: '1.9.0';
   agentChatPaths?: number;
 }
 
@@ -66,7 +66,7 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths))
     && (value.conversationContract === undefined || value.conversationContract === '1.4.0')
     && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths))
-    && (value.agentChatContract === undefined || value.agentChatContract === '1.8.0')
+    && (value.agentChatContract === undefined || value.agentChatContract === '1.9.0')
     && (value.agentChatPaths === undefined || Number.isInteger(value.agentChatPaths));
 }
 

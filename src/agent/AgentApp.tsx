@@ -311,7 +311,9 @@ export function AgentApp() {
                 >
                   <ComposerModes
                     model={`${chat.conversation.providerId}:${chat.conversation.modelId}`}
-                    effort={chat.conversation.reasoningEffort}
+                    effort={chat.effortDraft}
+                    levels={chat.effortLevels}
+                    onEffortChange={chat.setEffortDraft}
                     onNewThread={chat.restart}
                   />
                 </AgentChatComposer>

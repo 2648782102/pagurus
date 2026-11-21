@@ -66,7 +66,12 @@ export function AgentContextPanel({
               <h3 id="ctx-pinned">固定版本</h3>
               <FactList className="agent-context-facts" facts={[
                 { label: '模型', value: `${conversation.providerId}:${conversation.modelId}` },
-                { label: '思考强度', value: EFFORT[conversation.reasoningEffort] ?? conversation.reasoningEffort },
+                {
+                  label: '思考强度',
+                  value: conversation.reasoningEffort === null
+                    ? '该模型无档位'
+                    : EFFORT[conversation.reasoningEffort] ?? conversation.reasoningEffort,
+                },
                 { label: 'Agent 版本', value: shortId(conversation.agentRevisionId), code: true, title: conversation.agentRevisionId },
                 { label: '配置版本', value: shortId(conversation.configurationRevisionId), code: true, title: conversation.configurationRevisionId },
                 { label: '会话', value: shortId(conversation.id), code: true, title: conversation.id },

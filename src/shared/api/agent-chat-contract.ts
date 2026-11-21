@@ -1,6 +1,6 @@
 import { isRecord, isVersioned as hasContractVersion } from './guards.js';
 
-export const AGENT_CHAT_CONTRACT_VERSION = '1.8.0';
+export const AGENT_CHAT_CONTRACT_VERSION = '1.9.0';
 
 export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/agents',
@@ -8,6 +8,13 @@ export const AGENT_CHAT_PUBLIC_PATHS = Object.freeze([
   '/v1/agent-chat/conversations/{conversationId}',
   '/v1/agent-chat/conversations/{conversationId}/messages',
   '/v1/agent-chat/conversations/{conversationId}/approval',
+  /*
+   * Added by the Runtime alongside stop-in-flight support. It has to be listed
+   * here even though this client does not call it yet: `supportsAgentChat`
+   * compares the published path *count*, so a client that omits a path the
+   * Runtime advertises reports the whole surface as unsupported.
+   */
+  '/v1/agent-chat/conversations/{conversationId}/cancel',
   '/v1/agent-chat/conversations/{conversationId}/events',
 ] as const);
 
@@ -64,6 +71,14 @@ export interface AgentChatModel {
   readonly modelId: string;
   readonly reference: string;
   readonly displayName: string;
+  /**
+   * The effort tokens this model accepts, weakest first.
+   *
+   * Absent means the model offers no effort control; an empty array means it
+   * reasons but offers no choice. Both cases mean "do not show an effort menu",
+   * which is why the absence is preserved rather than normalised to a default.
+   */
+  readonly reasoningLevels?: readonly string[];
 }
 
 export interface AgentChatMessage {
@@ -146,16 +161,27 @@ export interface AgentChatConversation {
   readonly providerId: string;
   readonly modelId: string;
   readonly configurationRevisionId: string;
-  readonly reasoningEffort: AgentChatReasoningEffort;
+  /**
+   * The level the next turn runs at, or `null` when the model publishes none.
+   * `null` is a fact about the model, not an unset field.
+   */
+  readonly reasoningEffort: AgentChatReasoningEffort | null;
   readonly messages: readonly AgentChatMessage[];
 }
 
-export type AgentChatReasoningEffort = 'low' | 'medium' | 'high';
+/**
+ * A reasoning effort token, exactly as the model's catalog publishes it.
+ *
+ * Not a closed union: the gateway mixes `none/low/high/max`,
+ * `low/medium/high/xhigh/ultra`, a lone `high`, and models with reasoning but
+ * no published levels. A union of three could not name most of those.
+ */
+export type AgentChatReasoningEffort = string;
 
 export interface AgentChatConversationSummary {
   readonly id: string;
   readonly agentId: string;
-  readonly reasoningEffort: AgentChatReasoningEffort;
+  readonly reasoningEffort: AgentChatReasoningEffort | null;
   readonly createdAt: string;
   readonly messageCount: number;
   readonly lastMessagePreview: string;
@@ -251,7 +277,7 @@ export function isAgentChatConversation(value: unknown): value is AgentChatConve
     && typeof value.providerId === 'string'
     && typeof value.modelId === 'string'
     && typeof value.configurationRevisionId === 'string'
-    && (value.reasoningEffort === 'low' || value.reasoningEffort === 'medium' || value.reasoningEffort === 'high')
+    && (value.reasoningEffort === null || typeof value.reasoningEffort === 'string')
     && Array.isArray(value.messages) && value.messages.every(isAgentChatMessage);
 }
 

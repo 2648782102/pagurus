@@ -61,6 +61,35 @@ export function useAgentChat(
   const conversationRef = useRef<AgentChatConversation | null>(null);
   conversationRef.current = conversation;
 
+  /*
+   * What the composer's effort control currently shows.
+   *
+   * Kept apart from the conversation because the two are allowed to differ:
+   * a reader can pick a new level while a reply is still running, and the
+   * choice applies to the next message they send.
+   *
+   * Derived during render rather than copied into state by an effect. An
+   * effect that seeds state from props runs after the first paint, so for one
+   * frame the composer showed "无档位" for a conversation whose level was
+   * perfectly well known — and a reader who looked at that frame saw a bug.
+   * Tagging the override with the conversation it belongs to makes the
+   * fallback a pure function of the current props: switching or resuming a
+   * thread drops the stale choice with no bookkeeping.
+   */
+  const [effortChoice, setEffortChoice] = useState<{ conversationId: string | null; effort: string }>(
+    { conversationId: null, effort: '' },
+  );
+  const conversationId = conversation?.id ?? null;
+  const effortDraft: string | null = effortChoice.conversationId === conversationId
+    ? effortChoice.effort
+    : conversation?.reasoningEffort ?? null;
+  const effortDraftRef = useRef<string | null>(effortDraft);
+  effortDraftRef.current = effortDraft;
+
+  const setEffortDraft = useCallback((effort: string) => {
+    setEffortChoice({ conversationId: conversationRef.current?.id ?? null, effort });
+  }, []);
+
   const loadAgents = useCallback(async (options: { restoreLatest?: boolean } = {}) => {
     if (!supported) return;
     try {
@@ -230,9 +259,17 @@ export function useAgentChat(
     setBusy(true);
     setError(null);
     try {
+      /*
+       * The effort rides with the message, not with the conversation's stored
+       * value, because the reader may have switched it while a reply was
+       * running. The Runtime treats it as a per-turn override and adopts it as
+       * the new default, so the chip and the transcript cannot drift apart.
+       */
+      const effort = effortDraftRef.current;
       await postAgentChatMessage(current.id, {
         text,
         idempotencyKey: `pagurus-chat-${globalThis.crypto.randomUUID()}`,
+        ...(effort !== null && effort !== current.reasoningEffort ? { reasoningEffort: effort } : {}),
       });
       clearDraftFor(current.id);
       applyConversation(await getAgentChatConversation(current.id));
@@ -269,6 +306,20 @@ export function useAgentChat(
   const hasPending = conversation?.messages.some((message) =>
     message.author === 'assistant' && isPendingAgentChatState(message.state)) ?? false;
 
+  /*
+   * The levels the open conversation's model publishes.
+   *
+   * Read from the catalogue rather than assumed, and read through the same
+   * `providerId:modelId` pair the conversation is pinned to — a conversation
+   * created with a model override must consult that model, not the Agent's
+   * default.
+   */
+  const effortLevels = useMemo(() => {
+    if (conversation === null) return [] as readonly string[];
+    const reference = `${conversation.providerId}:${conversation.modelId}`;
+    return models.find((model) => model.reference === reference)?.reasoningLevels ?? [];
+  }, [conversation, models]);
+
   return {
     supported,
     agents,
@@ -286,6 +337,9 @@ export function useAgentChat(
     setDetailsOpen,
     activeAgent,
     hasPending,
+    effortDraft,
+    setEffortDraft,
+    effortLevels,
     streamConnected,
     streamStalled,
     streamAttempt,

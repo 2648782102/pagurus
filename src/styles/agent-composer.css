@@ -174,6 +174,56 @@
 .agent-composer-chip-text { overflow: hidden; text-overflow: ellipsis; }
 
 /*
+ * The effort control, built on a native `<select>`.
+ *
+ * It keeps the chip's geometry exactly — same height, same padding, same font —
+ * so the toolbar still reads as one band of quiet facts. What changes is the
+ * affordance: a caret on the right and a hover fill, because this one really
+ * does open something. The native control is stretched over the chip so the
+ * browser's own popup, keyboard handling, and screen-reader announcement are
+ * kept; the visual chrome is the label's.
+ */
+.agent-composer-chip-select {
+  position: relative;
+  padding-right: 20px;
+  cursor: pointer;
+}
+.agent-composer-chip-select::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 6px;
+  height: 6px;
+  margin-top: -4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  opacity: .7;
+  pointer-events: none;
+}
+.agent-composer-chip-select:hover { background: var(--accent-wash); }
+.agent-composer-chip-select:focus-within {
+  background: var(--accent-wash);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+.agent-composer-effort {
+  /* Covers the label so the native popup opens from the whole chip, while the
+     visible text is the label's own — a bare select would re-impose its own
+     height, padding, and font on the row. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  appearance: none;
+}
+.agent-composer-effort:focus-visible { outline: none; }
+
+/*
  * The hint and the length share one slot at the right end of the toolbar: they
  * answer the same question — "what happens if I keep going" — and only one of
  * them is ever worth reading. The hint is the resting state and fades out as

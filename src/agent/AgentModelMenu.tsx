@@ -4,7 +4,12 @@ import type { CapabilitySummary } from './useAgentCapabilities.js';
 import { FactList } from '../shared/ui/primitives.js';
 
 interface AgentModelMenuProps {
-  readonly pinned: { readonly provider: string; readonly model: string; readonly effort: string } | null;
+  /** `effort` is null when this conversation's model publishes no levels. */
+  readonly pinned: {
+    readonly provider: string;
+    readonly model: string;
+    readonly effort: string | null;
+  } | null;
   readonly models: readonly AgentChatModel[];
   /** Starts a fresh conversation, the only way to change the pinned model. */
   readonly onStartNew: () => void;
@@ -69,7 +74,9 @@ export function AgentModelMenu({
         }}
       >
         <span className="agent-model-name">{label}</span>
-        {pinned && <span className="agent-model-effort">思考 {EFFORT_LABELS[pinned.effort] ?? pinned.effort}</span>}
+        {pinned?.effort != null && (
+          <span className="agent-model-effort">思考 {EFFORT_LABELS[pinned.effort] ?? pinned.effort}</span>
+        )}
         <span aria-hidden="true">⌄</span>
       </button>
 
@@ -79,10 +86,18 @@ export function AgentModelMenu({
           <FactList className="agent-model-facts" facts={[
             { label: '供应商', value: pinned?.provider ?? '未知' },
             { label: '模型', value: pinned?.model ?? '未知' },
-            { label: '思考强度', value: pinned ? EFFORT_LABELS[pinned.effort] ?? pinned.effort : '未知' },
+            {
+              label: '思考强度',
+              value: pinned === null
+                ? '未知'
+                : pinned.effort === null
+                  ? '该模型无档位'
+                  : EFFORT_LABELS[pinned.effort] ?? pinned.effort,
+            },
           ]} />
           <p className="agent-model-note">
-            模型在对话创建时固定；换模型需要新开一段对话。当前目录共 {models.length} 个可选模型。
+            模型在对话创建时固定；思考强度可以随时在输入框里改。换模型需要新开一段对话。
+            当前目录共 {models.length} 个可选模型。
           </p>
           <CapabilityLine capabilities={capabilities} />
           <button
