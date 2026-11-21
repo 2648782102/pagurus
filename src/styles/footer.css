@@ -10,5 +10,5 @@
   padding-top: 10px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font: 9.5px var(--font-mono);
+  font: 9px var(--font-mono);
 }

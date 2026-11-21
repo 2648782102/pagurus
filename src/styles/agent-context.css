@@ -101,7 +101,7 @@
   padding: 13px 16px;
   border-bottom: 1px solid var(--border);
 }
-.agent-context-head h2 { margin: 0; color: var(--text-strong); font: 600 12.5px var(--font-body); }
+.agent-context-head h2 { margin: 0; color: var(--text-strong); font: 600 13px var(--font-body); }
 .agent-context-mode {
   margin-right: auto;
   padding: 2px 6px;
@@ -136,7 +136,7 @@
 .agent-context-section h3 {
   margin: 0 0 8px;
   color: var(--text-strong);
-  font: 600 11.5px var(--font-body);
+  font: 600 11px var(--font-body);
 }
 .agent-context-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .agent-context-mini {
@@ -154,7 +154,7 @@
 .agent-context-facts > div { display: flex; justify-content: space-between; gap: 10px; }
 .agent-context-facts dt { flex: 0 0 auto; color: var(--text-muted); font-size: 10px; }
 .agent-context-facts dd { margin: 0; color: var(--text-strong); font-size: 10px; overflow-wrap: anywhere; text-align: right; }
-.agent-context-facts code { color: var(--text); font: 10.5px var(--font-mono); }
+.agent-context-facts code { color: var(--text); font: 10px var(--font-mono); }
 
 .agent-context-empty { margin: 0; color: var(--text-muted); font-size: 10px; line-height: 1.65; }
 .agent-context-grant { margin-bottom: 8px; }
@@ -166,7 +166,7 @@
   border-radius: 3px;
   background: var(--surface-sunk);
   color: var(--text);
-  font: 10.5px var(--font-mono);
+  font: 10px var(--font-mono);
 }
 
 .agent-context-activity { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
@@ -188,7 +188,7 @@
 .agent-context-activity li.is-failed .agent-context-activity-state { color: var(--state-danger); }
 .agent-context-activity li.is-waiting_approval .agent-context-activity-state { color: var(--state-caution-ink); font-weight: 600; }
 .agent-context-activity-kind { color: var(--text-faint); font-size: 9px; }
-.agent-context-activity code { color: var(--text-muted); font: 9.5px var(--font-mono); overflow-wrap: anywhere; }
+.agent-context-activity code { color: var(--text-muted); font: 9px var(--font-mono); overflow-wrap: anywhere; }
 .agent-context-count { color: var(--text-faint); font-size: 10px; }
 
 .agent-context-note {

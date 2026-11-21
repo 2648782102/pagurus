@@ -610,9 +610,15 @@ describe('front-end architecture boundaries', () => {
      * The dense scale in `semantic-tokens.css` has four whole-pixel rungs now.
      * This keeps the next nudge from bringing the halves back.
      */
+    /*
+     * Both spellings. The `font` shorthand carries a size too, and it was the
+     * one that slipped through the first version of this check: a headline at
+     * `600 15.5px/1.5` read as fine because the rule only looked for
+     * `font-size:`.
+     */
     const halves = styleFiles().flatMap((file) =>
-      [...withoutComments(read(file)).matchAll(/font-size:\s*(\d+\.\d+)px/g)]
-        .map((match) => `${file}: font-size: ${match[1]}px`));
+      [...withoutComments(read(file)).matchAll(/(?:font-size:|font:)[^;{}]*?(\d+\.\d+)px/g)]
+        .map((match) => `${file}: ${match[1]}px`));
     expect(halves, `text sizes must be whole pixels:\n${halves.join('\n')}`).toEqual([]);
   });
 

@@ -60,7 +60,7 @@
 .agent-chat-approval-kicker {
   margin: 0 0 4px;
   color: var(--state-caution-strong);
-  font: 600 10.5px var(--font-body);
+  font: 600 10px var(--font-body);
   letter-spacing: .04em;
 }
 .agent-chat-approval-title {
@@ -94,7 +94,7 @@
   max-height: 260px;
   overflow: auto;
   color: var(--text-strong);
-  font: 11.5px/1.6 var(--font-code);
+  font: 11px/1.6 var(--font-code);
   white-space: pre;
 }
 .agent-chat-approval-actions {
@@ -145,4 +145,20 @@
 
 .agent-thread-area .agent-chat-message.is-arriving {
   animation: agent-message-arrive var(--motion-settle) var(--ease-out) both;
+}
+
+/*
+ * A tinted row needs the insets a block gets.
+ *
+ * The base rule is `22px 0` — an answer has no background, so its text starts
+ * on the column's own edge. A state that adds a fill inherits that, so the
+ * colour begins and ends exactly at the first and last glyph. The question card
+ * already carries `12px 16px` for this reason; these are the states that were
+ * missed.
+ */
+.agent-thread-area .agent-chat-state-waiting_attention,
+.agent-thread-area .agent-chat-state-failed,
+.agent-thread-area .agent-chat-state-unavailable {
+  padding: 14px 16px;
+  border-radius: 6px;
 }

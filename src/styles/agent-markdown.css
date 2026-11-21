@@ -75,6 +75,6 @@
   padding: 0;
   background: transparent;
   color: var(--text-strong);
-  font: 12.5px/1.7 var(--font-mono);
+  font: 13px/1.7 var(--font-mono);
   white-space: pre;
 }
