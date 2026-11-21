@@ -139,19 +139,8 @@
    * the cause (their send) to the effect, and short enough that nobody waits for
    * it.
    */
-  animation: agent-inline-error-in var(--motion-settle) var(--ease-out);
 }
 
-@keyframes agent-inline-error-in {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
 .agent-stream-note {
   margin: 8px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;
   color: var(--text-muted);

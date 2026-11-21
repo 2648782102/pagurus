@@ -132,20 +132,12 @@
  * and rose 6px together, which reads as the page repainting rather than as one
  * reply arriving.
  */
-@keyframes agent-message-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.agent-thread-area .agent-chat-message.is-arriving {
-  animation: agent-message-arrive var(--motion-settle) var(--ease-out) both;
-}
+/*
+ * The movement itself is `.anim-rise` from the motion library, applied by the
+ * component. `is-arriving` only decides *which* messages get it: the thread
+ * mounts every message in one pass on a resume, and without that split the whole
+ * column would play the arrival together and read as a repaint.
+ */
 
 /*
  * A tinted row needs the insets a block gets.

@@ -1,6 +1,6 @@
 # Current state
 
-Updated: 2026-11-19
+Updated: 2026-11-21
 
 ## Working today
 
@@ -19,11 +19,22 @@ Updated: 2026-11-19
 - Typed API modules with response validators and capability-based feature
   gating.
 - No browser storage for Runtime secrets or private state.
-- One icon family (Lucide) with even optical weight, three named motion
-  durations instead of per-rule numbers, one focus ring and press response on
-  every product control, and skeleton rows for a panel's first read. Motion is
-  not load-bearing: reduced motion removes the sweep and the press scale, and
-  nothing conveys state through movement alone.
+- One icon family (Lucide) with even optical weight, one focus ring and press
+  response on every product control, and skeleton rows for a panel's first
+  read. Motion is not load-bearing: reduced motion removes the sweep and the
+  press scale, and nothing conveys state through movement alone.
+- One motion library in `src/styles/motion-tokens.css`: three named durations
+  chosen by what the movement says (`quick`, `settle`, `travel`) plus one slow
+  looping cue, two decelerating curves, nine keyframes named for the movement
+  rather than the caller, and `anim-*` classes that pair a keyframe with the
+  house timing. A component joins by adding a class; it cannot pick its own
+  duration. Guards keep every keyframe in that file and every `animation:` name
+  resolvable.
+- A message rises into place as it arrives and does not replay while its text
+  streams; the newest turn scrolls smoothly when added and sets position
+  directly while streaming, since a smooth scroll restarted each frame never
+  finishes. The theme cross-fades once per switch rather than permanently, so a
+  hover keeps its own timing.
 
 ## Product gaps
 

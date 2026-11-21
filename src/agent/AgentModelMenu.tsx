@@ -74,7 +74,7 @@ export function AgentModelMenu({
       </button>
 
       {open && (
-        <div className="agent-model-popover" role="dialog" aria-label="模特信息">
+        <div className="agent-model-popover anim-pop" role="dialog" aria-label="模特信息">
           <p className="agent-model-popover-title">本次对话固定使用</p>
           <FactList className="agent-model-facts" facts={[
             { label: '供应商', value: pinned?.provider ?? '未知' },

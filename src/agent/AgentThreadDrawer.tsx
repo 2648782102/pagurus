@@ -74,9 +74,9 @@ export function AgentThreadDrawer({
   if (!open) return null;
 
   return (
-    <div className="agent-drawer-layer">
+    <div className="agent-drawer-layer anim-fade-in">
       <div
-        className="agent-drawer"
+        className="agent-drawer anim-slide-in"
         ref={panelRef}
         role="dialog"
         aria-modal="true"

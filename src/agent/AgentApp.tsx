@@ -255,7 +255,7 @@ export function AgentApp() {
               </div>
 
               {chat.error && (
-                <div className="agent-inline-error" role="alert">
+                <div className="agent-inline-error anim-rise-tight" role="alert">
                   {agentErrorText(new Error(chat.error), '这条消息没有发出去，请再试一次。')}
                 </div>
               )}
