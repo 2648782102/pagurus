@@ -18,6 +18,27 @@
   grid-template-columns: minmax(0, 1fr) 316px;
 }
 
+/*
+ * Opening the context panel changes two widths at once — the reading column
+ * narrows and the panel appears — so without a transition the text under the
+ * reader's eye jumps sideways in one frame. That is the most noticeable missing
+ * transition on the surface, because it moves what they were reading.
+ *
+ * `grid-template-columns` interpolates between two tracks of the same kind, so
+ * both states are written as `minmax(0, 1fr) <length>`: the closed state simply
+ * gives the second track 0. A `0fr` second track would not interpolate against a
+ * fixed length, and switching the number of tracks would not interpolate at all.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .agent-workspace {
+    grid-template-columns: minmax(0, 1fr) 0px;
+    transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
+  }
+  .agent-workspace.has-context {
+    grid-template-columns: minmax(0, 1fr) 316px;
+  }
+}
+
 .agent-context {
   display: flex;
   flex-direction: column;
@@ -25,6 +46,18 @@
   min-height: 0;
   border-left: 1px solid var(--border);
   background: var(--surface-canvas);
+}
+
+/*
+ * While the panel's track is between 0 and its full width — the whole of the
+ * open and close transition — its border would otherwise draw a hairline down
+ * the middle of the reading column. Clipping the track hides the border until
+ * there is room for it, which is exactly when it should appear.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .agent-workspace .agent-context {
+    overflow: hidden;
+  }
 }
 /* `hidden` must win over the display above; a flex panel would otherwise show. */
 .agent-context[hidden] { display: none; }
