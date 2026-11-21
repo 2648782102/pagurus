@@ -41,11 +41,9 @@
    * closes by unmounting everywhere else too. What it can do is arrive: a short
    * rise plus a fade reads as "opened below the button" instead of "appeared".
    *
-   * `transform-origin` at the top-left matches the trigger's corner, so the
-   * growth starts where the reader's click was rather than at the centre.
+   * The origin comes from `.anim-pop`, which sets it at the trigger's corner so
+   * the growth starts where the reader's click was rather than at the centre.
    */
-  transform-origin: top left;
-  animation: motion-pop var(--motion-settle) var(--ease-out);
 }
 
 .agent-model-popover-title { margin: 0 0 10px; color: var(--text-strong); font: 600 11px var(--font-body); }

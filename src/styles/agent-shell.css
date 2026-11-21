@@ -129,7 +129,6 @@
    * the cause (their send) to the effect, and short enough that nobody waits for
    * it.
    */
-  animation: motion-rise-tight var(--motion-settle) var(--ease-out) both;
 }
 
 .agent-stream-note {
