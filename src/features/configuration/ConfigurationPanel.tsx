@@ -1,6 +1,6 @@
 import { useConfiguration } from './useConfiguration.js';
 import type { ConfigurationDocument } from '../../shared/api/configuration.js';
-import { Button, FactList, Field, Notice, Section, Textarea } from '../../shared/ui/primitives.js';
+import { Button, FactList, Field, Notice, Section, SkeletonRows, Textarea } from '../../shared/ui/primitives.js';
 import { formatConfigurationSummary } from './configuration-summary.js';
 
 /**
@@ -39,7 +39,8 @@ export function ConfigurationPanel() {
         Conchbase 负责校验、应用，并把生效版本固定到之后创建的任务。
       </p>
 
-      {configuration.phase === 'loading' && <p className="task-hint" role="status">正在读取当前配置版本…</p>}
+      {/* Revision facts, then the document body — two blocks, so three rows. */}
+      {configuration.phase === 'loading' && <SkeletonRows rows={3} label="正在读取当前配置版本…" />}
       {configuration.phase === 'unsupported' && (
         <Notice tone="warning">{configuration.message}</Notice>
       )}

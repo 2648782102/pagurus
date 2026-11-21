@@ -659,7 +659,34 @@ describe('front-end architecture boundaries', () => {
       .flatMap((file) =>
         [...withoutComments(read(file)).matchAll(literal)]
           .filter((match) => !match[0].includes('var(--motion'))
+          /*
+           * `0s` is not a duration to pick — it is "switch now", usually on a
+           * discrete property like `visibility` that cannot interpolate. Taking
+           * it from the scale would mean a visibility change waits 120ms for a
+           * reason no reader could name.
+           */
+          .filter((match) => !/\b0m?s\b/.test(match[0]))
           .map((match) => `${file}: ${match[0].trim().slice(0, 70)}`));
     expect(offenders, `durations must come from the motion scale:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
+  it('arms the theme cross-fade for one switch, not permanently', () => {
+    /*
+     * Every colour on the surface is a variable, so flipping the theme repaints
+     * them all in one frame. A permanent transition on colour would smooth that
+     * — and would also slow every hover and every panel to the theme's duration.
+     *
+     * `useAgentTheme` therefore sets `data-theme-switching` for one frame plus
+     * the fade and removes it. This checks the removal exists: a marker left
+     * behind would silently rewrite the timing of every control on the surface.
+     */
+    const theme = read('src/agent/useAgentTheme.ts');
+    expect(theme, 'the switch marker must be set').toMatch(/dataset\.themeSwitching = 'true'/);
+    expect(theme, 'and removed again').toMatch(/delete root\.dataset\.themeSwitching/);
+
+    const tokens = read('src/styles/agent-tokens.css');
+    // The broad transition must be scoped to the marker, never global.
+    const armed = /:root\[data-theme-switching\]/.test(tokens);
+    expect(armed, 'the broad colour transition must be scoped to the marker').toBe(true);
   });
 });

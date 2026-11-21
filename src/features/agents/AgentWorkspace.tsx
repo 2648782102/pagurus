@@ -4,7 +4,7 @@ import { AgentEditor } from './AgentEditor.js';
 import { AgentPicker } from './AgentPicker.js';
 import { AgentRevisionHistory } from './AgentRevisionHistory.js';
 import { earliestRevision } from './agent-revisions.js';
-import { Button, EmptyState, Notice, Section } from '../../shared/ui/primitives.js';
+import { Button, EmptyState, Notice, Section, SkeletonRows } from '../../shared/ui/primitives.js';
 
 export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => void }) {
   const agents = useAgents(onAgentsChanged);
@@ -42,7 +42,8 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
         ? `${agents.agents.length} 个配置 · 选择身份后编辑内容或创建新版本`
         : undefined}
     >
-      {agents.phase === 'loading' && <p className="task-hint" role="status">正在读取 Runtime Agent 和模型目录…</p>}
+      {/* A picker plus an editor, so the placeholder is taller than a list's. */}
+      {agents.phase === 'loading' && <SkeletonRows rows={5} label="正在读取 Runtime Agent 和模型目录…" />}
       {agents.phase === 'unsupported' && (
         <Notice tone="warning" title="当前 Runtime 未开放 Agent 管理">
           任务运行和全局配置仍可照常使用。连接支持 agents 与 provider-neutral-model-catalog 能力的 Conchbase 后，此处即可管理 Agent。

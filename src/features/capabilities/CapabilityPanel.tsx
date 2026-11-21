@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { CapabilityKind, CapabilityStatus } from '../../shared/api/platform.js';
 import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { useCapabilities } from './useCapabilities.js';
-import { Button, EmptyState, Field, Notice, Section, Select, Tag, TextInput } from '../../shared/ui/primitives.js';
+import { Button, EmptyState, Field, Notice, Section, Select, SkeletonRows, Tag, TextInput } from '../../shared/ui/primitives.js';
 
 export function CapabilityPanel({ runtime }: { runtime: RuntimeInfo | null }) {
   const capabilities = useCapabilities(runtime);
@@ -33,7 +33,13 @@ export function CapabilityPanel({ runtime }: { runtime: RuntimeInfo | null }) {
       {capabilities.phase === 'unsupported' && (
         <Notice>当前 Runtime 未发布 <code>capability-directory</code>，能力目录保持关闭状态。</Notice>
       )}
-      {capabilities.phase === 'loading' && <p className="task-hint" role="status">正在读取能力目录…</p>}
+      {/*
+       * Rows rather than a sentence: the panel is about to be a list, so
+       * showing its shape while it reads means the arrival is a fill rather
+       * than a jump. The `checking` phase above keeps its sentence, because at
+       * that point the panel does not yet know whether it will have a list.
+       */}
+      {capabilities.phase === 'loading' && <SkeletonRows rows={4} label="正在读取能力目录…" />}
       {capabilities.phase === 'error' && <Notice tone="danger">{capabilities.error}</Notice>}
       {capabilities.message && <p className="task-hint" role="status">{capabilities.message}</p>}
       {capabilities.phase === 'ready' && <>
