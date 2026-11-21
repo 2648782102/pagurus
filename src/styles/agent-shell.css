@@ -121,6 +121,26 @@
   background: var(--state-danger-wash);
   color: var(--state-danger-strong);
   font-size: 11px;
+  /*
+   * An error is not softened by easing — it should land, not drift in. What the
+   * animation does is make the appearance *noticed*: a block inserted above the
+   * reading column pushes the thread down, and without a transition the text the
+   * reader was mid-sentence in jumps. Two pixels of settle is enough to connect
+   * the cause (their send) to the effect, and short enough that nobody waits for
+   * it.
+   */
+  animation: agent-inline-error-in var(--motion-settle) var(--ease-out);
+}
+
+@keyframes agent-inline-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .agent-stream-note {
   margin: 8px max(24px, calc((100% - var(--measure-reading)) / 2)) 0;

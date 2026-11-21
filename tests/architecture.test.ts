@@ -639,4 +639,24 @@ describe('front-end architecture boundaries', () => {
       expect(icons, `${id} needs an icon`).toMatch(new RegExp(`\\b${id}:\\s*\\w+`));
     }
   });
+
+  it('arms the theme cross-fade for one switch, not permanently', () => {
+    /*
+     * Every colour on the surface is a variable, so flipping the theme repaints
+     * them all in one frame. A permanent transition on colour would smooth that
+     * — and would also slow every hover and every panel to the theme's duration.
+     *
+     * `useAgentTheme` therefore sets `data-theme-switching` for one frame plus
+     * the fade and removes it. This checks the removal exists: a marker left
+     * behind would silently rewrite the timing of every control on the surface.
+     */
+    const theme = read('src/agent/useAgentTheme.ts');
+    expect(theme, 'the switch marker must be set').toMatch(/dataset\.themeSwitching = 'true'/);
+    expect(theme, 'and removed again').toMatch(/delete root\.dataset\.themeSwitching/);
+
+    const tokens = read('src/styles/agent-tokens.css');
+    // The broad transition must be scoped to the marker, never global.
+    const armed = /:root\[data-theme-switching\]/.test(tokens);
+    expect(armed, 'the broad colour transition must be scoped to the marker').toBe(true);
+  });
 });

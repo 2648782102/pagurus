@@ -33,6 +33,30 @@
   border-radius: var(--radius-control);
   background: var(--surface-raised);
   box-shadow: 0 10px 30px rgba(20, 28, 25, .13);
+  /*
+   * Opens from the control that owns it.
+   *
+   * The popover is inserted on open rather than toggled, so it cannot
+   * transition out — a real exit would need it kept mounted, and this menu
+   * closes by unmounting everywhere else too. What it can do is arrive: a short
+   * rise plus a fade reads as "opened below the button" instead of "appeared".
+   *
+   * `transform-origin` at the top-left matches the trigger's corner, so the
+   * growth starts where the reader's click was rather than at the centre.
+   */
+  transform-origin: top left;
+  animation: agent-model-popover-in var(--motion-settle) var(--ease-out);
+}
+
+@keyframes agent-model-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .agent-model-popover-title { margin: 0 0 10px; color: var(--text-strong); font: 600 11.5px var(--font-body); }
 .agent-model-facts { display: grid; gap: 5px; margin: 0 0 10px; }
