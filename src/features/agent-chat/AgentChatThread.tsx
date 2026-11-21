@@ -353,7 +353,13 @@ export function AgentChatThread({
         const arriving = settled && !(initialIdsRef.current?.has(message.id) ?? true);
         return (
           <article
-            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}${arriving ? ' is-arriving' : ''}`}
+            /*
+             * `anim-rise` comes from the motion library rather than a rule here:
+             * the movement is "content appearing in place", which is a library
+             * entry, not a property of a chat message. `is-arriving` stays as the
+             * hook for which messages get it.
+             */
+            className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}${arriving ? ' is-arriving anim-rise' : ''}`}
             key={message.id}
             aria-busy={isWorking(message.state)}
           >

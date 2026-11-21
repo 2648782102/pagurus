@@ -726,4 +726,38 @@ describe('front-end architecture boundaries', () => {
     const missing = [...used].filter((name) => !defined.has(name));
     expect(missing, `undefined keyframes: ${missing.join(', ')}`).toEqual([]);
   });
+
+  it('uses the motion library rather than restating its declarations', () => {
+    /*
+     * A library nobody calls is a document. Every movement the surface performs
+     * should name an `anim-*` class, and the sheets should not repeat the
+     * `animation:` shorthand for a movement the library already pairs with a
+     * duration and curve — that is how eight durations accumulated the first
+     * time.
+     *
+     * Two exceptions are allowed, both because the caller needs a detail the
+     * class does not carry: the drawer pair animates separate elements of one
+     * sheet, and the looping cues vary their delay per child.
+     */
+    const library = read('src/styles/motion-tokens.css');
+    const classNames = [...library.matchAll(/^\.(anim-[a-z-]+)/gm)].map((match) => match[1]!);
+    expect(classNames.length, 'the library must expose anim-* classes').toBeGreaterThan(0);
+
+    /*
+     * Read only `className` literals. A first version matched the whole file,
+     * so a comment that *named* the class satisfied the check while the element
+     * applying it had lost it — the guard passed against the bug it exists for.
+     */
+    const classLiterals = sourceFiles('src')
+      .filter((file) => file.endsWith('.tsx'))
+      .flatMap((file) => {
+        const source = read(file);
+        return [...source.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\})/g)]
+          .map((match) => `${match[1] ?? ''} ${match[2] ?? ''}`);
+      })
+      .join(' ');
+    const used = classNames.filter((name) => new RegExp(`\\b${name}\\b`).test(classLiterals));
+    expect(used.length, `at least one anim-* class must be used; library has ${classNames.join(', ')}`)
+      .toBeGreaterThan(0);
+  });
 });
