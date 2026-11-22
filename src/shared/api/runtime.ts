@@ -1,3 +1,4 @@
+import { AGENT_CHAT_CONTRACT_VERSION } from './agent-chat-contract.js';
 import { UnsupportedRuntimeApiError } from './errors.js';
 import { isRecord } from './guards.js';
 import { requestJson } from './http.js';
@@ -38,7 +39,15 @@ export interface RuntimeInfo {
   executionRunPaths?: number;
   conversationContract?: '1.4.0';
   conversationPaths?: number;
-  agentChatContract?: '1.9.0';
+  /*
+   * Read from the constant, not written out again.
+   *
+   * This literal and the one in the validator are the two places a version bump
+   * used to be missed: the Runtime moved to 1.9.0 and this client kept rejecting
+   * every response with "invalid response from /v1/runtime", which says nothing
+   * about the cause.
+   */
+  agentChatContract?: typeof AGENT_CHAT_CONTRACT_VERSION;
   agentChatPaths?: number;
 }
 
@@ -82,7 +91,7 @@ function isRuntimeInfo(value: unknown): value is RuntimeInfo {
     && (value.executionRunPaths === undefined || Number.isInteger(value.executionRunPaths))
     && (value.conversationContract === undefined || value.conversationContract === '1.4.0')
     && (value.conversationPaths === undefined || Number.isInteger(value.conversationPaths))
-    && (value.agentChatContract === undefined || value.agentChatContract === '1.9.0')
+    && (value.agentChatContract === undefined || value.agentChatContract === AGENT_CHAT_CONTRACT_VERSION)
     && (value.agentChatPaths === undefined || Number.isInteger(value.agentChatPaths));
 }
 
