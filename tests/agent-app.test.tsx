@@ -513,4 +513,15 @@ describe('shipped Agent surface', () => {
     expect(document.activeElement).toBe(toggle);
   });
 
+  it('closes the diagnostics drawer with Escape', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '诊断' }));
+    await screen.findByRole('dialog', { name: '诊断与支持' });
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog', { name: '诊断与支持' })).toBeNull();
+  });
+
 });
