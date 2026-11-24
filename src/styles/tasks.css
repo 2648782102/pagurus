@@ -11,8 +11,8 @@
   align-items: center;
   gap: 6px 16px;
   padding: 8px 0;
-  border-top: 1px solid var(--line);
-  color: var(--ink-soft);
+  border-top: 1px solid var(--border);
+  color: var(--text);
   font-size: 11px;
 }
 .task-binding, .history-detail-grid {
@@ -21,11 +21,11 @@
   gap: 8px 18px;
   margin: 10px 0;
   padding: 11px 12px;
-  border: 1px solid var(--line);
-  background: var(--paper-inset);
+  border: 1px solid var(--border);
+  background: var(--surface-sunk);
 }
 .task-binding > div, .history-detail-grid > div { display: grid; gap: 3px; min-width: 0; }
-.task-binding dt, .history-detail-grid dt { color: var(--muted); font-size: 10px; }
+.task-binding dt, .history-detail-grid dt { color: var(--text-muted); font-size: var(--dense-small); }
 .task-binding dd, .history-detail-grid dd { margin: 0; font-size: 11px; overflow-wrap: anywhere; }
 .task-output {
   max-height: 260px;

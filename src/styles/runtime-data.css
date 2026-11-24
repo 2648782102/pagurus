@@ -18,11 +18,11 @@
   width: 100%;
   padding: 6px 8px;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--dense-small);
   color: var(--text);
   background: var(--surface-sunk);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
 }
 
 .runtime-data-target input:focus-visible {
@@ -35,12 +35,12 @@
   max-height: 200px;
   overflow: auto;
   padding: 8px 10px;
-  font-size: 11px;
+  font-size: var(--dense-label);
   line-height: 1.5;
   color: var(--text-muted);
   background: var(--surface-sunk);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   white-space: pre-wrap;
   word-break: break-word;
 }

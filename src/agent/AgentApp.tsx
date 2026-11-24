@@ -15,6 +15,7 @@ import { AgentModelMenu } from './AgentModelMenu.js';
 import { ComposerModes } from '../features/agent-chat/ComposerModes.js';
 import { AgentPrompt } from './AgentPrompt.js';
 import { FirstRunGuide } from './FirstRunGuide.js';
+import { AgentDiagnosticsDrawer } from './AgentDiagnosticsDrawer.js';
 import { AgentThreadDrawer } from './AgentThreadDrawer.js';
 import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
@@ -58,7 +59,9 @@ export function AgentApp() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [firstRunDismissed, setFirstRunDismissed] = useState(false);
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const contextButtonRef = useRef<HTMLButtonElement | null>(null);
+  const diagnosticsButtonRef = useRef<HTMLButtonElement | null>(null);
   const { theme, toggle: toggleTheme } = useAgentTheme();
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
@@ -118,6 +121,23 @@ export function AgentApp() {
     setContextOpen(false);
     contextButtonRef.current?.focus();
   }, []);
+
+  const toggleDiagnostics = useCallback(() => {
+    setDiagnosticsOpen((open) => {
+      if (open) diagnosticsButtonRef.current?.focus();
+      return !open;
+    });
+  }, []);
+
+  const closeDiagnostics = useCallback(() => {
+    setDiagnosticsOpen(false);
+    diagnosticsButtonRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!diagnosticsOpen) return;
+    document.querySelector<HTMLElement>('.agent-diagnostics-close')?.focus();
+  }, [diagnosticsOpen]);
 
   // A sheet over the page must not let the page scroll behind it.
   useEffect(() => {
@@ -206,6 +226,9 @@ export function AgentApp() {
         contextButtonRef={contextButtonRef}
         theme={theme}
         onToggleTheme={toggleTheme}
+        diagnosticsOpen={diagnosticsOpen}
+        onToggleDiagnostics={toggleDiagnostics}
+        diagnosticsButtonRef={diagnosticsButtonRef}
       />
 
       <div className={`agent-workspace${contextOpen ? ' has-context' : ''}`}>
@@ -359,6 +382,12 @@ export function AgentApp() {
         onClose={closeDrawer}
         onSelectAgent={chat.selectAgent}
         onResume={chat.resumeConversation}
+      />
+
+      <AgentDiagnosticsDrawer
+        open={diagnosticsOpen}
+        runtime={runtimeStatus.runtime}
+        onClose={closeDiagnostics}
       />
     </div>
   );

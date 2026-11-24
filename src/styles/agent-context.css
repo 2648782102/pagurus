@@ -225,3 +225,67 @@
 @media (prefers-reduced-motion: reduce) {
   .agent-workspace.has-context .agent-page { transition: none; }
 }
+/* Agent-surface diagnostics: a quiet drawer over the reading column. */
+
+.agent-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(10, 18, 16, .32);
+}
+
+.agent-diagnostics {
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100vw);
+  height: 100%;
+  border-left: 1px solid var(--border);
+  background: var(--surface-canvas);
+  box-shadow: var(--lift-2);
+}
+
+.agent-diagnostics-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.agent-diagnostics-head h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font: 600 14px var(--font-body);
+}
+
+.agent-diagnostics-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.agent-diagnostics-close:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.agent-diagnostics-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 14px 24px;
+}
+
+@media (max-width: 640px) {
+  .agent-diagnostics { width: 100vw; }
+}

@@ -451,4 +451,31 @@ describe('shipped Agent surface', () => {
     expect(document.activeElement).toBe(toggle);
   });
 
+  it('opens a diagnostics drawer from the Agent surface without switching pages', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const toggle = screen.getByRole('button', { name: '诊断' });
+    fireEvent.click(toggle);
+
+    const drawer = await screen.findByRole('dialog', { name: '诊断与支持' });
+    expect(within(drawer).getByText('数据与诊断')).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(requests.some((request) => request.url === '/v1/operations/data')).toBe(true);
+  });
+
+  it('returns focus from the diagnostics drawer to its trigger', async () => {
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+
+    const toggle = screen.getByRole('button', { name: '诊断' });
+    fireEvent.click(toggle);
+    const close = await screen.findByRole('button', { name: '关闭诊断' });
+    expect(document.activeElement).toBe(close);
+
+    fireEvent.click(close);
+    expect(screen.queryByRole('dialog', { name: '诊断与支持' })).toBeNull();
+    expect(document.activeElement).toBe(toggle);
+  });
+
 });

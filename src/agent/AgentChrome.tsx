@@ -24,6 +24,9 @@ export function AgentChrome({
   contextButtonRef,
   theme,
   onToggleTheme,
+  diagnosticsOpen,
+  onToggleDiagnostics,
+  diagnosticsButtonRef,
 }: {
   readonly agentName: string;
   readonly threadTitle: string | null;
@@ -41,6 +44,10 @@ export function AgentChrome({
   readonly contextButtonRef?: RefObject<HTMLButtonElement | null>;
   readonly theme: 'light' | 'dark';
   readonly onToggleTheme: () => void;
+  /** Whether the diagnostics drawer is showing. */
+  readonly diagnosticsOpen: boolean;
+  readonly onToggleDiagnostics: () => void;
+  readonly diagnosticsButtonRef: RefObject<HTMLButtonElement | null>;
 }) {
   return (
     <header className="agent-chrome">
@@ -63,6 +70,16 @@ export function AgentChrome({
         <Button shape="pill" onClick={onToggleTheme}
           aria-label={theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'}>
           {theme === 'dark' ? '浅色' : '深色'}
+        </Button>
+        <Button
+          shape="pill"
+          pressed={diagnosticsOpen}
+          onClick={onToggleDiagnostics}
+          buttonRef={diagnosticsButtonRef}
+          aria-expanded={diagnosticsOpen}
+          aria-controls="agent-diagnostics-title"
+        >
+          诊断
         </Button>
         {/* Advanced surfaces stay one click away, never the default path. */}
         <a className="agent-chrome-link" href={consoleSurfaceHref()}>控制台</a>
