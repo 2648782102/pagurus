@@ -97,6 +97,8 @@ export function buildTimeline(conversation: AgentChatConversation | null): reado
     }
   }
   // Within one message, the message itself precedes the activity it spawned.
+  // Activity order stays as published: it is the Runtime's record of what
+  // actually happened, not a UI-owned priority list.
   const kindRank: Record<TimelineKind, number> = { user: 0, assistant: 1, tool: 2, approval: 3, error: 4 };
   return Object.freeze([...out].sort((left, right) =>
     left.sequence - right.sequence

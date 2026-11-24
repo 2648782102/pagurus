@@ -90,7 +90,7 @@ export function AgentContextPanel({
 
             <section className="agent-context-section" aria-labelledby="ctx-activity">
               <div className="agent-context-section-head">
-                <h3 id="ctx-activity">时间线</h3>
+                <h3 id="ctx-activity">发生了什么</h3>
                 {timeline.length > 0 && (
                   <span className="agent-context-count">{timelineSummary(timeline)}</span>
                 )}

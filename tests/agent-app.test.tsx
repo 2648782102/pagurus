@@ -433,6 +433,41 @@ describe('shipped Agent surface', () => {
     expect(await within(panel).findByText(/read_file/)).toBeTruthy();
   });
 
+  it('shows one activity timeline in the context panel', async () => {
+    const withActivity = conversation();
+    withActivity.messages[1]!.activity = [
+      { id: 'act_diag', kind: 'tool', label: '读取文件', state: 'succeeded', detail: 'notes.md' },
+      { id: 'act_write', kind: 'approval', label: '等待审批：workspace_write', state: 'waiting_approval', detail: '风险：write' },
+    ] as never;
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/v1/health') return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
+      if (path === '/v1/runtime') return Promise.resolve(json(runtime));
+      if (path === '/v1/agent-chat/agents') {
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
+          id: 'agt_alpha', name: '研究助手', currentRevisionId: 'agr_alpha',
+          providerId: 'magpie', modelId: 'fixture/chat-model', isDefault: true, archived: false,
+        }] }));
+      }
+      if (path === '/v1/model-catalog') return Promise.resolve(json({ models: [] }));
+      if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+        return Promise.resolve(json({ version: '1.9.0', conversations: [{
+          id: conversationId, agentId: 'agt_alpha', reasoningEffort: null,
+          createdAt: '2026-11-16T00:00:00.000Z', messageCount: 2, lastMessagePreview: '帮我看一下发布状态',
+        }], defaultModelId: null }));
+      }
+      if (path === `/v1/agent-chat/conversations/${conversationId}`) return Promise.resolve(json(withActivity));
+      return Promise.resolve(json({ error: 'not found' }, 404));
+    }));
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+    const panel = screen.getByRole('complementary', { name: '对话上下文' });
+    expect(within(panel).getByRole('heading', { name: '发生了什么' })).toBeTruthy();
+    expect(within(panel).getByText('等待你批准')).toBeTruthy();
+    expect(within(panel).getByText(/notes\.md/)).toBeTruthy();
+  });
+
   it('closes the context panel and reports it as collapsed', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();

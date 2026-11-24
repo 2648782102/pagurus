@@ -65,4 +65,5 @@ describe('conversation timeline', () => {
   it('returns an empty timeline for no conversation', () => {
     expect(buildTimeline(null)).toEqual([]);
   });
+
 });
