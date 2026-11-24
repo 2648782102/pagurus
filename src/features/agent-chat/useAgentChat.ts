@@ -78,6 +78,9 @@ export function useAgentChat(
   const modelCatalogRef = useRef(models);
   modelCatalogRef.current = models;
 
+  const agentsRef = useRef(agents);
+  agentsRef.current = agents;
+
   /*
    * What the composer's effort control currently shows.
    *
@@ -270,7 +273,8 @@ export function useAgentChat(
     restoreDraft(null);
     setError(null);
     setDetailsOpen(false);
-  }, [applyConversation, restoreDraft]);
+    setSelectedAgentId(pickFirstAgent(agentsRef.current));
+  }, [applyConversation, restoreDraft, agents]);
 
   /**
    * Start a conversation and immediately say the first thing.
