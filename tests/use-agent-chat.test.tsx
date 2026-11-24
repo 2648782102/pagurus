@@ -170,6 +170,27 @@ describe('useAgentChat', () => {
     expect(result.current.selectedAgentId).toBe(boss.id);
   });
 
+  it('resetting keeps the hook order stable when the agent list grows', async () => {
+    const boss = {
+      id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'agr_boss',
+      providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
+    };
+    let agents = [AGENT];
+    vi.stubGlobal('fetch', vi.fn(serveChat((url) => {
+      if (url.endsWith('/v1/agent-chat/agents')) {
+        return json({ version: '1.9.0', agents });
+      }
+      return undefined;
+    })));
+    const { result } = renderHook(() => useAgentChat(runtime));
+    await waitFor(() => expect(result.current.selectedAgentId).toBe(AGENT.id));
+
+    agents = [AGENT, boss];
+    await act(async () => { await result.current.loadAgents(); });
+    act(() => result.current.resetConversation());
+    expect(result.current.selectedAgentId).toBe(boss.id);
+  });
+
   it('reports hasPending only while the Runtime still owes a reply', async () => {
     const pending = conversation('chat_a', [
       {

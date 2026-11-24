@@ -274,7 +274,7 @@ export function useAgentChat(
     setError(null);
     setDetailsOpen(false);
     setSelectedAgentId(pickFirstAgent(agentsRef.current));
-  }, [applyConversation, restoreDraft, agents]);
+  }, [applyConversation, restoreDraft]);
 
   /**
    * Start a conversation and immediately say the first thing.
