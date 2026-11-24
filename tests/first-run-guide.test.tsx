@@ -14,6 +14,7 @@ function renderGuide(overrides: Partial<React.ComponentProps<typeof FirstRunGuid
     dismissed: false,
     onDismiss: vi.fn(),
     onUseExample: vi.fn(),
+    onOpenDiagnostics: vi.fn(),
     ...overrides,
   };
   return { props, ...render(<FirstRunGuide {...props} />) };
@@ -54,5 +55,12 @@ describe('FirstRunGuide', () => {
     renderGuide({ agents: [] });
     expect(screen.getByText('还没有可用 Agent；可以先在控制台创建一个')).toBeTruthy();
     expect(screen.queryByRole('button', { name: '用这条开始' })).toBeNull();
+  });
+
+  it('offers a direct diagnostics action when setup is blocked', () => {
+    const props = { onOpenDiagnostics: vi.fn() };
+    renderGuide({ connection: 'disconnected', models: [], ...props });
+    fireEvent.click(screen.getByRole('button', { name: '查看诊断' }));
+    expect(props.onOpenDiagnostics).toHaveBeenCalled();
   });
 });

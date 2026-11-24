@@ -245,6 +245,7 @@ export function AgentApp() {
                   chat.setDraft(text);
                   setFirstRunDismissed(true);
                 }}
+                onOpenDiagnostics={toggleDiagnostics}
               />
               <AgentPrompt
                 agents={chat.agents}

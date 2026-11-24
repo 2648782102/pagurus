@@ -8,6 +8,7 @@ export interface FirstRunGuideProps {
   readonly dismissed: boolean;
   readonly onDismiss: () => void;
   readonly onUseExample: (text: string) => void;
+  readonly onOpenDiagnostics: () => void;
 }
 
 type StepState = 'done' | 'todo' | 'blocked';
@@ -39,6 +40,7 @@ export function FirstRunGuide({
   dismissed,
   onDismiss,
   onUseExample,
+  onOpenDiagnostics,
 }: FirstRunGuideProps) {
   if (dismissed) return null;
 
@@ -92,6 +94,12 @@ export function FirstRunGuide({
           </li>
         ))}
       </ol>
+      {!ready && (
+        <div className="agent-first-run-recovery">
+          <button type="button" onClick={onOpenDiagnostics}>查看诊断</button>
+          <span>连接、模型或 Agent 没准备好时，先看具体检查结果。</span>
+        </div>
+      )}
       {ready && (
         <div className="agent-first-run-example">
           <p>{EXAMPLE}</p>

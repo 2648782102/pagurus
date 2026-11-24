@@ -114,3 +114,28 @@
   .agent-first-run-step { grid-template-columns: 16px 1fr; }
   .agent-first-run-hint { grid-column: 2; }
 }
+
+.agent-first-run-recovery {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+.agent-first-run-recovery button {
+  appearance: none;
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.agent-first-run-recovery button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.agent-first-run-recovery span { color: var(--text-muted); font-size: 11px; }
