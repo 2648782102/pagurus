@@ -1,0 +1,35 @@
+/* Boss insight: a compact command rail read from the current conversation. */
+
+.boss-insight {
+  display: none;
+  grid-area: insight;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: auto;
+  padding: 20px 18px;
+  border-inline-start: 1px solid var(--ag-line);
+  background:
+    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--ag-tide) 8%, transparent), transparent 34%),
+    var(--ag-paper);
+  color: var(--ag-ink);
+  font-family: var(--ag-sans);
+}
+.boss-insight-head { display: grid; gap: 3px; padding-block-end: 14px; border-block-end: 1px solid var(--ag-line); }
+.boss-insight-head h2 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.02em; }
+.boss-insight-head p { margin: 0; color: var(--ag-muted); font-size: 11px; }
+.boss-insight section { padding-block: 16px; border-block-end: 1px solid var(--ag-line); }
+.boss-insight h3 { margin: 0 0 9px; color: var(--ag-ink-soft); font-size: 11px; font-weight: 650; letter-spacing: .04em; }
+.boss-insight-focus { margin: 0; font: 15px/1.55 var(--ag-serif); text-wrap: pretty; }
+.boss-insight-empty { margin: 0; color: var(--ag-faint); font-size: 12px; line-height: 1.6; }
+.boss-insight-signals { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.boss-insight-signals li { display: grid; gap: 3px; padding: 9px 10px; border-inline-start: 2px solid var(--ag-line-strong); background: color-mix(in srgb, var(--ag-paper-raised) 65%, transparent); }
+.boss-insight-signals li.is-attention { border-inline-start-color: var(--ag-danger); background: var(--ag-danger-wash); }
+.boss-insight-signals li.is-failed { border-inline-start-color: var(--ag-danger); }
+.boss-insight-signals li.is-success { border-inline-start-color: var(--ag-signal); }
+.boss-insight-signals span { color: var(--ag-muted); font-size: 10px; }
+.boss-insight-signals p { margin: 0; font-size: 12px; line-height: 1.55; text-wrap: pretty; }
+.boss-insight footer { margin-block-start: auto; padding-block-start: 14px; color: var(--ag-faint); font-size: 10px; }
+
+@media (width >= 1440px) {
+  .boss-insight { display: flex; }
+}

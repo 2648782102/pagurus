@@ -161,14 +161,26 @@
 .boss-work-rail.is-collapsed > :not(.boss-work-head) { display: none; }
 .boss-work-rail.is-collapsed > .boss-work-head p,
 .boss-work-rail.is-collapsed > .boss-work-head dl { display: none; }
-.boss-work-rail > .boss-work-head button {
-  padding: 3px 8px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 999px;
-  background: transparent;
+.boss-work-rail > .boss-work-head button.boss-work-collapse {
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-end: 14px;
+  display: grid;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 26px;
+  padding: 0;
+  border: 1px solid var(--ag-line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ag-paper-raised) 70%, transparent);
   color: var(--ag-muted);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 15px;
+  line-height: 1;
+}
+.boss-work-rail > .boss-work-head button.boss-work-collapse:hover {
+  color: var(--ag-ink);
+  border-color: var(--ag-line-strong);
 }
 .boss-work-error {
   display: grid;

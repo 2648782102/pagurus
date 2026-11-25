@@ -22,6 +22,7 @@ import { conversationTitle } from './agent-surface-model.js';
 import { agentErrorText } from './agent-error-text.js';
 import { modelName } from '../shared/ui/model-label.js';
 import { runtimeNoticeBody } from './RuntimeNoticeBody.js';
+import { BossInsightPanel } from './BossInsightPanel.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -359,6 +360,10 @@ export function AgentApp() {
             </>
           )}
         </main>
+
+        {chat.isBoss && chat.conversation !== null && (
+          <BossInsightPanel messages={chat.conversation.messages} />
+        )}
 
         <AgentContextPanel
           open={contextOpen}

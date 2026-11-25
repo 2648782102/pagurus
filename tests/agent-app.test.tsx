@@ -256,6 +256,7 @@ describe('shipped Agent surface', () => {
     const workRail = await screen.findByRole('complementary', { name: '正在推进' });
     expect(workRail).toBeTruthy();
     expect(workRail?.closest('.agent-workspace')).toBeTruthy();
+    expect(screen.getByRole('complementary', { name: '指挥台' })).toBeTruthy();
     expect(document.querySelector('.agent-page-head')).toBeNull();
   });
 

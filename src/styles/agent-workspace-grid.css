@@ -15,15 +15,18 @@
   }
 }
 
-@media (width >= 1280px) {
+@media (width >= 1440px) {
   .agent-workspace {
-    grid-template-columns: minmax(0, 1fr) 0px;
-    grid-template-areas: "page context";
-    transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "page";
   }
-  .agent-workspace:has(> .boss-work-rail) {
-    grid-template-columns: clamp(320px, 20vw, 360px) minmax(0, 1fr) 0px;
-    grid-template-areas: "work page context";
+  .agent-workspace:has(> .boss-work-rail):has(> .boss-insight) {
+    grid-template-columns: 320px minmax(0, 1fr) 320px;
+    grid-template-areas: "work page insight";
+  }
+  .agent-workspace:has(> .boss-work-rail):not(:has(> .boss-insight)) {
+    grid-template-columns: clamp(320px, 20vw, 360px) minmax(0, 1fr);
+    grid-template-areas: "work page";
   }
   .agent-workspace:has(> .boss-work-rail) .agent-chat-thread {
     padding-inline: max(40px, calc((100% - 56rem) / 2));
@@ -33,21 +36,10 @@
     max-inline-size: calc(100% - 80px);
     margin-inline: auto;
   }
-  .agent-workspace.has-context {
-    grid-template-columns: minmax(0, 1fr) 316px;
-  }
-  .agent-workspace.has-context:has(> .boss-work-rail) {
-    grid-template-columns: clamp(320px, 20vw, 360px) minmax(0, 1fr) 316px;
-  }
   .agent-context {
-    position: static;
-    grid-area: context;
-    inline-size: auto;
-    box-shadow: none;
-  }
-  .agent-context[data-open='false'] {
-    inline-size: 0;
-    border-inline-start: 0;
-    overflow: hidden;
+    position: absolute;
+    grid-area: page;
+    inset-block: 0;
+    inset-inline-end: 0;
   }
 }

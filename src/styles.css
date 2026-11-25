@@ -4,5 +4,5 @@
 @import "./styles/organization.css"; @import "./styles/execution.css"; @import "./styles/conversation.css"; @import "./styles/configuration.css"; @import "./styles/footer.css";
 @import "./styles/agent-shell.css"; @import "./styles/agent-entry.css"; @import "./styles/agent-chat.css"; @import "./styles/agent-composer.css"; @import "./styles/agent-activity.css";
 @import "./styles/agent-markdown.css"; @import "./styles/agent-model.css"; @import "./styles/agent-model-switch.css"; @import "./styles/agent-drawer.css"; @import "./styles/agent-context.css"; @import "./styles/agent-workspace-grid.css";
-@import "./styles/boss-work.css"; @import "./styles/responsive.css"; @import "./styles/agent-responsive.css"; @import "./styles/agent-first-run.css";
+@import "./styles/boss-work.css"; @import "./styles/boss-insight.css"; @import "./styles/responsive.css"; @import "./styles/agent-responsive.css"; @import "./styles/agent-first-run.css";
 @import "./styles/motion-tokens.css"; @import "./styles/motion.css";
