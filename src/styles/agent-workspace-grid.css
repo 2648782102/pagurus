@@ -2,8 +2,12 @@
 
 @media (width >= 900px) and (width < 1280px) {
   .agent-workspace:has(> .boss-work-rail) {
-    grid-template-columns: 280px minmax(0, 1fr);
-    grid-template-areas: "work page";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "page";
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .boss-work-rail {
+    grid-area: work;
   }
   .agent-workspace:has(> .boss-work-rail) .agent-chat-thread {
     padding-inline: 24px;
@@ -41,5 +45,34 @@
     grid-area: page;
     inset-block: 0;
     inset-inline-end: 0;
+  }
+}
+
+/* Below the desktop three-column breakpoint the work rail becomes a compact
+   status strip: it must not push the conversation below the fold. */
+@media (width >= 900px) and (width < 1440px) {
+  .agent-workspace:has(> .boss-work-rail) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 64px minmax(0, 1fr);
+    grid-template-areas: "work" "page";
+  }
+  .boss-work-rail {
+    max-block-size: 64px;
+    overflow: hidden;
+    padding-block: 12px;
+    border-block-end: 1px solid var(--ag-line);
+  }
+  .boss-work-rail > .boss-work-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+  .boss-work-rail > .boss-work-head p,
+  .boss-work-rail > .boss-work-head .boss-work-counts,
+  .boss-work-rail section,
+  .boss-work-rail details {
+    display: none;
   }
 }

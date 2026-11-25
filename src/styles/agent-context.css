@@ -21,6 +21,7 @@
 }
 
 .agent-workspace:has(> .boss-work-rail) {
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas: "work" "page";
 }
 
