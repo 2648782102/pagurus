@@ -215,24 +215,18 @@ describe('shipped Agent surface', () => {
     expect(screen.queryByText('没有匹配的对话。')).toBeNull();
   });
 
-  it('states the current model and keeps a new conversation as its own action', async () => {
+  it('keeps model switching in the composer and starts over as its own action', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '对话模型：fixture/chat-model' }));
-    expect(screen.getByText('当前使用')).toBeTruthy();
-    /*
-     * The model is switchable from the composer now, so the popover must not
-     * keep telling the reader it is fixed — that wording was the reason a model
-     * change used to throw the transcript away.
-     */
-    expect(screen.getByText(/都可以在输入框里随时切换/)).toBeTruthy();
-    expect(screen.queryByText(/换模型需要新开一段对话/)).toBeNull();
-    // Capability boundary is stated in plain language, not as a permission table.
-    expect(await screen.findByText(/1 个工具/)).toBeTruthy();
+    // The header used to duplicate the composer's model picker and note. One
+    // page should offer one model control: the one next to the input.
+    expect(screen.queryByRole('button', { name: /对话模型/ })).toBeNull();
+    expect(screen.queryByText(/组织变更由 Runtime 校验后执行/)).toBeNull();
+    expect(screen.getByRole('button', { name: /^模型：/ })).toBeTruthy();
 
     // Starting over is still offered, as a clear-the-transcript action.
-    fireEvent.click(screen.getByRole('button', { name: '开新对话' }));
+    fireEvent.click(screen.getByRole('button', { name: '新对话' }));
     expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
   });
 

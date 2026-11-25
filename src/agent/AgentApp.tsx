@@ -12,7 +12,6 @@ import { useAgentTheme } from './useAgentTheme.js';
 import { AgentContextPanel } from './AgentContextPanel.js';
 import { AgentAnswer } from './AgentAnswer.js';
 import { AgentMessageActions } from './AgentMessageActions.js';
-import { AgentModelMenu } from './AgentModelMenu.js';
 import { ComposerModes } from '../features/agent-chat/ComposerModes.js';
 import { AgentPrompt } from './AgentPrompt.js';
 import { FirstRunGuide } from './FirstRunGuide.js';
@@ -269,20 +268,6 @@ export function AgentApp() {
             </div>
           ) : (
             <>
-              <div className="agent-page-head">
-                <AgentModelMenu
-                  pinned={chat.pinSummary}
-                  models={chat.models}
-                  onStartNew={chat.restart}
-                  capabilities={agentCapabilities.capabilities}
-                  onInspect={() => void agentCapabilities.load(
-                    chat.conversation?.agentId,
-                    chat.conversation?.agentRevisionId,
-                  )}
-                />
-                {chat.isBoss && <span className="agent-page-note">Boss Agent · 组织变更由 Runtime 校验后执行</span>}
-              </div>
-
             {chat.isBoss && (
               <BossWorkPanel
                 runtime={runtimeStatus.runtime}
