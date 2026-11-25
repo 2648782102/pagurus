@@ -279,7 +279,7 @@ export function AgentApp() {
                     chat.conversation?.agentRevisionId,
                   )}
                 />
-                {chat.isBoss && <span className="agent-page-note">老板 Agent · 组织变更由 Runtime 校验后执行</span>}
+                {chat.isBoss && <span className="agent-page-note">Boss Agent · 组织变更由 Runtime 校验后执行</span>}
               </div>
 
               {chat.error && (

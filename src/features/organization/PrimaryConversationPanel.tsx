@@ -39,7 +39,7 @@ export function PrimaryConversationPanel({
       <div className="section-heading">
         <div>
           <p className="eyebrow">主会话 · 1.4.0</p>
-          <h3 id="primary-conversation-title">老板 Agent 主会话</h3>
+          <h3 id="primary-conversation-title">Boss Agent 主会话</h3>
         </div>
         <div className="history-heading-actions">
           <span className="muted-label">
@@ -63,7 +63,7 @@ export function PrimaryConversationPanel({
         <div className="conversation-thread" aria-live="polite" aria-label="主会话消息">
           {conversation.loading && <p className="task-hint" role="status">正在读取 Runtime 发布的主会话…</p>}
           {!conversation.loading && conversation.messages.length === 0 && (
-            <p className="task-hint">还没有消息。向老板 Agent 说一句话，Runtime 会发布用户消息、回执和员工进展。</p>
+            <p className="task-hint">还没有消息。向Boss Agent 说一句话，Runtime 会发布用户消息、回执和员工进展。</p>
           )}
           {conversation.messages.map((message) => (
             <article className={authorClass(message)} key={message.id}>
@@ -91,7 +91,7 @@ export function PrimaryConversationPanel({
           event.preventDefault();
           if (!busy && intentText.trim().length > 0) void onSubmitIntent();
         }}>
-          <Field label="给老板 Agent 发消息" htmlFor="primary-conversation-intent">
+          <Field label="给Boss Agent 发消息" htmlFor="primary-conversation-intent">
           <Textarea
             id="primary-conversation-intent"
             value={intentText}

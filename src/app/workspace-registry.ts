@@ -24,7 +24,7 @@ export const WORKSPACE_GROUPS: readonly WorkspaceGroup[] = Object.freeze([
      * product read as a console with a chat feature. The organization surface
      * is the assistant; direct Agent chat is a secondary door from there.
      */
-    note: '把目标交给老板 Agent；需要直接找一个 Agent 对话时，从组织台进入。',
+    note: '把目标交给Boss Agent；需要直接找一个 Agent 对话时，从组织台进入。',
     ids: ['organization', 'agentChat'],
     labels: { agentChat: '直接对话（次级）' },
   },

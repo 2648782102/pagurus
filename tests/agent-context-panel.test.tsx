@@ -88,7 +88,7 @@ describe('context panel activity', () => {
         onClose={() => {}}
       />,
     );
-    expect(screen.getByText(/Runtime 内建的老板 Agent/)).toBeTruthy();
+    expect(screen.getByText(/Runtime 内建的Boss Agent/)).toBeTruthy();
   });
 
   it('renders nothing visible while closed', () => {

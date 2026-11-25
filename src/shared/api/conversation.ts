@@ -158,7 +158,7 @@ export async function getConversationMessages(
 
 export function conversationMessageLabel(message: ConversationMessage): string {
   if (message.author === 'user') return '你';
-  if (message.author === 'boss') return '老板 Agent';
+  if (message.author === 'boss') return 'Boss Agent';
   if (message.author === 'worker') return '员工 Agent';
   return 'Runtime';
 }
@@ -166,7 +166,7 @@ export function conversationMessageLabel(message: ConversationMessage): string {
 export function conversationKindLabel(message: ConversationMessage): string {
   const labels: Record<ConversationMessageKind, string> = {
     user_message: '用户消息',
-    boss_acknowledgement: '老板回执',
+    boss_acknowledgement: 'Boss 回执',
     worker_activity: '员工活动',
     report: '结构化汇报',
     attention: '需要确认',

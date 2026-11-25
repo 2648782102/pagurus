@@ -167,7 +167,7 @@ function CapabilityFacts({ capabilities }: { readonly capabilities: CapabilitySu
   if (capabilities.phase === 'builtin') {
     return (
       <p className="agent-context-empty">
-        这是 Runtime 内建的老板 Agent，没有可编辑的 Agent 版本，也没有单独的工具授权。
+        这是 Runtime 内建的Boss Agent，没有可编辑的 Agent 版本，也没有单独的工具授权。
         它只能提议组织动作，由 Runtime 校验后执行。
       </p>
     );

@@ -135,7 +135,7 @@ function CapabilityLine({ capabilities }: { readonly capabilities: CapabilitySum
   if (capabilities.phase === 'builtin') {
     return (
       <p className="agent-model-note agent-model-capability">
-        Runtime 内建的老板 Agent：只能提议组织动作，由 Runtime 校验后执行。
+        Runtime 内建的Boss Agent：只能提议组织动作，由 Runtime 校验后执行。
       </p>
     );
   }

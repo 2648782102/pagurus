@@ -34,7 +34,7 @@ describe('Agent Chat panel', () => {
       const path = String(input);
       if (path === '/v1/agent-chat/agents') {
         return Promise.resolve(json({ version: '1.9.0', agents: [{
-          id: 'boss-agent', name: '老板 Agent', currentRevisionId: 'boss-runtime-v1',
+          id: 'boss-agent', name: 'Boss Agent', currentRevisionId: 'boss-runtime-v1',
           providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
         }, {
           id: 'agt_alpha', name: '中文助手', currentRevisionId: 'agr_alpha',
@@ -138,7 +138,7 @@ describe('Agent Chat panel', () => {
       { id: `amsg_${'0'.repeat(24)}`, sequence: 4, author: 'assistant', body: '需要确认', state: 'waiting_attention', taskId: null, error: null, phase: 'human', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}`, activity: [] },
       { id: `amsg_${'1'.repeat(24)}`, sequence: 5, author: 'assistant', body: '目录不可用', state: 'unavailable', taskId: null, error: 'Model catalog is unavailable.', phase: 'terminal', progress: null, updatedAt: '2026-11-14T00:00:00.000Z', replyToId: `amsg_${'d'.repeat(24)}`, activity: [] },
     ];
-    render(<AgentChatThread messages={messages} agentName="老板 Agent" busy={false} onDecision={() => undefined} />);
+    render(<AgentChatThread messages={messages} agentName="Boss Agent" busy={false} onDecision={() => undefined} />);
     expect(screen.getByText('正在思考…')).toBeTruthy();
     expect(screen.getByText('正在执行组织动作…')).toBeTruthy();
     expect(screen.getByText('等待你的确认')).toBeTruthy();
@@ -427,7 +427,7 @@ describe('Agent Chat panel', () => {
         state: 'replied', taskId: null, error: null, phase: 'terminal', progress: null,
         updatedAt: '2026-11-16T00:00:00.000Z', replyToId: null, activity: [],
       }]}
-      agentName="老板 Agent"
+      agentName="Boss Agent"
       busy={false}
       onDecision={() => undefined}
     />);
@@ -441,11 +441,11 @@ describe('Agent Chat panel', () => {
 
   it('labels the Runtime-owned Boss Agent as organization orchestration', async () => {
     render(<AgentChatPanel runtime={runtime} />);
-    const bossCard = await screen.findByRole('button', { name: /老板 Agent/ });
+    const bossCard = await screen.findByRole('button', { name: /Boss Agent/ });
     expect(bossCard).toBeTruthy();
     fireEvent.click(bossCard);
     fireEvent.click(await screen.findByRole('button', { name: '开启新对话' }));
-    expect(await screen.findByText(/老板 Agent：直接对话/)).toBeTruthy();
+    expect(await screen.findByText(/Boss Agent：直接对话/)).toBeTruthy();
     expect(await screen.findByText(/未接入网页搜索/)).toBeTruthy();
   });
 

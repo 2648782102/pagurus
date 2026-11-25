@@ -54,7 +54,7 @@ describe('primary conversation panel', () => {
             sequence: 2,
             kind: 'attention',
             author: 'boss',
-            body: '老板 Agent 需要你确认一个开放问题。',
+            body: 'Boss Agent 需要你确认一个开放问题。',
             state: 'open',
           }],
         }));
@@ -90,10 +90,10 @@ describe('primary conversation panel', () => {
       />,
     );
     expect(await screen.findByText('Start project atlas and hire worker planner.')).toBeTruthy();
-    await waitFor(() => expect(screen.getByText('老板 Agent 需要你确认一个开放问题。')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Boss Agent 需要你确认一个开放问题。')).toBeTruthy());
     expect(screen.getByRole('button', { name: '回答' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '撤回' })).toBeTruthy();
-    expect(screen.getByLabelText('给老板 Agent 发消息')).toBeTruthy();
+    expect(screen.getByLabelText('给Boss Agent 发消息')).toBeTruthy();
     fireEvent.submit(screen.getByRole('button', { name: '发送' }).closest('form')!);
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
   });
