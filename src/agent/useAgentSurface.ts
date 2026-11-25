@@ -22,7 +22,14 @@ export function useAgentSurface(runtime: RuntimeInfo | null) {
 
   const activeAgent = chat.activeAgent;
   const title = activeAgent?.name ?? 'Agent';
-  const isBoss = activeAgent ? isBossAgent(activeAgent) : false;
+  /*
+   * The conversation is the source of truth for which Agent produced it. A
+   * selected revision or a stale `activeAgent` entry can describe a different
+   * model than the thread; using that to decide whether to show the Boss work
+   * strip made the strip vanish from a real Boss conversation.
+   */
+  const isBoss = chat.conversation?.agentId === 'boss-agent'
+    || (chat.conversation === null && activeAgent ? isBossAgent(activeAgent) : false);
 
   const pinSummary = useMemo(() => {
     if (chat.conversation === null) return null;

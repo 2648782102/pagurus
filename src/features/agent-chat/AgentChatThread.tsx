@@ -396,9 +396,6 @@ export function AgentChatThread({
                * transcript as it stands when it runs, answer included. The old
                * wording would now assert the opposite of what happened.
                */}
-              {concurrent && (
-                <span className="agent-chat-concurrent-note">上一条回复生成中时发出</span>
-              )}
               {STATE_LABELS[message.state] && (
                 <span className="agent-chat-state-label" role="status">
                   <StatusDot tone={statusTone(message.state)} />

@@ -264,7 +264,7 @@ describe('Agent Chat panel', () => {
     expect(onDecision).not.toHaveBeenCalled();
   });
 
-  it('says a turn was submitted while the previous reply was still being written', () => {
+  it('does not imply that the Boss was blocked by a background worker report', () => {
     /*
      * The timestamps are the shape the Runtime produces when a question arrives
      * mid-reply (measured): the first answer's last update lands after the
@@ -279,12 +279,11 @@ describe('Agent Chat panel', () => {
       { id: 'a2', sequence: 4, author: 'assistant', body: '这是 B 的回复', state: 'replied', taskId: 'task_b', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:03.000Z', replyToId: 'u2', activity: [] },
     ];
     render(<AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />);
-    const notes = screen.getAllByText(/上一条回复生成中时发出/);
-    // Only the second question was asked mid-reply; the first waited for nothing.
-    expect(notes).toHaveLength(1);
-    // The note names no turn: a `sequence` can skip (a Runtime notice occupies
-    // one), so a number would point at the wrong message.
-    expect(notes[0]?.textContent).toBe('上一条回复生成中时发出');
+    // The timestamps still identify a turn asked mid-reply, but that note was
+    // wrong in the parallel Boss architecture: a worker notice can land after
+    // the question without the Boss ever being blocked. The work panel carries
+    // the background state; the transcript stays a transcript.
+    expect(screen.queryByText(/上一条回复生成中时发出/)).toBeNull();
   });
 
   it('distinguishes a queued reply from one the Runtime has started', () => {
@@ -357,7 +356,7 @@ describe('Agent Chat panel', () => {
     expect(arrived).toHaveLength(2);
   });
 
-  it('does not annotate a conversation where every question waited', () => {
+  it('does not annotate a conversation with ordinary consecutive turns', () => {
     const messages: readonly AgentChatMessage[] = [
       { id: 'u1', sequence: 1, author: 'user', body: 'A', state: 'published', taskId: null, error: null, phase: 'accepted', progress: null, updatedAt: '2026-11-20T15:55:00.000Z', replyToId: null, activity: [] },
       { id: 'a1', sequence: 2, author: 'assistant', body: '答 A', state: 'replied', taskId: 'task_a', error: null, phase: 'terminal', progress: 100, updatedAt: '2026-11-20T15:55:02.000Z', replyToId: 'u1', activity: [] },
@@ -368,7 +367,7 @@ describe('Agent Chat panel', () => {
     expect(screen.queryByText(/上一条回复生成中时发出/)).toBeNull();
   });
 
-  it('does not claim the two replies were written without knowing about each other', () => {
+  it('removes the old concurrent-turn note instead of reinterpreting it', () => {
     /*
      * This is the assertion that keeps the note honest after queueing.
      *
@@ -389,8 +388,8 @@ describe('Agent Chat panel', () => {
       <AgentChatThread messages={messages} agentName="助手" busy={false} onDecision={() => undefined} />,
     );
     const note = container.querySelector('.agent-chat-concurrent-note');
-    expect(note).toBeTruthy();
-    const text = note?.textContent ?? '';
+    expect(note).toBeNull();
+    const text = container.textContent ?? '';
     for (const claim of ['互不知情', '没有看到', '各自', '不知道']) {
       expect(text, `the note must not assert isolation: ${claim}`).not.toContain(claim);
     }

@@ -1,0 +1,73 @@
+/* Boss work strip: a compact, read-only account of delegated work. */
+
+.boss-work {
+  margin: 12px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--ag-line);
+  border-radius: var(--ag-radius);
+  background: var(--ag-paper-raised);
+  color: var(--ag-ink);
+  font-family: var(--ag-sans);
+}
+.boss-work-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.boss-work-head h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
+.boss-work-head p { margin: 3px 0 0; color: var(--ag-muted); font-size: 10px; }
+.boss-work-counts { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.boss-work-counts span { color: var(--ag-muted); font-size: 10px; white-space: nowrap; }
+.boss-work-counts strong { color: var(--ag-ink); font: 650 14px var(--ag-sans); }
+.boss-work-counts .is-attention strong { color: var(--ag-danger); }
+
+.boss-work-attention {
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-left: 3px solid var(--ag-danger);
+  background: var(--ag-danger-wash);
+  font-size: 11px;
+}
+.boss-work-attention strong { display: block; margin-bottom: 3px; color: var(--ag-danger); }
+.boss-work-attention p { margin: 2px 0; overflow-wrap: anywhere; }
+
+.boss-work-projects { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.boss-work-project {
+  padding: 9px 11px;
+  border: 1px solid var(--ag-line);
+  border-left: 3px solid var(--ag-tide);
+  background: var(--ag-paper);
+}
+.boss-work-project.is-resumed { border-left-color: var(--ag-signal); }
+.boss-work-project.is-quiet, .boss-work-project.is-archived { border-left-color: var(--ag-faint); opacity: .78; }
+.boss-work-project-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.boss-work-project-head strong { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.boss-work-project-head span { flex: 0 0 auto; color: var(--ag-tide-ink); font-size: 10px; }
+.boss-work-project-id { margin-top: 2px; color: var(--ag-faint); font: 9px var(--font-mono); }
+
+.boss-work-workers { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
+.boss-work-workers li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--ag-line);
+  font-size: 11px;
+}
+.boss-work-workers li.is-failed { color: var(--ag-danger); }
+.boss-work-workers li.is-done { color: var(--ag-signal); }
+.boss-work-worker-name { font-weight: 600; }
+.boss-work-worker-state { color: var(--ag-muted); font-size: 10px; }
+.boss-work-workers li p { flex-basis: 100%; margin: 0; color: inherit; font-size: 10px; overflow-wrap: anywhere; }
+
+.boss-work-notices { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--ag-line); }
+.boss-work-notices summary { color: var(--ag-muted); cursor: pointer; font-size: 10px; }
+.boss-work-notices ol { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.boss-work-notices li { display: flex; flex-wrap: wrap; gap: 7px; align-items: baseline; font-size: 10px; }
+.boss-work-notices li > span { color: var(--ag-ink-soft); font-weight: 600; }
+.boss-work-notices li code { color: var(--ag-faint); }
+.boss-work-notices li.is-failed > span, .boss-work-notices li.is-failed code { color: var(--ag-danger); }
+.boss-work-notices li p { flex-basis: 100%; margin: 0; color: var(--ag-ink-soft); overflow-wrap: anywhere; }
+
+@media (max-width: 720px) {
+  .boss-work { margin-inline: 16px; padding: 11px 12px; }
+  .boss-work-head { display: block; }
+  .boss-work-counts { justify-content: flex-start; margin-top: 8px; }
+}

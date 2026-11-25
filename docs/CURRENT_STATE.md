@@ -13,6 +13,10 @@ Updated: 2026-11-21
   surfaces.
 - Agent surface with conversation history, model selection, streaming, copy,
   context panel, responsive layout, and inline approval state.
+- The Boss Agent conversation shows an inline work strip: project state, worker
+  state, reports, failures, and open Attention come from the Runtime's
+  organization session, without adding a second conversation entry or parsing
+  model prose.
 - The Agent surface reports stream degradation while a reply is pending: a
   stalled stream or an in-progress reconnect says so and notes that polling is
   carrying the update. A healthy stream shows nothing.

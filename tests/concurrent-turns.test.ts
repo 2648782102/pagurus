@@ -181,4 +181,22 @@ describe('a real transcript', () => {
   it('marks exactly the turn that was asked mid-reply', () => {
     expect([...concurrentTurnIds(real)]).toEqual(['m3']);
   });
+
+  it('does not mark a turn merely because a background worker reported later', () => {
+    /*
+     * The real Boss transcript has a worker notice arriving between a question
+     * and the answer to the next question. A notice is not a generating reply,
+     * so it must never turn the following question into a "concurrent" turn:
+     * that label would tell the user their conversation is blocked when the
+     * Boss was free the whole time.
+     */
+    const messages = [
+      message('u1', 1, 'user', '2026-11-25T10:00:00.000Z', '委派任务'),
+      message('a1', 2, 'assistant', '2026-11-25T10:00:01.000Z', '已安排', 'u1'),
+      notice('n1', 3, '2026-11-25T10:00:08.000Z'),
+      message('u2', 4, 'user', '2026-11-25T10:00:05.000Z', '继续聊'),
+      message('a2', 5, 'assistant', '2026-11-25T10:00:06.000Z', '回答', 'u2'),
+    ];
+    expect([...concurrentTurnIds(messages)]).toEqual([]);
+  });
 });

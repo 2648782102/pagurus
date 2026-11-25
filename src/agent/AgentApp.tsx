@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RuntimeConnectionState } from '../features/runtime-status/useRuntimeStatus.js';
 import { useRuntimeStatus } from '../features/runtime-status/useRuntimeStatus.js';
 import { AgentChatComposer } from '../features/agent-chat/AgentChatComposer.js';
+import { BossWorkPanel } from './BossWorkPanel.js';
 import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
 import { Button } from '../shared/ui/primitives.js';
 import { consoleSurfaceHref } from '../shared/ui/surface.js';
@@ -281,6 +282,13 @@ export function AgentApp() {
                 />
                 {chat.isBoss && <span className="agent-page-note">Boss Agent · 组织变更由 Runtime 校验后执行</span>}
               </div>
+
+            {chat.isBoss && (
+              <BossWorkPanel
+                runtime={runtimeStatus.runtime}
+                messages={chat.conversation.messages}
+              />
+            )}
 
               {chat.error && (
                 <div className="agent-inline-error anim-rise-tight" role="alert">
