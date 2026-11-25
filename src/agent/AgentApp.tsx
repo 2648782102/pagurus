@@ -21,6 +21,7 @@ import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
 import { agentErrorText } from './agent-error-text.js';
 import { modelName } from '../shared/ui/model-label.js';
+import { runtimeNoticeBody } from './RuntimeNoticeBody.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -315,6 +316,8 @@ export function AgentApp() {
                   renderBody={(message, body) =>
                   message.author === 'assistant'
                     ? <AgentAnswer body={body} streaming={STREAMING.has(message.state)} />
+                    : message.author === 'runtime'
+                      ? runtimeNoticeBody(body)
                     : <p>{body}</p>}
                   onPinnedChange={setPinnedToBottom}
                   /*

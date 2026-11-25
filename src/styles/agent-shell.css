@@ -45,7 +45,7 @@
    * reason. Same measure, same insets, so the two left edges line up at any
    * width.
    */
-  padding: 0 max(20px, calc((100% - var(--measure-reading)) / 2));
+  padding: 0 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-canvas);
 }

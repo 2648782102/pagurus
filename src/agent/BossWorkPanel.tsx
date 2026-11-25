@@ -96,8 +96,14 @@ export function BossWorkPanel({ runtime, messages }: {
       <header className="boss-work-head">
         <h2>正在推进</h2>
         <p>只读取 Runtime 发布的项目、员工、汇报与 Attention。</p>
-        <button type="button" onClick={() => setCollapsed((value) => !value)}>
-          {collapsed ? '展开工作面板' : '收起工作面板'}
+        <button
+          type="button"
+          className="boss-work-collapse"
+          aria-label={collapsed ? '展开工作面板' : '收起工作面板'}
+          aria-expanded={!collapsed}
+          onClick={() => setCollapsed((value) => !value)}
+        >
+          <span aria-hidden="true">{collapsed ? '›' : '‹'}</span>
         </button>
         {loadError && (
           <p role="status" className="boss-work-error">
