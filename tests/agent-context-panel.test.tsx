@@ -91,6 +91,21 @@ describe('context panel activity', () => {
     expect(screen.getByText(/Runtime 内建的Boss Agent/)).toBeTruthy();
   });
 
+  it('removes the closed context drawer from tab order with inert', () => {
+    render(
+      <AgentContextPanel
+        open={false}
+        conversation={conversationWith([])}
+        capabilities={idle}
+        onRefreshCapabilities={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    const panel = document.querySelector('aside.agent-context');
+    expect(panel?.hasAttribute('inert')).toBe(true);
+    expect(panel?.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('renders nothing visible while closed', () => {
     render(
       <AgentContextPanel

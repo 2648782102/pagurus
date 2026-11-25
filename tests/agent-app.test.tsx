@@ -215,6 +215,50 @@ describe('shipped Agent surface', () => {
     expect(screen.queryByText('没有匹配的对话。')).toBeNull();
   });
 
+  it('places delegated work in a semantic rail beside the Boss conversation', async () => {
+    (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/v1/agent-chat/agents') {
+        return Promise.resolve(json({ version: '1.9.0', agents: [{
+          id: 'boss-agent', name: 'Boss Agent', currentRevisionId: 'agr_alpha',
+          providerId: 'runtime', modelId: '组织编排', isDefault: false, archived: false,
+        }] }));
+      }
+      if (path.startsWith('/v1/agent-chat/conversations?limit=')) {
+        return Promise.resolve(json({
+          version: '1.9.0',
+          conversations: [{
+            id: conversationId, agentId: 'boss-agent', reasoningEffort: 'medium',
+            createdAt: '2026-11-16T00:00:00.000Z', messageCount: 2,
+            lastMessagePreview: '帮我看一下发布状态',
+          }],
+          defaultModelId: null,
+        }));
+      }
+      if (path.includes('/v1/agent-chat/conversations/') && !path.includes('?')) {
+        return Promise.resolve(json({ ...conversation(), agentId: 'boss-agent' }));
+      }
+      if (path === '/v1/organization/session') {
+        return Promise.resolve(json({
+          version: '1.1.0',
+          bossSession: { version: 1, id: 'boss_1', state: 'active', projectIds: [] },
+          projects: [], delegations: [], workers: [], reports: [], attentionRequests: [],
+        }));
+      }
+      if (path === '/v1/health') return Promise.resolve(json({ status: 'ok', service: 'conchbase', apiVersion: 1 }));
+      if (path === '/v1/runtime') return Promise.resolve(json({ ...runtime, organizationContract: '1.1.0', organizationPaths: 18 }));
+      if (path === '/v1/model-catalog') return Promise.resolve(json({ models: [] }));
+      if (path === '/v1/agents/boss-agent') return Promise.resolve(json({ agent: { id: 'boss-agent', currentRevisionId: 'agr_alpha', archived: false, isDefault: false, current: { id: 'agr_alpha', name: 'Boss Agent', instructions: '', providerId: 'runtime', modelId: '组织编排', createdAt: '2026-11-16T00:00:00.000Z', grantedCapabilities: [] }, revisions: [] } }));
+      return Promise.resolve(json({ error: 'not found' }));
+    });
+    render(<AgentApp />);
+    expect(await screen.findByText('发布已通过。')).toBeTruthy();
+    const workRail = await screen.findByRole('complementary', { name: '正在推进' });
+    expect(workRail).toBeTruthy();
+    expect(workRail?.closest('.agent-workspace')).toBeTruthy();
+    expect(document.querySelector('.agent-page-head')).toBeNull();
+  });
+
   it('keeps model switching in the composer and starts over as its own action', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();

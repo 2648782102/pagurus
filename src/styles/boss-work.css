@@ -1,73 +1,159 @@
-/* Boss work strip: a compact, read-only account of delegated work. */
+/* Boss work rail: a quiet live surface for delegated work. */
 
-.boss-work {
-  margin: 12px max(24px, calc((100% - var(--ag-measure)) / 2)) 0;
-  padding: 14px 16px 12px;
-  border: 1px solid var(--ag-line);
-  border-radius: var(--ag-radius);
-  background: var(--ag-paper-raised);
+.boss-work-rail {
+  --boss-rail-w: clamp(320px, 24vw, 380px);
+  grid-area: work;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: auto;
+  padding: 18px 16px 22px;
+  border-inline-end: 1px solid var(--ag-line);
+  background:
+    radial-gradient(circle at 12% 2%, color-mix(in srgb, var(--ag-tide) 9%, transparent), transparent 30%),
+    var(--ag-paper-sunk);
   color: var(--ag-ink);
   font-family: var(--ag-sans);
+  text-wrap: pretty;
 }
-.boss-work-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.boss-work-head h2 { margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
-.boss-work-head p { margin: 3px 0 0; color: var(--ag-muted); font-size: 10px; }
-.boss-work-counts { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-.boss-work-counts span { color: var(--ag-muted); font-size: 10px; white-space: nowrap; }
-.boss-work-counts strong { color: var(--ag-ink); font: 650 14px var(--ag-sans); }
-.boss-work-counts .is-attention strong { color: var(--ag-danger); }
 
-.boss-work-attention {
-  margin-top: 12px;
-  padding: 9px 11px;
-  border-left: 3px solid var(--ag-danger);
-  background: var(--ag-danger-wash);
-  font-size: 11px;
+.boss-work-rail > .boss-work-head {
+  display: grid;
+  gap: 10px;
+  padding-block-end: 14px;
+  border-block-end: 1px solid var(--ag-line);
 }
-.boss-work-attention strong { display: block; margin-bottom: 3px; color: var(--ag-danger); }
-.boss-work-attention p { margin: 2px 0; overflow-wrap: anywhere; }
-
-.boss-work-projects { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
-.boss-work-project {
-  padding: 9px 11px;
-  border: 1px solid var(--ag-line);
-  border-left: 3px solid var(--ag-tide);
-  background: var(--ag-paper);
-}
-.boss-work-project.is-resumed { border-left-color: var(--ag-signal); }
-.boss-work-project.is-quiet, .boss-work-project.is-archived { border-left-color: var(--ag-faint); opacity: .78; }
-.boss-work-project-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.boss-work-project-head strong { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
-.boss-work-project-head span { flex: 0 0 auto; color: var(--ag-tide-ink); font-size: 10px; }
-.boss-work-project-id { margin-top: 2px; color: var(--ag-faint); font: 9px var(--font-mono); }
-
-.boss-work-workers { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
-.boss-work-workers li {
+.boss-work-rail > .boss-work-head h2 {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-  padding-top: 4px;
-  border-top: 1px solid var(--ag-line);
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: var(--ag-ink);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+.boss-work-rail > .boss-work-head h2::before {
+  content: '';
+  inline-size: 9px;
+  block-size: 9px;
+  border: 2px solid var(--ag-tide);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ag-tide) 12%, transparent);
+}
+.boss-work-rail > .boss-work-head p { margin: 0; color: var(--ag-muted); font-size: 11px; }
+
+.boss-work-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0;
+}
+.boss-work-counts > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  border: 1px solid var(--ag-line);
+  border-radius: var(--ag-radius);
+  background: color-mix(in srgb, var(--ag-paper-raised) 72%, transparent);
+}
+.boss-work-counts dt { color: var(--ag-muted); font-size: 10px; }
+.boss-work-counts dd { margin: 0; color: var(--ag-ink); font: 650 16px var(--ag-sans); }
+.boss-work-counts .is-attention dd { color: var(--ag-danger); }
+
+.boss-work-rail section { padding-block: 16px; border-block-end: 1px solid var(--ag-line); }
+.boss-work-rail section h3 {
+  margin: 0 0 10px;
+  color: var(--ag-ink-soft);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+.boss-work-rail ol,
+.boss-work-rail ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+
+.boss-work-attention li {
+  display: grid;
+  gap: 3px;
+  padding: 10px 11px;
+  border-inline-start: 3px solid var(--ag-danger);
+  border-radius: var(--ag-radius);
+  background: var(--ag-danger-wash);
+  color: var(--ag-danger-strong);
   font-size: 11px;
 }
-.boss-work-workers li.is-failed { color: var(--ag-danger); }
-.boss-work-workers li.is-done { color: var(--ag-signal); }
+.boss-work-attention li span { font-weight: 650; }
+.boss-work-attention p { margin: 0; }
+.boss-work-quiet { margin: 0; color: var(--ag-faint); font-size: 11px; }
+
+.boss-work-projects > ol { gap: 10px; }
+.boss-work-project {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  padding: 11px 12px;
+  border: 1px solid var(--ag-line);
+  border-radius: var(--ag-radius);
+  background: color-mix(in srgb, var(--ag-paper-raised) 86%, transparent);
+  overflow: hidden;
+}
+.boss-work-project::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: linear-gradient(90deg, transparent, var(--ag-tide), transparent);
+  background-size: 180% 100%;
+}
+.boss-work-project:has(.is-active)::after { animation: motion-live-sweep calc(var(--motion-attention) * 1.1) linear infinite; }
+.boss-work-project header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.boss-work-project header strong { font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.boss-work-project header span { flex: 0 0 auto; color: var(--ag-tide-ink); font-size: 10px; }
+.boss-work-project > code { color: var(--ag-faint); font: 9px var(--font-mono); }
+
+.boss-work-project ul { gap: 5px; margin-block-start: 4px; }
+.boss-work-project ul > li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding-block-start: 6px;
+  border-block-start: 1px solid var(--ag-line);
+  font-size: 11px;
+}
+.boss-work-project ul > li::before {
+  content: '';
+  grid-row: 1 / span 2;
+  align-self: center;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--ag-faint);
+}
+.boss-work-project ul > li.is-active::before { background: var(--ag-tide); animation: motion-live-orbit calc(var(--motion-attention) * 1.4) linear infinite; }
+.boss-work-project ul > li.is-done::before { background: var(--ag-signal); }
+.boss-work-project ul > li.is-failed::before { background: var(--ag-danger); }
+.boss-work-project ul > li.is-attention::before { background: var(--ag-caution-line); }
 .boss-work-worker-name { font-weight: 600; }
 .boss-work-worker-state { color: var(--ag-muted); font-size: 10px; }
-.boss-work-workers li p { flex-basis: 100%; margin: 0; color: inherit; font-size: 10px; overflow-wrap: anywhere; }
+.boss-work-project ul > li p { grid-column: 2; margin: 0; color: var(--ag-danger-strong); font-size: 10px; overflow-wrap: anywhere; }
 
-.boss-work-notices { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--ag-line); }
-.boss-work-notices summary { color: var(--ag-muted); cursor: pointer; font-size: 10px; }
-.boss-work-notices ol { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
-.boss-work-notices li { display: flex; flex-wrap: wrap; gap: 7px; align-items: baseline; font-size: 10px; }
+.boss-work-notices { padding-block-start: 12px; }
+.boss-work-notices summary { color: var(--ag-muted); cursor: pointer; font-size: 11px; }
+.boss-work-notices ol { margin-block-start: 9px; }
+.boss-work-notices li { display: grid; gap: 2px; font-size: 10px; }
 .boss-work-notices li > span { color: var(--ag-ink-soft); font-weight: 600; }
 .boss-work-notices li code { color: var(--ag-faint); }
-.boss-work-notices li.is-failed > span, .boss-work-notices li.is-failed code { color: var(--ag-danger); }
-.boss-work-notices li p { flex-basis: 100%; margin: 0; color: var(--ag-ink-soft); overflow-wrap: anywhere; }
+.boss-work-notices li.is-failed > span,
+.boss-work-notices li.is-failed code { color: var(--ag-danger); }
+.boss-work-notices li p { margin: 0; color: var(--ag-ink-soft); overflow-wrap: anywhere; }
 
-@media (max-width: 720px) {
-  .boss-work { margin-inline: 16px; padding: 11px 12px; }
-  .boss-work-head { display: block; }
-  .boss-work-counts { justify-content: flex-start; margin-top: 8px; }
+@media (width < 900px) {
+  .boss-work-rail {
+    inline-size: auto;
+    max-block-size: 34dvh;
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--ag-line);
+  }
+  .boss-work-counts { grid-template-columns: repeat(3, 1fr); }
 }

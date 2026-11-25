@@ -243,3 +243,40 @@
 .anim-blink {
   animation: motion-blink calc(var(--motion-attention) * .64) steps(2, start) infinite;
 }
+
+/* Boss work states: small, semantic motions that never encode state alone. */
+@keyframes motion-live-orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes motion-live-sweep {
+  from { background-position: 180% 0; }
+  to { background-position: -60% 0; }
+}
+
+@keyframes motion-attention-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ag-danger) 0%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ag-danger) 18%, transparent); }
+}
+
+@keyframes motion-state-settle {
+  from { opacity: 0; transform: translateY(4px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+.anim-live-orbit {
+  animation: motion-live-orbit calc(var(--motion-attention) * 1.4) linear infinite;
+}
+
+.anim-live-sweep {
+  animation: motion-live-sweep calc(var(--motion-attention) * 1.1) linear infinite;
+}
+
+.anim-attention-glow {
+  animation: motion-attention-glow var(--motion-attention) ease-in-out infinite;
+}
+
+.anim-state-settle {
+  animation: motion-state-settle var(--motion-settle) var(--ease-out) both;
+}

@@ -115,3 +115,48 @@ describe('Boss work view', () => {
     expect(view.attention).toEqual([]);
   });
 });
+
+describe('Boss work motion state', () => {
+  it('derives active work from a running worker with no report', () => {
+    const base = input();
+    const activeSession: OrganizationSessionView = {
+      ...base.session!,
+      workers: [{
+        ...base.session!.workers[0]!,
+        state: 'running',
+      }],
+      reports: [],
+    };
+    const view = buildBossWorkView({ ...base, session: activeSession });
+    expect(view.projects[0]?.workers[0]?.activity).toBe('active');
+  });
+
+  it('derives failed work from a failed report rather than the boss reply state', () => {
+    const view = buildBossWorkView(input());
+    expect(view.projects[0]?.workers[0]?.activity).toBe('failed');
+  });
+
+  it('derives attention work from an open attention request', () => {
+    const base = input();
+    const withAttention: BossWorkViewInput = {
+      ...base,
+      session: {
+        ...base.session!,
+        workers: [{ ...base.session!.workers[0]!, state: 'running' }],
+        reports: [],
+        attentionRequests: [{
+          version: 1, id: 'att_1', projectId: 'project_hot', workerId: 'worker_hot',
+          state: 'open', questionDigest: 'sha256_q', sequence: 7, expectedVersion: 2,
+        }],
+      },
+    };
+    const view = buildBossWorkView(withAttention);
+    expect(view.projects[0]?.workers[0]?.activity).toBe('attention');
+  });
+
+  it('classifies a runtime report notice without treating it as an assistant reply', () => {
+    const view = buildBossWorkView(input());
+    expect(view.notices[0]?.kind).toBe('report');
+    expect(view.notices.some((notice) => notice.state === 'failed')).toBe(true);
+  });
+});

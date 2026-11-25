@@ -17,6 +17,10 @@ Updated: 2026-11-21
   state, reports, failures, and open Attention come from the Runtime's
   organization session, without adding a second conversation entry or parsing
   model prose.
+- The Boss Agent surface uses a three-region desktop layout: a semantic work
+  rail, the conversation, and a context drawer that overlays below 1280px and
+  becomes a real column at 1280px+. Work states use CSS motion paired with
+  readable labels and respect reduced motion.
 - The Agent surface reports stream degradation while a reply is pending: a
   stalled stream or an in-progress reconnect says so and notes that polling is
   carrying the update. A healthy stream shows nothing.

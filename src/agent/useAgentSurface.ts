@@ -29,7 +29,7 @@ export function useAgentSurface(runtime: RuntimeInfo | null) {
    * strip made the strip vanish from a real Boss conversation.
    */
   const isBoss = chat.conversation?.agentId === 'boss-agent'
-    || (chat.conversation === null && activeAgent ? isBossAgent(activeAgent) : false);
+    || (activeAgent ? isBossAgent(activeAgent) : false);
 
   const pinSummary = useMemo(() => {
     if (chat.conversation === null) return null;

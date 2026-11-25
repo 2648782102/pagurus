@@ -49,11 +49,20 @@ describe('Boss work panel', () => {
           id: 'u1', sequence: 1, author: 'user', body: '查热点', state: 'published',
           taskId: null, error: null, phase: 'accepted', progress: null,
           updatedAt: '2026-11-25T10:00:00.000Z', replyToId: null, activity: [],
+        }, {
+          id: 'n1', sequence: 2, author: 'runtime',
+          body: '员工 热点检索员（worker_hot）失败。 Agent loop exceeded 6 iterations.',
+          state: 'replied', taskId: null, error: null, phase: 'terminal', progress: null,
+          updatedAt: '2026-11-25T10:00:01.000Z', replyToId: null, activity: [],
         }]}
       />,
     );
-    expect(await screen.findByRole('heading', { name: '正在推进' })).toBeTruthy();
-    expect(await screen.findByText('热点检索员')).toBeTruthy();
+    expect(await screen.findByRole('complementary', { name: '正在推进' })).toBeTruthy();
+    const headings = screen.getAllByRole('heading').map((node) => node.textContent ?? '');
+    expect(headings.indexOf('需要你处理')).toBeLessThan(headings.indexOf('项目'));
+    const worker = await screen.findByText((_, node) => node?.className === 'boss-work-worker-name' && node.textContent === '热点检索员');
+    expect(worker.closest('li')?.className).toContain('is-failed');
+    expect(worker.closest('li')?.textContent).toContain('Agent loop exceeded 6 iterations.');
     expect(screen.getAllByText('1').length).toBeGreaterThan(0);
   });
 });

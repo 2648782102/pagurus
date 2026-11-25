@@ -232,6 +232,12 @@ export function AgentApp() {
       />
 
       <div className={`agent-workspace${contextOpen ? ' has-context' : ''}`}>
+        {chat.isBoss && chat.conversation !== null && (
+          <BossWorkPanel
+            runtime={runtimeStatus.runtime}
+            messages={chat.conversation.messages}
+          />
+        )}
         <main className="agent-page">
           {chat.conversation === null ? (
             <div className="agent-page-center">
@@ -268,13 +274,6 @@ export function AgentApp() {
             </div>
           ) : (
             <>
-            {chat.isBoss && (
-              <BossWorkPanel
-                runtime={runtimeStatus.runtime}
-                messages={chat.conversation.messages}
-              />
-            )}
-
               {chat.error && (
                 <div className="agent-inline-error anim-rise-tight" role="alert">
                   {agentErrorText(new Error(chat.error), '这条消息没有发出去，请再试一次。')}

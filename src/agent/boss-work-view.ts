@@ -24,10 +24,13 @@ export interface BossWorkWorkerView {
   readonly id: string;
   readonly name: string;
   readonly state: string;
+  readonly activity: BossWorkActivity;
   readonly reportId: string | null;
   readonly reportState: string | null;
   readonly reportDetail: string | null;
 }
+
+export type BossWorkActivity = 'active' | 'attention' | 'done' | 'failed' | 'idle';
 
 export interface BossWorkProjectView {
   readonly id: string;
@@ -83,6 +86,20 @@ function reportDetail(body: string): string | null {
   return detail.length > 0 ? detail.slice(0, 240) : null;
 }
 
+function workerActivity(
+  workerState: string,
+  reportState: string | undefined,
+  hasOpenAttention: boolean,
+): BossWorkActivity {
+  if (hasOpenAttention) return 'attention';
+  if (reportState === 'failed') return 'failed';
+  if (workerState === 'blocked') return 'attention';
+  if (reportState === 'ready') return 'done';
+  if (reportState) return 'active';
+  if (workerState === 'running' || workerState === 'reporting') return 'active';
+  return 'idle';
+}
+
 function noticeKind(body: string): BossWorkNoticeView['kind'] {
   if (/员工/.test(body) && /(?:完成|失败|取消|中断|汇报)/.test(body)) return 'report';
   if (/Attention|需要你(?:补充|确认|输入)/i.test(body)) return 'attention';
@@ -126,6 +143,9 @@ export function buildBossWorkView(input: BossWorkViewInput): BossWorkView {
           id: worker.id,
           name: worker.displayName,
           state: worker.state,
+          activity: workerActivity(worker.state, report?.state,
+            session.attentionRequests.some((request) =>
+              request.workerId === worker.id && request.state === 'open')),
           reportId: report?.id ?? null,
           reportState: report?.state ?? null,
           reportDetail: report?.state === 'failed' ? reportDetail(body) : null,

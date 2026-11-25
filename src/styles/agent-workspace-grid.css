@@ -1,0 +1,37 @@
+/* Boss workspace: responsive three-region layout. */
+
+@media (width >= 900px) and (width < 1280px) {
+  .agent-workspace:has(> .boss-work-rail) {
+    grid-template-columns: 280px minmax(0, 1fr);
+    grid-template-areas: "work page";
+  }
+  .agent-context {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block: 0;
+  }
+}
+
+@media (width >= 1280px) {
+  .agent-workspace {
+    grid-template-columns: minmax(0, 1fr) 0px;
+    grid-template-areas: "page context";
+    transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
+  }
+  .agent-workspace:has(> .boss-work-rail) {
+    grid-template-columns: clamp(320px, 24vw, 380px) minmax(0, 1fr) 0px;
+    grid-template-areas: "work page context";
+  }
+  .agent-workspace.has-context {
+    grid-template-columns: minmax(0, 1fr) 316px;
+  }
+  .agent-workspace.has-context:has(> .boss-work-rail) {
+    grid-template-columns: clamp(320px, 24vw, 380px) minmax(0, 1fr) 316px;
+  }
+  .agent-context {
+    position: static;
+    grid-area: context;
+    width: auto;
+    box-shadow: none;
+  }
+}

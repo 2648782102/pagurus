@@ -37,7 +37,7 @@ function readableProject(id: string): string {
     .join(' ');
 }
 
-/** A read-only work strip inside the single Boss conversation. */
+/** A read-only work rail for one Boss conversation. */
 export function BossWorkPanel({ runtime, messages }: {
   readonly runtime: RuntimeInfo | null;
   readonly messages: readonly AgentChatMessage[];
@@ -69,64 +69,68 @@ export function BossWorkPanel({ runtime, messages }: {
     return () => { active = false; window.clearInterval(timer); };
   }, [supported, messagesKey]);
 
-  if (!supported || view === null || view.projects.length === 0) return null;
+  if (!supported || view === null) return null;
   const openAttention = view.attention.filter((item) => item.state === 'open');
   const activeProjects = view.projects.filter((project) => project.state === 'active' || project.state === 'resumed');
 
   return (
-    <section className="boss-work" aria-label="正在推进">
-      <div className="boss-work-head">
-        <div>
-          <h2>正在推进</h2>
-          <p>只读取 Runtime 发布的项目、员工、汇报与 Attention。</p>
-        </div>
-        <div className="boss-work-counts" aria-label="工作摘要">
-          <span><strong>{activeProjects.length}</strong> 进行中</span>
-          <span><strong>{view.projects.length}</strong> 项目</span>
-          <span className={openAttention.length > 0 ? 'is-attention' : ''}>
-            <strong>{openAttention.length}</strong> 待你处理
-          </span>
-        </div>
-      </div>
+    <aside className="boss-work-rail" aria-label="正在推进">
+      <header className="boss-work-head">
+        <h2>正在推进</h2>
+        <p>只读取 Runtime 发布的项目、员工、汇报与 Attention。</p>
+        <dl className="boss-work-counts" aria-label="工作摘要">
+          <div><dt>进行中</dt><dd>{activeProjects.length}</dd></div>
+          <div><dt>项目</dt><dd>{view.projects.length}</dd></div>
+          <div className={openAttention.length > 0 ? 'is-attention' : ''}>
+            <dt>待你处理</dt><dd>{openAttention.length}</dd>
+          </div>
+        </dl>
+      </header>
 
-      {openAttention.length > 0 && (
-        <div className="boss-work-attention" role="status">
-          <strong>需要你的输入</strong>
-          {openAttention.map((item) => (
-            <p key={item.id}>{item.workerName ?? item.workerId}：请在主会话里回答这条 Attention。</p>
-          ))}
-        </div>
-      )}
+      <section className="boss-work-attention" aria-labelledby="boss-attention-title" role="status">
+        <h3 id="boss-attention-title">需要你处理</h3>
+        {openAttention.length === 0 ? (
+          <p className="boss-work-quiet">没有需要打断你的事项。</p>
+        ) : (
+          <ol>
+            {openAttention.map((item) => (
+              <li key={item.id} className="anim-attention-glow">
+                <span>{item.workerName ?? item.workerId}</span>
+                <p>请在主会话里回答这条 Attention。</p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
 
-      <ol className="boss-work-projects">
-        {view.projects.slice(-3).map((project) => (
-          <li key={project.id} className={`boss-work-project is-${project.state}`}>
-            <div className="boss-work-project-head">
-              <strong>{readableProject(project.id)}</strong>
-              <span>{projectStateLabel(project.state)}</span>
-            </div>
-            <div className="boss-work-project-id">{shortId(project.id)}</div>
-            {project.workers.length > 0 && (
-              <ul className="boss-work-workers">
-                {project.workers.slice(-3).map((worker) => {
-                  const failed = worker.reportState === 'failed';
-                  const done = worker.reportState === 'ready';
-                  return (
-                    <li key={worker.id} className={failed ? 'is-failed' : done ? 'is-done' : ''}>
+      <section className="boss-work-projects" aria-labelledby="boss-projects-title">
+        <h3 id="boss-projects-title">项目</h3>
+        <ol>
+          {view.projects.slice(-3).map((project) => (
+            <li key={project.id} className={`boss-work-project is-${project.state}`}>
+              <header>
+                <strong>{readableProject(project.id)}</strong>
+                <span>{projectStateLabel(project.state)}</span>
+              </header>
+              <code>{shortId(project.id)}</code>
+              {project.workers.length > 0 && (
+                <ul>
+                  {project.workers.slice(-3).map((worker) => (
+                    <li key={worker.id} className={`is-${worker.activity} anim-state-settle`}>
                       <span className="boss-work-worker-name">{worker.name}</span>
                       <span className="boss-work-worker-state">
                         {bossWorkerStateLabel(worker.state)}
                         {worker.reportState ? ` · ${bossReportStateLabel(worker.reportState)}` : ''}
                       </span>
-                      {failed && worker.reportDetail && <p>{worker.reportDetail}</p>}
+                      {worker.reportDetail && <p>{worker.reportDetail}</p>}
                     </li>
-                  );
-                })}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ol>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {view.notices.length > 0 && (
         <details className="boss-work-notices">
@@ -142,6 +146,6 @@ export function BossWorkPanel({ runtime, messages }: {
           </ol>
         </details>
       )}
-    </section>
+    </aside>
   );
 }

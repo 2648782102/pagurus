@@ -11,45 +11,17 @@
   position: relative;
   display: grid;
   flex: 1 1 auto;
-  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
-  /*
-   * Opening the panel adds a 316px column, so the reading column loses that
-   * width in one frame and every line re-wraps at once. Above 900px the panel
-   * is a real column, so the change is worth animating: the reader sees the
-   * page make room instead of the text jumping.
-   *
-   * `grid-template-columns` is animatable only when both ends are the same
-   * shape — a single track to two tracks is not. The closed state therefore
-   * carries a same-shaped hidden column, so both are `minmax(0, 1fr) 316px` and
-   * only the track's width changes.
-   */
-  grid-template-columns: minmax(0, 1fr) 0px;
-  transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "page" "page";
 }
 .agent-workspace.has-context {
-  grid-template-columns: minmax(0, 1fr) 316px;
+  grid-template-areas: "page" "page";
 }
 
-/*
- * Opening the context panel changes two widths at once — the reading column
- * narrows and the panel appears — so without a transition the text under the
- * reader's eye jumps sideways in one frame. That is the most noticeable missing
- * transition on the surface, because it moves what they were reading.
- *
- * `grid-template-columns` interpolates between two tracks of the same kind, so
- * both states are written as `minmax(0, 1fr) <length>`: the closed state simply
- * gives the second track 0. A `0fr` second track would not interpolate against a
- * fixed length, and switching the number of tracks would not interpolate at all.
- */
-@media (prefers-reduced-motion: no-preference) {
-  .agent-workspace {
-    grid-template-columns: minmax(0, 1fr) 0px;
-    transition: grid-template-columns var(--motion-travel) var(--ease-out-soft);
-  }
-  .agent-workspace.has-context {
-    grid-template-columns: minmax(0, 1fr) 316px;
-  }
+.agent-workspace:has(> .boss-work-rail) {
+  grid-template-areas: "work" "page";
 }
 
 .agent-context {
@@ -59,6 +31,12 @@
   min-height: 0;
   border-left: 1px solid var(--border);
   background: var(--surface-canvas);
+  grid-area: page;
+  justify-self: end;
+  z-index: 5;
+  width: min(316px, 92vw);
+  height: 100%;
+  box-shadow: -18px 0 48px rgb(0 0 0 / 12%);
 }
 
 /*

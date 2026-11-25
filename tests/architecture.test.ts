@@ -734,6 +734,20 @@ describe('front-end architecture boundaries', () => {
     expect(missing, `undefined keyframes: ${missing.join(', ')}`).toEqual([]);
   });
 
+  it('keeps Boss work motion in the shared library and modern markup', () => {
+    const library = read('src/styles/motion-tokens.css');
+    for (const keyframe of ['motion-live-orbit', 'motion-live-sweep', 'motion-attention-glow', 'motion-state-settle']) {
+      expect(library, `${keyframe} must live in the motion library`).toMatch(new RegExp(`@keyframes\\s+${keyframe}`));
+    }
+    for (const className of ['anim-live-orbit', 'anim-live-sweep', 'anim-attention-glow', 'anim-state-settle']) {
+      expect(library, `${className} must be defined`).toContain(`.${className}`);
+    }
+    for (const file of ['src/agent/BossWorkPanel.tsx', 'src/agent/AgentApp.tsx', 'src/agent/boss-work-view.ts']) {
+      expect(read(file), `${file} uses an inline style`).not.toMatch(/\sstyle=/);
+      expect(read(file), `${file} uses a presentational attribute`).not.toMatch(/\s(?:bgcolor|align|valign|border|width|height)=/);
+    }
+  });
+
   it('uses the motion library rather than restating its declarations', () => {
     /*
      * A library nobody calls is a document. Every movement the surface performs
