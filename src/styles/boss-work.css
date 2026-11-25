@@ -1,7 +1,6 @@
 /* Boss work rail: a quiet live surface for delegated work. */
 
 .boss-work-rail {
-  --boss-rail-w: clamp(320px, 24vw, 380px);
   grid-area: work;
   display: flex;
   flex-direction: column;
@@ -106,7 +105,7 @@
   background: linear-gradient(90deg, transparent, var(--ag-tide), transparent);
   background-size: 180% 100%;
 }
-.boss-work-project:has(.is-active)::after { animation: motion-live-sweep calc(var(--motion-attention) * 1.1) linear infinite; }
+.boss-work-project.anim-live-sweep::after { animation: motion-live-sweep calc(var(--motion-attention) * 1.1) linear infinite; }
 .boss-work-project header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .boss-work-project header strong { font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
 .boss-work-project header span { flex: 0 0 auto; color: var(--ag-tide-ink); font-size: 10px; }
@@ -121,8 +120,7 @@
   border-block-start: 1px solid var(--ag-line);
   font-size: 11px;
 }
-.boss-work-project ul > li::before {
-  content: '';
+.boss-work-dot {
   grid-row: 1 / span 2;
   align-self: center;
   inline-size: 6px;
@@ -130,10 +128,10 @@
   border-radius: 50%;
   background: var(--ag-faint);
 }
-.boss-work-project ul > li.is-active::before { background: var(--ag-tide); animation: motion-live-orbit calc(var(--motion-attention) * 1.4) linear infinite; }
-.boss-work-project ul > li.is-done::before { background: var(--ag-signal); }
-.boss-work-project ul > li.is-failed::before { background: var(--ag-danger); }
-.boss-work-project ul > li.is-attention::before { background: var(--ag-caution-line); }
+.boss-work-project ul > li.is-active .boss-work-dot { background: var(--ag-tide); }
+.boss-work-project ul > li.is-done .boss-work-dot { background: var(--ag-signal); }
+.boss-work-project ul > li.is-failed .boss-work-dot { background: var(--ag-danger); }
+.boss-work-project ul > li.is-attention .boss-work-dot { background: var(--ag-caution-line); }
 .boss-work-worker-name { font-weight: 600; }
 .boss-work-worker-state { color: var(--ag-muted); font-size: 10px; }
 .boss-work-project ul > li p { grid-column: 2; margin: 0; color: var(--ag-danger-strong); font-size: 10px; overflow-wrap: anywhere; }
@@ -157,3 +155,24 @@
   }
   .boss-work-counts { grid-template-columns: repeat(3, 1fr); }
 }
+
+.boss-work-rail.is-collapsed > :not(.boss-work-head) { display: none; }
+.boss-work-rail > .boss-work-head button {
+  padding: 3px 8px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ag-muted);
+  cursor: pointer;
+  font-size: 10px;
+}
+.boss-work-error {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: var(--ag-radius);
+  background: var(--ag-danger-wash);
+  color: var(--ag-danger-strong);
+}
+.boss-work-error button { justify-self: start; }

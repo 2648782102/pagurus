@@ -140,14 +140,14 @@ Run `cd pagurus && npx vitest run tests/architecture.test.ts tests/boss-work-pan
 - Modify: `docs/CURRENT_STATE.md`
 - Test: full Pagurus suite and manual browser check.
 
-- [ ] **Step 1: Run Pagurus checks**
+- [x] **Step 1: Run Pagurus checks**
 
 Run `cd pagurus && npm run check && npm test && npm run build`; all must pass.
 
-- [ ] **Step 2: Visual QA**
+- [x] **Step 2: Visual QA**
 
 Open `http://localhost:5173/?surface=agent` at the actual 1920×1080 display and at the in-app 843px viewport. Confirm: work rail left, transcript center, context overlay behavior, light/dark themes, running/attention/failed states, and reduced-motion fallback.
 
-- [ ] **Step 3: Update state doc**
+- [x] **Step 3: Update state doc**
 
 Record that the Boss surface now has a desktop work rail and modern responsive layout.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   bossReportStateLabel,
   bossWorkerStateLabel,
@@ -43,8 +43,19 @@ export function BossWorkPanel({ runtime, messages }: {
   readonly messages: readonly AgentChatMessage[];
 }) {
   const messagesKey = JSON.stringify(messages.map((message) => [message.id, message.body, message.author]));
-  const [view, setView] = useState<BossWorkView | null>(null);
+  const [view, setView] = useState<BossWorkView>(() => buildBossWorkView({
+    conversation: null, session: null, messages: [],
+  }));
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const previousActivity = useRef(new Map<string, string>());
   const supported = supportsOrganizationContract(runtime);
+
+  const retry = useCallback(() => {
+    setLoadError(false);
+    setReloadKey((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     if (!supported) return;
@@ -53,6 +64,7 @@ export function BossWorkPanel({ runtime, messages }: {
       getOrganizationSession()
         .then((session) => {
           if (!active) return;
+          setLoadError(false);
           setView(buildBossWorkView({
             conversation: null,
             session,
@@ -61,23 +73,38 @@ export function BossWorkPanel({ runtime, messages }: {
         })
         .catch(() => {
           if (!active) return;
-          setView(null);
+          setLoadError(true);
         });
     };
     load();
     const timer = window.setInterval(load, 4000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [supported, messagesKey]);
+  }, [supported, messagesKey, reloadKey]);
 
-  if (!supported || view === null) return null;
+  if (!supported) return null;
   const openAttention = view.attention.filter((item) => item.state === 'open');
   const activeProjects = view.projects.filter((project) => project.state === 'active' || project.state === 'resumed');
+  const workerMotionClass = (id: string, activity: string): string => {
+    const previous = previousActivity.current.get(id);
+    previousActivity.current.set(id, activity);
+    if (previous !== undefined && previous !== activity) return ' anim-state-settle';
+    return '';
+  };
 
   return (
-    <aside className="boss-work-rail" aria-label="正在推进">
+    <aside className={`boss-work-rail${collapsed ? ' is-collapsed' : ''}`} aria-label="正在推进">
       <header className="boss-work-head">
         <h2>正在推进</h2>
         <p>只读取 Runtime 发布的项目、员工、汇报与 Attention。</p>
+        <button type="button" onClick={() => setCollapsed((value) => !value)}>
+          {collapsed ? '展开工作面板' : '收起工作面板'}
+        </button>
+        {loadError && (
+          <p role="status" className="boss-work-error">
+            组织状态暂时无法读取，显示最近一次已知信息。
+            <button type="button" onClick={retry}>重试读取组织状态</button>
+          </p>
+        )}
         <dl className="boss-work-counts" aria-label="工作摘要">
           <div><dt>进行中</dt><dd>{activeProjects.length}</dd></div>
           <div><dt>项目</dt><dd>{view.projects.length}</dd></div>
@@ -107,7 +134,7 @@ export function BossWorkPanel({ runtime, messages }: {
         <h3 id="boss-projects-title">项目</h3>
         <ol>
           {view.projects.slice(-3).map((project) => (
-            <li key={project.id} className={`boss-work-project is-${project.state}`}>
+            <li key={project.id} className={`boss-work-project is-${project.state}${project.workers.some((worker) => worker.activity === 'active') ? ' anim-live-sweep' : ''}`}>
               <header>
                 <strong>{readableProject(project.id)}</strong>
                 <span>{projectStateLabel(project.state)}</span>
@@ -116,7 +143,8 @@ export function BossWorkPanel({ runtime, messages }: {
               {project.workers.length > 0 && (
                 <ul>
                   {project.workers.slice(-3).map((worker) => (
-                    <li key={worker.id} className={`is-${worker.activity} anim-state-settle`}>
+                    <li key={worker.id} className={`is-${worker.activity}${workerMotionClass(worker.id, worker.activity)}`}>
+                      <span className={`boss-work-dot${worker.activity === 'active' ? ' anim-live-orbit' : ''}`} aria-hidden="true" />
                       <span className="boss-work-worker-name">{worker.name}</span>
                       <span className="boss-work-worker-state">
                         {bossWorkerStateLabel(worker.state)}

@@ -746,6 +746,13 @@ describe('front-end architecture boundaries', () => {
       expect(read(file), `${file} uses an inline style`).not.toMatch(/\sstyle=/);
       expect(read(file), `${file} uses a presentational attribute`).not.toMatch(/\s(?:bgcolor|align|valign|border|width|height)=/);
     }
+    const workCss = read('src/styles/boss-work.css');
+    const referenced = [...workCss.matchAll(/var\((--boss-[\w-]+)\)/g)].map((match) => match[1]!);
+    for (const token of referenced) {
+      expect(workCss, `${token} must be defined before use`).toMatch(new RegExp(`^\\s*${token}\\s*:`, 'm'));
+    }
+    expect(read('src/styles/motion.css'), 'reduced motion must have an explicit override')
+      .toMatch(/prefers-reduced-motion:\s*reduce/);
   });
 
   it('uses the motion library rather than restating its declarations', () => {
