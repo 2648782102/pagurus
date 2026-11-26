@@ -90,6 +90,13 @@ const approvedRuntimeDependencies: Readonly<Record<string, string>> = Object.fre
   react: 'the view layer',
   'react-dom': 'the view layer',
   'lucide-react': 'one icon family; the Unicode glyphs it replaces came from four different fonts',
+  /*
+   * Required by the vendored DSH primitives: their class-name composition is
+   * `clsx(...)`. Vendoring those files unchanged is more reviewable than
+   * rewriting each call, and `clsx` is a 300-byte string joiner with no state,
+   * no I/O, and no runtime behaviour of its own.
+   */
+  clsx: 'class-name composition in the vendored DSH primitives; no runtime behaviour',
 });
 
 describe('dependency baseline', () => {

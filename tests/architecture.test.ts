@@ -16,12 +16,40 @@ function sourceFiles(relativeDir: string): string[] {
     .sort();
 }
 
+/**
+ * The vendored DSH layer is upstream code, not ours.
+ *
+ * `src/dsh` holds byte-for-byte copies of DSH's tokens and atoms (MIT, see
+ * `src/dsh/README.md`). The size, identity, and token rules below describe how
+ * *this* project writes code; applying them to upstream files would force us to
+ * fork them, and a fork is exactly what vendoring avoids. `vendor/dsh` is
+ * excluded by construction because these helpers only walk `src`.
+ */
+const isVendored = (file: string): boolean => file.startsWith('src/dsh/');
+
+/**
+ * The stylesheets this project authors.
+ *
+ * `styleFiles()` includes the vendored DSH sheets so their tokens count as
+ * definitions; every rule about *how we write CSS* uses this narrower list.
+ */
+const ownStyleFiles = (): string[] => styleFiles().filter((file) => !isVendored(file));
+
 function styleFiles(): string[] {
   const absoluteDir = path.join(repositoryRoot, 'src/styles');
-  return readdirSync(absoluteDir)
+  const own = readdirSync(absoluteDir)
     .filter((entry) => entry.endsWith('.css'))
-    .map((entry) => path.join('src/styles', entry))
-    .sort();
+    .map((entry) => path.join('src/styles', entry));
+  /*
+   * The vendored DSH sheets are part of the cascade: their token definitions
+   * are what the bridge reads. They are scanned so `var(--dsw-*)` resolves;
+   * `isVendored` keeps them out of the rules that describe how we write CSS.
+   */
+  const vendoredDir = path.join(repositoryRoot, 'src/dsh/theme');
+  const vendored = readdirSync(vendoredDir)
+    .filter((entry) => entry.endsWith('.css'))
+    .map((entry) => path.join('src/dsh/theme', entry));
+  return [...own, ...vendored].sort();
 }
 
 /**
@@ -69,7 +97,7 @@ function declaredBy(rule: CssRule): string[] {
  * by design. A value stops being flagged the moment it is properly adopted.
  */
 function unthemedPalette(): Set<string> {
-  const rules = styleFiles().flatMap(cssRules);
+  const rules = ownStyleFiles().flatMap(cssRules);
   const declared = new Set(
     rules
       .filter((rule) => rule.file === 'src/styles/tokens.css')
@@ -191,7 +219,7 @@ const STATE_MODIFIER = /^(?:is|has)-/;
  * renders classes that appear nowhere in the source as a whole word.
  */
 function productClasses(): Set<string> {
-  const declared = declaredClasses(styleFiles().flatMap(cssRules));
+  const declared = declaredClasses(ownStyleFiles().flatMap(cssRules));
   const reachable = new Set<string>();
   const prefixes = new Set<string>();
 
@@ -239,6 +267,7 @@ function reachesProduct(selectors: readonly string[], product: ReadonlySet<strin
 describe('front-end architecture boundaries', () => {
   it('keeps modules small enough to review in one pass', () => {
     const oversized = sourceFiles('src')
+      .filter((file) => !isVendored(file))
       .map((file) => ({ file, lines: read(file).split('\n').length - 1 }))
       .filter(({ lines }) => lines > 500);
     expect(oversized, `split oversized modules:\n${oversized.map(({ file, lines }) => `${file} (${lines})`).join('\n')}`)
@@ -251,6 +280,7 @@ describe('front-end architecture boundaries', () => {
     expect(read('src/styles.css').split('\n').length - 1, 'src/styles.css must stay an import entry point')
       .toBeLessThanOrEqual(30);
     const oversized = styleFiles()
+      .filter((file) => !isVendored(file))
       .map((file) => ({ file, lines: read(file).split('\n').length - 1 }))
       .filter(({ lines }) => lines > 300);
     expect(oversized, `split oversized style layers:\n${oversized.map(({ file, lines }) => `${file} (${lines})`).join('\n')}`)
@@ -396,11 +426,21 @@ describe('front-end architecture boundaries', () => {
   });
 
   it('keeps the product surface free of borrowed third-party assets', () => {
-    // the implementation accepts interaction patterns, not another product's identity.
-    // A vendor name in the shipped shell would mean we copied branding.
+    /*
+     * DSH is the declared, licensed design base for this surface: its MIT
+     * tokens and atoms are vendored under `src/dsh/README.md`, and product code
+     * must be able to name the interop it performs (for example the
+     * `data-ds-dark-theme` attribute DSH's own stylesheet keys off). Naming that
+     * integration is not borrowing an identity.
+     *
+     * Every *other* vendor name is still forbidden in the shipped shell: a
+     * `codex` class, a "WorkBuddy" label, or a copied wordmark would mean we
+     * shipped someone else's product as ours.
+     */
     const product = sourceFiles('src/agent').map((file) => ({ file, source: read(file) }));
-    const borrowedIdentity = /\b(?:codex|dsh|deepseek\s*harness|workbuddy|cursor|claude)\b/i;
+    const borrowedIdentity = /\b(?:codex|workbuddy|cursor|claude)\b/i;
     const offenders = product
+      .filter(({ file }) => !isVendored(file))
       .filter(({ source }) => borrowedIdentity.test(source))
       .map(({ file }) => file);
     expect(offenders, `product modules must not carry another vendor's identity:\n${offenders.join('\n')}`)
@@ -457,7 +497,7 @@ describe('front-end architecture boundaries', () => {
      */
     const product = productClasses();
     const unthemed = unthemedPalette();
-    const offenders = styleFiles()
+    const offenders = ownStyleFiles()
       .flatMap(cssRules)
       .filter((rule) => reachesProduct(rule.selectors, product))
       .filter((rule) => [...rule.body.matchAll(/var\(--([\w-]+)\)/g)]
@@ -472,7 +512,7 @@ describe('front-end architecture boundaries', () => {
      * else it means two layers are fighting over the same selector.
      */
     const motionExempt = new Set(['src/styles/motion.css', 'src/styles/responsive.css']);
-    const important = styleFiles()
+    const important = ownStyleFiles()
       .filter((file) => !motionExempt.has(file))
       .filter((file) => /!important/.test(withoutComments(read(file))));
     expect(important, `no layer outside reduced-motion may need !important:\n${important.join('\n')}`).toEqual([]);
@@ -488,12 +528,21 @@ describe('front-end architecture boundaries', () => {
      */
     const defined = new Set<string>();
     for (const file of styleFiles()) {
+      /*
+       * The vendored DSH sheets define their tokens on `body`, not `:root`, and
+       * a handful of `--dsw-*` names are supplied at runtime by DSH's theme
+       * presenter. They are real definitions in a real browser; what this rule
+       * protects is our own layers, so they are still scanned as definitions but
+       * not as consumers.
+       */
       for (const match of withoutComments(read(file)).matchAll(/^\s*(--[\w-]+)\s*:/gm)) defined.add(match[1]!);
     }
-    const missing = styleFiles().flatMap((file) =>
-      [...withoutComments(read(file)).matchAll(/var\((--[\w-]+)/g)]
-        .filter((match) => !defined.has(match[1]!))
-        .map((match) => `${file}: ${match[1]}`));
+    const missing = styleFiles()
+      .filter((file) => !isVendored(file))
+      .flatMap((file) =>
+        [...withoutComments(read(file)).matchAll(/var\((--[\w-]+)/g)]
+          .filter((match) => !defined.has(match[1]!))
+          .map((match) => `${file}: ${match[1]}`));
     expect(missing, `every referenced custom property must be defined:\n${missing.join('\n')}`).toEqual([]);
   });
 
@@ -623,7 +672,7 @@ describe('front-end architecture boundaries', () => {
      * `600 15.5px/1.5` read as fine because the rule only looked for
      * `font-size:`.
      */
-    const halves = styleFiles().flatMap((file) =>
+    const halves = ownStyleFiles().flatMap((file) =>
       [...withoutComments(read(file)).matchAll(/(?:font-size:|font:)[^;{}]*?(\d+\.\d+)px/g)]
         .map((match) => `${file}: ${match[1]}px`));
     expect(halves, `text sizes must be whole pixels:\n${halves.join('\n')}`).toEqual([]);
@@ -667,7 +716,7 @@ describe('front-end architecture boundaries', () => {
      */
     const exempt = new Set(['src/styles/motion.css', 'src/styles/responsive.css']);
     const literal = /(?:transition|animation)[^;{}]*?\b\d+(?:\.\d+)?m?s\b/g;
-    const offenders = styleFiles()
+    const offenders = ownStyleFiles()
       .filter((file) => !exempt.has(file))
       .flatMap((file) =>
         [...withoutComments(read(file)).matchAll(literal)]
@@ -714,7 +763,7 @@ describe('front-end architecture boundaries', () => {
      * keeps a new one from being defined next to the rule that first wanted it.
      */
     const library = read('src/styles/motion-tokens.css');
-    const elsewhere = styleFiles()
+    const elsewhere = ownStyleFiles()
       .filter((file) => file !== 'src/styles/motion-tokens.css')
       .filter((file) => /@keyframes/.test(withoutComments(read(file))));
     expect(elsewhere, `keyframes belong in motion-tokens.css:\n${elsewhere.join('\n')}`).toEqual([]);

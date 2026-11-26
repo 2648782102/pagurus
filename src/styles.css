@@ -1,4 +1,12 @@
 /* Entry point. Import order is cascade order. Append; never reorder. */
+/*
+ * DSH's own token layer, before anything of ours.
+ *
+ * These are custom-property definitions plus a `body` background; importing
+ * them first means every `--dsw-*` reference below resolves, and our own
+ * `--ag-*` layer can map onto DSH's scale instead of inventing a second one.
+ */
+@import "./dsh/theme/base.css"; @import "./dsh/theme/design-platform.css"; @import "./dsh/theme/corner-shape.css"; @import "./dsh/theme/focus.css"; @import "./dsh/theme/scrollbar.css";
 @import "./styles/tokens.css"; @import "./styles/agent-tokens.css"; @import "./styles/semantic-tokens.css"; @import "./styles/primitives.css"; @import "./styles/base.css";
 @import "./styles/shell.css"; @import "./styles/page.css"; @import "./styles/overview.css"; @import "./styles/tasks.css"; @import "./styles/workbench.css";
 @import "./styles/organization.css"; @import "./styles/execution.css"; @import "./styles/conversation.css"; @import "./styles/configuration.css"; @import "./styles/footer.css";
@@ -6,4 +14,5 @@
 @import "./styles/agent-markdown.css"; @import "./styles/agent-model.css"; @import "./styles/agent-model-switch.css"; @import "./styles/agent-drawer.css"; @import "./styles/agent-context.css"; @import "./styles/agent-session-rail.css"; @import "./styles/agent-settings.css"; @import "./styles/agent-workspace-grid.css";
 @import "./styles/boss-work.css"; @import "./styles/boss-insight.css"; @import "./styles/responsive.css"; @import "./styles/agent-responsive.css"; @import "./styles/agent-first-run.css";
 @import "./styles/agent-trigger.css";
+@import "./styles/dsh-bridge.css";
 @import "./styles/motion-tokens.css"; @import "./styles/motion.css";

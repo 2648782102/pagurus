@@ -1,4 +1,9 @@
-import { defineConfig } from 'vite';
+/*
+ * `vitest/config` re-exports Vite's config type with the `test` block, so the
+ * one config file can carry both the dev server and the suite's include rule.
+ * Importing from `vite` types `test` as an unknown key and fails `tsc -b`.
+ */
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -50,6 +55,16 @@ const consolePort = Number(process.env.PAGURUS_PORT ?? (session === 4318 ? 5173 
 
 export default defineConfig({
   plugins: [react()],
+  /*
+   * `vendor/dsh` is a reference tree, not a dependency: 84 packages with their
+   * own tests. Vitest's default include would collect those 79 test files as
+   * ours, which reports DSH's coverage as Pagurus's and fails on imports it
+   * resolves through its own workspace. Only `tests/` is this project's suite.
+   */
+  test: {
+    include: ['tests/**/*.test.{ts,tsx}'],
+    exclude: ['node_modules/**', 'vendor/**', 'dist/**'],
+  },
   define: {
     __PAGURUS_RUNTIME_URL__: JSON.stringify(runtimeUrl),
   },

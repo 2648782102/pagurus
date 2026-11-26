@@ -13,7 +13,18 @@ export function useAgentTheme() {
 
   useEffect(() => {
     document.documentElement.dataset.agentTheme = theme;
-    return () => { delete document.documentElement.dataset.agentTheme; };
+    /*
+     * DSH's token sheet keys its dark aliases off `body[data-ds-dark-theme]`.
+     * Writing both attributes here keeps the vendored components and our own
+     * tokens flipping in the same frame, with one source of truth for the
+     * preference.
+     */
+    if (theme === 'dark') document.body.dataset.dsDarkTheme = '';
+    else delete document.body.dataset.dsDarkTheme;
+    return () => {
+      delete document.documentElement.dataset.agentTheme;
+      delete document.body.dataset.dsDarkTheme;
+    };
   }, [theme]);
 
   /*

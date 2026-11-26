@@ -6,6 +6,7 @@ import { ComposerTriggerMenu, type TriggerMenuItem } from './ComposerTriggerMenu
 import {
   applyTriggerChoice,
   composerTriggerAt,
+  fileMention,
   filterCommands,
   type ComposerCommand,
 } from './composer-trigger.js';
@@ -56,11 +57,11 @@ export function AgentChatComposer({
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
 
   const trigger = useMemo(() => {
-    if (commands.length === 0 && !filesEnabled) return null;
-    const found = composerTriggerAt(draft, caret);
+    const found = composerTriggerAt(draft, caret, {
+      commands: commands.length > 0,
+      files: filesEnabled,
+    });
     if (found === null) return null;
-    if (found.kind === 'command' && commands.length === 0) return null;
-    if (found.kind === 'file' && !filesEnabled) return null;
     // Escape closes the menu for this exact trigger position only; typing
     // another character reopens it, because that is a new question.
     if (dismissedAt !== null && dismissedAt === found.start) return null;
@@ -101,7 +102,14 @@ export function AgentChatComposer({
       onCommand?.(item.id);
       return;
     }
-    const applied = applyTriggerChoice(draft, trigger, `@${item.id} `);
+    /*
+     * DSH's mention grammar decides the inserted text: a path with a space
+     * becomes `@"a path"`, and the trailing space closes the token so the next
+     * word is prose again.
+     */
+    const applied = applyTriggerChoice(draft, trigger, `${fileMention(item.id)} `, {
+      quoted: trigger.quoted,
+    });
     onDraftChange(applied.draft);
     setCaret(applied.caret);
     setDismissedAt(null);

@@ -1,78 +1,90 @@
 /**
- * What the composer is offering, given the text before the caret.
+ * Composer trigger policy for Pagurus, on top of DSH's detection core.
  *
- * Two triggers, one shape:
+ * The detection itself is DSH's own (`src/dsh/trigger/detect.ts`, with its
+ * shared `@file` grammar) rather than a lookalike: it is the code that decides
+ * that `https://…` contains no slash command, that `user@host` is an address
+ * and not a file reference, and that `@"a path with spaces` is one token.
  *
- * - `/` at the start of a word offers commands — things the client itself can
- *   do, like starting a new thread or opening the context panel.
- * - `@` at the start of a word offers workspace files — a way to name a path
- *   precisely instead of describing it, which is the difference between "read
- *   my notes" and "read docs/notes/2026-11.md".
- *
- * Both are recognised only at a word boundary, so a URL's `@` or a fraction
- * like `1/2` does not open a popup nobody asked for. The helper is pure so the
- * keyboard rules can be tested without a DOM.
+ * What stays here is the product policy DSH cannot own: which characters this
+ * surface offers at all, and what each trigger means to Pagurus.
  */
+import {
+  detectTrigger,
+  type TriggerGuard,
+} from '../../dsh/trigger/detect.js';
+import { formatFileMention } from '../../dsh/trigger/file-reference-grammar.js';
 
-export type ComposerTrigger = {
-  readonly kind: 'command';
-  /** Text after the slash, lowercased. Empty right after typing `/`. */
-  readonly query: string;
-  /** Index of the `/` itself. */
-  readonly start: number;
-};
+export type ComposerTrigger =
+  | {
+    readonly kind: 'command';
+    /** Text after the slash, lowercased. Empty right after typing `/`. */
+    readonly query: string;
+    /** Index of the `/` itself. */
+    readonly start: number;
+  }
+  | {
+    readonly kind: 'file';
+    readonly query: string;
+    /** True for an open `@"…` token, which may contain spaces. */
+    readonly quoted: boolean;
+    readonly start: number;
+  };
 
-export type ComposerFileTrigger = {
-  readonly kind: 'file';
-  readonly query: string;
-  readonly start: number;
-};
-
-export type ComposerTriggerResult = ComposerTrigger | ComposerFileTrigger;
-
-/** A trigger is only a trigger at the start of a word. */
-function atWordBoundary(draft: string, index: number): boolean {
-  if (index === 0) return true;
-  return /\s/.test(draft[index - 1] ?? '');
+/**
+ * A trigger only exists where the surface advertises it.
+ *
+ * DSH separates the guard *tier* (whether a trigger is suppressed by an
+ * enclosing claim) from availability. Pagurus has no claims, so the tier is
+ * always `plain`, and a trigger the product does not offer is simply not
+ * consulted — a menu that opens onto nothing is worse than no menu.
+ */
+export function composerTriggerAt(
+  draft: string,
+  caret: number,
+  options: { readonly commands: boolean; readonly files: boolean },
+): ComposerTrigger | null {
+  if (!options.commands && !options.files) return null;
+  const guard: TriggerGuard = { tier: 'plain' };
+  const hit = detectTrigger(draft, caret, guard);
+  if (hit === null) return null;
+  if (hit.trigger === '/') {
+    if (!options.commands) return null;
+    return { kind: 'command', query: hit.query.toLowerCase(), start: hit.span.start };
+  }
+  if (!options.files) return null;
+  return { kind: 'file', query: hit.query, quoted: hit.quoted, start: hit.span.start };
 }
 
-export function composerTriggerAt(draft: string, caret: number): ComposerTriggerResult | null {
-  const upto = draft.slice(0, Math.max(0, Math.min(caret, draft.length)));
-  /*
-   * The token being typed: no whitespace ends it, and the marker must be the
-   * first character of the token. A file reference may span directories, so
-   * the `@` branch accepts slashes inside the query; `//` is not a command, so
-   * the `/` branch still stops at one.
-   */
-  const match = /(^|\s)([/@])([^\s]*)$/.exec(upto);
-  if (!match) return null;
-  const marker = match[2] as '/' | '@';
-  const query = match[3] ?? '';
-  // A command token never contains a slash: `1/2` and `//` are not commands.
-  if (marker === '/' && query.includes('/')) return null;
-  const start = upto.length - query.length - 1;
-  if (!atWordBoundary(upto, start)) return null;
-  /*
-   * A file mention may contain a slash — `@docs/plans/x.md` is the whole point
-   * — but a command never does, so `//` and an absolute path do not look like
-   * a command menu. A space still ends both.
-   */
-  return marker === '/'
-    ? { kind: 'command', query: query.toLowerCase(), start }
-    : { kind: 'file', query, start };
-}
-
-/** Replaces the trigger token with the chosen text and puts the caret after it. */
+/**
+ * Replaces the trigger token with the chosen text and reports the new caret.
+ *
+ * The replacement is built with DSH's own `formatFileMention`, so a path with a
+ * space is inserted as `@"a path"` and a directory keeps its quote open — the
+ * same rules the rest of DSH's input layer reads back.
+ */
 export function applyTriggerChoice(
   draft: string,
-  trigger: ComposerTriggerResult,
+  trigger: ComposerTrigger,
   replacement: string,
+  options: { readonly quoted?: boolean } = {},
 ): { readonly draft: string; readonly caret: number } {
-  const head = draft.slice(0, trigger.start);
   const tail = draft.slice(trigger.start);
-  const consumed = /^\S*/.exec(tail)?.[0] ?? '';
+  /*
+   * A quoted token runs to its closing quote (or the end of the draft), so the
+   * whole `@"…` is replaced rather than only up to the first space.
+   */
+  const consumed = trigger.kind === 'file' && (trigger.quoted || options.quoted)
+    ? (/^@"[^"]*"?/.exec(tail)?.[0] ?? /^\S*/.exec(tail)?.[0] ?? '')
+    : /^\S*/.exec(tail)?.[0] ?? '';
+  const head = draft.slice(0, trigger.start);
   const next = `${head}${replacement}${tail.slice(consumed.length)}`;
   return { draft: next, caret: head.length + replacement.length };
+}
+
+/** The insertion value for one workspace file, via DSH's mention grammar. */
+export function fileMention(path: string): string {
+  return formatFileMention({ path, kind: 'file' }, false) ?? `@${path}`;
 }
 
 export interface ComposerCommand {

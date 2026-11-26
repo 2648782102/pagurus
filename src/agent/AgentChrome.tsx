@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
-import { Button } from '../shared/ui/primitives.js';
+import { Button } from '../dsh/primitives/Button.js';
+import { StateDot, type StateDotState } from '../dsh/primitives/StateDot.js';
 
 /**
  * The product's only persistent chrome: one thin bar.
@@ -68,22 +69,38 @@ export function AgentChrome({
 
       <div className="agent-chrome-actions">
         <span className={`agent-chrome-status status-${connectionState}`} role="status">
-          <span className="agent-chrome-dot" aria-hidden="true" />
+          <StateDot state={connectionDot(connectionState, pending)} />
           {pending ? '回复中' : connection}
         </span>
         <Button
-          shape="pill"
-          pressed={settingsOpen}
+          variant="ghost"
+          size="sm"
+          aria-pressed={settingsOpen}
           onClick={onOpenSettings}
           aria-expanded={settingsOpen}
           aria-controls="agent-settings-title"
         >
           菜单
         </Button>
-        <Button shape="pill" variant="primary" onClick={onNewThread}>
+        <Button variant="primary" size="sm" onClick={onNewThread}>
           新对话
         </Button>
       </div>
     </header>
   );
+}
+
+/**
+ * The connection's semantic state, in DSH's own vocabulary.
+ *
+ * The status word is still rendered beside the dot: DSH's `StateDot` is
+ * explicitly `aria-hidden` and is meant to be paired with text, so colour is
+ * never the only signal.
+ */
+function connectionDot(state: string, pending: boolean): StateDotState {
+  if (pending) return 'ongoing';
+  if (state === 'connected') return 'done';
+  if (state === 'checking') return 'ongoing';
+  if (state === 'incompatible' || state === 'disconnected') return 'error';
+  return 'idle';
 }

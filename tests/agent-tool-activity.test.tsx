@@ -25,7 +25,7 @@ describe('Agent tool activity', () => {
     const list = screen.getByRole('list', { name: 'Agent 执行活动' });
     expect(within(list).getByText('调用工具 http_fetch')).toBeTruthy();
     expect(within(list).getByText('top.baidu.com')).toBeTruthy();
-    expect(list.querySelectorAll('li.is-succeeded')).toHaveLength(3);
+    expect(list.querySelectorAll('li[data-state="succeeded"]')).toHaveLength(3);
   });
 
   it('stays open while the turn is still running', () => {
@@ -39,7 +39,7 @@ describe('Agent tool activity', () => {
       turnState="replied" />);
     fireEvent.click(screen.getByRole('button', { name: /1 个步骤/ }));
     const row = screen.getByText('调用工具 web_extract').closest('li');
-    expect(row?.className).toContain('is-failed');
+    expect(row?.getAttribute('data-state')).toBe('failed');
     expect(row?.textContent).toContain('timeout');
   });
 

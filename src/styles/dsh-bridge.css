@@ -1,0 +1,116 @@
+/*
+ * Bridge Pagurus's product tokens onto DSH's design system.
+ *
+ * DSH ships a complete `--dsw-*` scale (`src/dsh/theme/design-platform.css`)
+ * and every vendored atom reads only from it. Rather than maintain two visual
+ * languages — one for the vendored components and one for the rest of the
+ * surface — the product's `--ag-*` names are re-pointed at DSH aliases. A theme
+ * flip then changes one thing: the dark aliases DSH already defines.
+ *
+ * Load order matters: after `agent-tokens.css` (this overrides its defaults)
+ * and after the DSH sheets (this reads their aliases).
+ */
+
+.agent-app,
+.agent-app-blocked {
+  /* --- surfaces ------------------------------------------------------- */
+  --ag-paper: var(--dsw-alias-bg-base);
+  --ag-paper-raised: var(--dsw-alias-bg-layer-1);
+  --ag-paper-sunk: var(--dsw-alias-bg-layer-2);
+  --ag-rail: var(--dsw-alias-bg-layer-2);
+  --ag-rail-soft: var(--dsw-alias-bg-layer-1);
+  --ag-rail-line: var(--dsw-alias-border-l2);
+
+  /* --- ink ------------------------------------------------------------ */
+  --ag-ink: var(--dsw-alias-label-primary);
+  --ag-ink-soft: var(--dsw-alias-label-secondary);
+  --ag-muted: var(--dsw-alias-label-tertiary);
+  --ag-faint: var(--dsw-alias-label-caption);
+
+  /* --- rules ---------------------------------------------------------- */
+  --ag-line: var(--dsw-alias-border-l2);
+  --ag-line-strong: var(--dsw-alias-border-l3);
+
+  /* --- type and shape ------------------------------------------------- */
+  --ag-sans: var(--dsw-font-family);
+  --ag-serif: var(--dsw-font-family);
+  --ag-radius: var(--dsw-radius-sm);
+
+  /* --- accent and state ----------------------------------------------- */
+  --ag-tide: var(--dsw-static-deepseek-500);
+  --ag-tide-ink: var(--dsw-static-deepseek-600);
+  --ag-tide-wash: var(--dsw-static-deepseek-50);
+  --ag-signal: var(--dsw-static-green-500);
+  --ag-danger: var(--dsw-static-red-500);
+  --ag-danger-wash: var(--dsw-static-red-50);
+  --ag-amber-wash: var(--dsw-static-amber-100);
+}
+
+/*
+ * One dark-theme switch for both languages.
+ *
+ * `useAgentTheme` writes `data-agent-theme="dark"` on the root; DSH keys its
+ * dark aliases off `body[data-ds-dark-theme]`. Mirroring the attribute here
+ * means no component can be left behind on the light palette.
+ */
+:root[data-agent-theme='dark'] body {
+  color-scheme: dark;
+}
+
+:root[data-agent-theme='dark'] .agent-app,
+:root[data-agent-theme='dark'] .agent-app-blocked {
+  --ag-tide: var(--dsw-static-deepseek-400);
+  --ag-tide-ink: var(--dsw-static-deepseek-300);
+  --ag-tide-wash: var(--dsw-static-deepseek-900);
+  --ag-danger: var(--dsw-static-red-400);
+  /*
+   * A wash is a *tint*, not the state colour at full strength. DSH's `*-900`
+   * swatches are dark saturated reds, so using one as a fill painted the
+   * failed-turn card as a solid red block. DSH publishes `-a12` alpha variants
+   * for exactly this purpose, and they are the ones its own components use.
+   */
+  --ag-danger-wash: var(--dsw-static-red-400-a12, rgb(242 90 90 / 12%));
+  /* DSH publishes no amber alpha swatch; the tint is stated here instead. */
+  --ag-amber-wash: rgb(245 158 11 / 12%);
+}
+
+/* DSH's row rhythm: a compact process line in tertiary ink. */
+.agent-dsh-activity {
+  margin-block: 6px 2px;
+}
+.agent-dsh-activity-list {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.agent-dsh-activity-list > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 3px 0;
+  color: var(--dsw-alias-label-secondary);
+  font: 12px/1.55 var(--dsw-font-family);
+}
+.agent-dsh-activity-label { min-inline-size: 0; }
+.agent-dsh-activity-state {
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.agent-dsh-activity-list > li code {
+  grid-column: 2 / -1;
+  overflow: hidden;
+  color: var(--dsw-alias-label-caption);
+  font: 11px/1.5 var(--ds-font-family-code);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-dsh-activity-list > li[data-state='failed'] .agent-dsh-activity-label {
+  color: var(--ag-danger);
+}
+.agent-dsh-activity-list > li[data-state='failed'] .agent-dsh-activity-state {
+  color: var(--ag-danger);
+}

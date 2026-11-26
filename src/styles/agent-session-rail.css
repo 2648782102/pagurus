@@ -27,63 +27,20 @@
   font: 650 14px var(--ag-sans);
   letter-spacing: -.03em;
 }
-.agent-rail-new {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 9px 10px;
-  border: 1px solid var(--ag-line-strong);
-  border-radius: 9px;
-  background: var(--ag-paper-raised);
-  color: var(--ag-ink);
-  cursor: pointer;
-  font: 550 12px var(--ag-sans);
-  transition:
-    border-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out),
-    background var(--motion-quick) var(--ease-out);
-}
-.agent-rail-new:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); }
+/*
+ * The rail's new-thread control is DSH's `Button` in its outline variant, so
+ * only the full-bleed width is ours: DSH's button is content-sized, and this
+ * one anchors the rail's header.
+ */
+.agent-rail-new { inline-size: 100%; justify-content: center; }
 
 /*
- * A rail filter, not a search page.
- *
- * With dozens of Boss turns the list is the only way back to a thread, and
- * scanning titles by eye stops working well before the list does. The field
- * stays inside the rail's own head so it never competes with the composer.
+ * The rail filter is DSH's `SearchField`, so only its width is ours: the
+ * control already carries the magnifier, the clear button, and the focus ring
+ * from `--dsw-*`. With dozens of Boss turns the list is the only way back to a
+ * thread, and scanning titles by eye stops working well before the list does.
  */
-.agent-rail-filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 9px;
-  border: 1px solid var(--ag-line);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--ag-paper-raised) 70%, transparent);
-  color: var(--ag-faint);
-}
-.agent-rail-filter:focus-within { border-color: var(--ag-tide); color: var(--ag-tide); }
-.agent-rail-filter input {
-  inline-size: 100%;
-  min-inline-size: 0;
-  padding: 7px 0;
-  border: 0;
-  background: none;
-  color: var(--ag-ink);
-  font: 12px var(--ag-sans);
-  outline: none;
-}
-.agent-rail-filter input::placeholder { color: var(--ag-faint); }
-.agent-rail-filter-clear {
-  display: grid;
-  place-items: center;
-  padding: 2px;
-  border: 0;
-  background: none;
-  color: var(--ag-muted);
-  cursor: pointer;
-}
+.agent-rail-filter { inline-size: 100%; }
 
 .agent-rail-list {
   min-block-size: 0;

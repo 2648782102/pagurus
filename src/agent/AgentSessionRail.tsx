@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { AgentChatConversationSummary } from '../shared/api/agent-chat.js';
 import { groupForRail, shortRelativeTime } from './agent-surface-model.js';
-import { AgentIcon } from '../shared/ui/AgentIcon.js';
+import { IconNewChatOutlineRegular } from '../dsh/primitives/icons/index.js';
+import { SearchField } from '../dsh/primitives/SearchField.js';
+import { Button } from '../dsh/primitives/Button.js';
 
 /** The persistent session rail: one workspace, one list of running threads. */
 export function AgentSessionRail({
@@ -30,36 +32,34 @@ export function AgentSessionRail({
     <aside className="agent-rail" aria-label="会话">
       <header className="agent-rail-head">
         <span className="agent-rail-brand">pagurus</span>
-        <button type="button" className="agent-rail-new" onClick={onNewThread}>
-          <AgentIcon name="send" size={13} />
+        <Button
+          className="agent-rail-new"
+          variant="outline"
+          size="sm"
+          icon={<IconNewChatOutlineRegular size={14} />}
+          onClick={onNewThread}
+        >
           新对话
-        </button>
+        </Button>
         {/*
          * Only once there is something to filter. An empty rail with a search
          * box asks the reader to search a list they can see is empty.
          */}
         {conversations.length > 6 && (
-          <div className="agent-rail-filter">
-            <AgentIcon name="search" size={13} />
-            <label className="sr-only" htmlFor="agent-rail-filter-input">筛选会话</label>
-            <input
-              id="agent-rail-filter-input"
-              type="search"
-              value={filter}
-              placeholder="筛选会话…"
-              onChange={(event) => setFilter(event.target.value)}
-            />
-            {filter.length > 0 && (
-              <button
-                type="button"
-                className="agent-rail-filter-clear"
-                aria-label="清除筛选"
-                onClick={() => setFilter('')}
-              >
-                <AgentIcon name="close" size={12} />
-              </button>
-            )}
-          </div>
+          /*
+           * DSH's own search atom, not a hand-rolled field: the leading
+           * magnifier, the clear affordance, and the focus ring are the same
+           * ones used inside DSH's menus.
+           */
+          <SearchField
+            className="agent-rail-filter"
+            aria-label="筛选会话"
+            placeholder="筛选会话…"
+            value={filter}
+            onChange={setFilter}
+            {...(filter.length > 0 ? { clearLabel: '清除筛选' } : {})}
+            onClear={() => setFilter('')}
+          />
         )}
       </header>
       <nav className="agent-rail-list" aria-label="会话记录">

@@ -43,10 +43,14 @@ describe('Agent activity list', () => {
 
     const list = screen.getByRole('list', { name: 'Agent 执行活动' });
     expect(list.children.length).toBe(3);
-    // State must be visible in the DOM, not only implied by colour.
-    expect(list.querySelector('li.is-running')).toBeTruthy();
-    expect(list.querySelector('li.is-succeeded')).toBeTruthy();
-    expect(list.querySelector('li.is-failed')).toBeTruthy();
+    /*
+     * State must be visible in the DOM, not only implied by colour. The rows are
+     * DSH's own `StateDot`, which publishes the semantic state as `data-state`
+     * rather than as a class of ours.
+     */
+    expect(list.querySelector('li[data-state="running"]')).toBeTruthy();
+    expect(list.querySelector('li[data-state="succeeded"]')).toBeTruthy();
+    expect(list.querySelector('li[data-state="failed"]')).toBeTruthy();
     expect(screen.getByText('read_file')).toBeTruthy();
   });
 });
