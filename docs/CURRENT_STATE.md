@@ -6,7 +6,17 @@ Updated: 2026-11-27
 
 - `/` opens the Agent surface; the operator console is reached with
   `?surface=console` or any existing `#workspace` bookmark.
-- React 19 + TypeScript + Vite application.
+- React 19 + TypeScript + Vite application, built on the DSH client design
+  system: DSH's `packages/client` is vendored whole under `vendor/dsh`
+  (reference tree, MIT) and the compiled subset — its `--dsw-*` token sheets,
+  its Cordis-free `ui-primitives` atoms, and its `@file`/trigger detection core
+  — lives under `src/dsh`. See `src/dsh/README.md` for the split and the one
+  divergence from upstream.
+- The theme has one source of truth: `src/styles/dsh-bridge.css` maps the
+  product's `--ag-*` names onto DSH aliases and is the only place that declares
+  the dark mapping. A theme flip writes both `data-agent-theme` (ours) and
+  `data-ds-dark-theme` (DSH's), so vendored components and product styles
+  change in the same frame.
 - Same-origin development proxy to Conchbase loopback API.
 - Operator console with runtime status, Agent management, tasks, history,
   configuration, organization, execution, work, capabilities, and SecretHandle
@@ -20,6 +30,11 @@ Updated: 2026-11-27
 - A settled turn's tool work folds into one disclosure line ("N 个步骤 · M 个
   失败") and opens into rows with a state dot, tool name, state, and detail.
   A running or blocked turn stays open, so a pending approval is never hidden.
+  The row is DSH's own `DisclosureRow` with its `StateDot` and `TextShimmer`.
+- The workbench's two side tracks are solved by DSH's `computeColumns`: the
+  right panel shrinks, then loses its track, before the centre falls below its
+  400px minimum, and the left rail never concedes. The numbers arrive as CSS
+  custom properties; the stylesheet owns the geometry.
 - The composer offers two triggers: `/` for client commands (new thread,
   history, context, diagnostics, settings) and `@` for workspace file
   references, backed by the Runtime's bounded `workspace-index`. Both are
