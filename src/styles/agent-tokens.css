@@ -135,58 +135,13 @@
       fill var(--motion-travel) var(--ease-out);
   }
 }
-:root[data-agent-theme='dark'] .agent-app,
-:root[data-agent-theme='dark'] .agent-app-blocked {
-  --ag-paper: #10121a;
-  --ag-paper-raised: #171a25;
-  --ag-paper-sunk: #0b0d13;
-  --ag-rail: #0b0d13;
-  --ag-rail-soft: #171a25;
-  --ag-rail-line: #262b39;
-  --ag-ink: #f2f4fa;
-  --ag-ink-soft: #d2d8e6;
-  --ag-muted: #a2aec2;
-  --ag-faint: #76839a;
-  --ag-line: #262b39;
-  --ag-line-strong: #394155;
-  --ag-tide: #7cc9ba;
-  --ag-tide-ink: #a2e0d2;
-  --ag-tide-wash: #1a2c2c;
-  --ag-signal: #75c795;
-  --ag-danger: #e09770;
-  --ag-danger-wash: #2a1d1a;
-  --ag-amber-wash: #2a2518;
-
-  /* Fixed light-on-rail values from the light palette must follow the dark rail. */
-  --ag-on-rail: #f2f4fa;
-  /*
-   * The accent is a light teal on this ground, so its label has to be dark.
-   * It was light-on-light here — 1.75:1, a send arrow you cannot see. The value
-   * below the dark block used to overwrite this one, which is why the dark
-   * theme never showed a readable primary; see the shared block's comment.
-   */
-  --ag-on-accent: #10201c;
-  --ag-caution-line: #c99c4a;
-  --ag-caution-ink: #c99c4a;
-  --ag-danger-strong: var(--ag-danger);
-  --ag-rail-ink-soft: #d2d8e6;
-
-  /* Action colour: the dark-theme rust must stay legible on blue-black. */
-  --rust: #e09770;
-  --rust-strong: #f0ac86;
-  /*
-   * The wash has to follow the action colour. Left alone it resolves to the
-   * light theme's pale peach, which paints a near-white block on a near-black
-   * ground — the same class of leak as the activity colours.
-   */
-  --rust-wash: #2a1d1a;
-  --ag-action-contrast: #241108;
-
-  /* On a near-black ground a light shadow is invisible and a grey one looks
-     like a smudge; depth has to come from a darker halo plus a lighter edge. */
-  --edge: 0 0 0 1px rgba(0, 0, 0, .5);
-  --lift-1: 0 1px 2px rgba(0, 0, 0, .4);
-  --lift-2: 0 2px 10px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .05);
-  --inset-well: inset 0 1px 3px rgba(0, 0, 0, .45);
-}
+/*
+ * The dark palette lives with the DSH bridge now.
+ *
+ * This block used to restate every product colour for the dark theme. Once the
+ * surface was mapped onto DSH's `--dsw-*` aliases, two dark palettes existed and
+ * the older one won by sitting on a child element — which is why a dark theme
+ * could keep a light-theme ink. `src/styles/dsh-bridge.css` is the single place
+ * that defines the dark mapping.
+ */
 

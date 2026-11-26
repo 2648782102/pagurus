@@ -8,21 +8,59 @@
   overflow: auto;
   padding: 20px 18px;
   border-inline-start: 1px solid var(--ag-line);
-  background:
-    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--ag-tide) 8%, transparent), transparent 34%),
-    var(--ag-paper);
+  /*
+   * DSH's sidebar fill, not a tinted wash: the rail is a surface, and a
+   * gradient behind text made the right column read as a different product.
+   */
+  background: var(--dsw-alias-bg-layer-2);
   color: var(--ag-ink);
   font-family: var(--ag-sans);
 }
 .boss-insight-head { display: grid; gap: 3px; padding-block-end: 14px; border-block-end: 1px solid var(--ag-line); }
-.boss-insight-head h2 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -.02em; }
+/*
+ * The heading needs its own colour: the global `h1..h4 { color: var(--ink) }`
+ * rule outranks inheritance, so relying on the rail's colour left this title
+ * on the console palette's ink instead of the surface's.
+ */
+.boss-insight-head h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
 .boss-insight-head p { margin: 0; color: var(--ag-muted); font-size: 11px; }
 .boss-insight section { padding-block: 16px; border-block-end: 1px solid var(--ag-line); }
-.boss-insight h3 { margin: 0 0 9px; color: var(--ag-ink-soft); font-size: 11px; font-weight: 650; letter-spacing: .04em; }
-.boss-insight-focus { margin: 0; font: 15px/1.55 var(--ag-serif); text-wrap: pretty; }
+.boss-insight h3 {
+  margin: 0 0 9px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+.boss-insight-focus { margin: 0; text-wrap: pretty; }
 .boss-insight-empty { margin: 0; color: var(--ag-faint); font-size: 12px; line-height: 1.6; }
 .boss-insight-signals { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.boss-insight-signals li { display: grid; gap: 3px; padding: 9px 10px; border-inline-start: 2px solid var(--ag-line-strong); background: color-mix(in srgb, var(--ag-paper-raised) 65%, transparent); }
+/*
+ * Signal rows are DSH cards: a hairline, the shared radius, and a raised fill.
+ * The state edge stays as the one state signal, drawn thin enough to read as a
+ * marker rather than a stripe.
+ */
+.boss-insight-signals li {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-inline-start: 2px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm);
+  /*
+   * `bg-module-platform` is DSH's "module inside a panel" fill. It is the one
+   * alias that stays lighter than the panel in both palettes, which is what a
+   * card sitting on the rail needs; `layer-1` is the *submerged* layer and made
+   * the cards darker than the surface they sit on.
+   */
+  background: var(--dsw-alias-bg-module-platform);
+}
 .boss-insight-signals li.is-attention { border-inline-start-color: var(--ag-danger); background: var(--ag-danger-wash); }
 .boss-insight-signals li.is-failed { border-inline-start-color: var(--ag-danger); }
 .boss-insight-signals li.is-success { border-inline-start-color: var(--ag-signal); }
@@ -38,23 +76,20 @@
 .boss-insight section {
   padding: 15px 13px;
   margin-block: 10px;
-  border: 1px solid var(--ag-line);
-  border-radius: 9px;
-  background: var(--ag-paper-raised);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-module-platform);
 }
 .boss-insight section h3 {
   margin-block-end: 8px;
-  color: var(--ag-ink-soft);
+  color: var(--dsw-alias-label-secondary);
   letter-spacing: .03em;
 }
 .boss-insight-head { padding-block-end: 16px; }
 .boss-insight-head h2 { font-size: 15px; letter-spacing: -.01em; }
-.boss-insight-focus { font-size: 14px; line-height: 1.6; }
-.boss-insight-signals li { border-radius: 6px; }
+.boss-insight-focus { font: var(--dsw-font-markdown-h4); }
 
 /* The rail's focus block is the one thing to read first: give it the strongest
    type treatment and keep the report list visually secondary. */
-.boss-insight section:first-of-type { background: var(--ag-tide-wash); border-color: var(--ag-tide); }
-.boss-insight section:first-of-type h3 { color: var(--ag-tide-ink); }
-.boss-insight-signals li { padding: 8px 9px; background: var(--ag-paper-raised); }
+.boss-insight section:first-of-type { border-color: var(--dsw-alias-border-l4); }
 .boss-insight-signals li p { font-size: 11px; line-height: 1.55; color: var(--ag-ink-soft); }
