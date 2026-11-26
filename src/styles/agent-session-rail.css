@@ -70,6 +70,10 @@
  * 36px row below it, so the row kept the smaller box while the title — still
  * `nowrap` — painted outside it, over the next row. The geometry is now stated
  * once: a grid, a fixed height, and clipping on the cell that holds the text.
+ *
+ * The rhythm follows DSH's sidebar: a 32px row with a 12px inset, the title
+ * carrying the width, and the trailing time resting quietly at the right edge
+ * — the same place DSH puts a session's timestamp.
  */
 .agent-rail .agent-rail-list button {
   display: grid;
@@ -77,27 +81,29 @@
   align-items: center;
   gap: 8px;
   inline-size: 100%;
-  block-size: 36px;
-  padding: 0 9px;
+  block-size: 32px;
+  padding: 0 10px;
   overflow: hidden;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--dsw-radius-sm);
   background: transparent;
   color: var(--ag-ink-soft);
   cursor: pointer;
-  font: 12px var(--ag-sans);
+  font: 12px/1 var(--ag-sans);
   text-align: start;
   transition:
     background var(--motion-quick) var(--ease-out),
     color var(--motion-quick) var(--ease-out);
 }
-.agent-rail-list button:hover { background: var(--ag-paper-raised); color: var(--ag-ink); }
+.agent-rail-list button:hover {
+  background: var(--dsw-alias-interactive-bg-hover, var(--ag-paper-raised));
+  color: var(--ag-ink);
+}
 
 /* The open thread reads as selected, not merely hovered. */
 .agent-rail-list button.is-active {
-  background: var(--ag-tide-wash);
-  box-shadow: inset 2px 0 0 var(--ag-tide);
-  color: var(--ag-tide-ink);
+  background: var(--dsw-alias-interactive-bg-hover, var(--ag-tide-wash));
+  color: var(--ag-ink);
   font-weight: 600;
 }
 .agent-rail-title {
@@ -106,8 +112,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.agent-rail-meta { color: var(--ag-faint); font-size: 10px; white-space: nowrap; }
-.agent-rail-list button.is-active .agent-rail-meta { color: var(--ag-tide-ink); opacity: .75; }
+.agent-rail-meta {
+  color: var(--dsw-alias-label-caption);
+  font-size: 10px;
+  white-space: nowrap;
+}
+/* DSH rests the trailing fact quietly and brings it forward on interaction. */
+.agent-rail-list button:hover .agent-rail-meta,
+.agent-rail-list button.is-active .agent-rail-meta { color: var(--ag-muted); }
 .agent-rail-empty { margin: 8px 6px; color: var(--ag-faint); font-size: 11px; }
 
 @media (width < 900px) {
