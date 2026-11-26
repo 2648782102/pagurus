@@ -1,6 +1,5 @@
 import type { RefObject } from 'react';
 import { Button } from '../shared/ui/primitives.js';
-import { consoleSurfaceHref } from '../shared/ui/surface.js';
 
 /**
  * The product's only persistent chrome: one thin bar.
@@ -27,6 +26,8 @@ export function AgentChrome({
   diagnosticsOpen,
   onToggleDiagnostics,
   diagnosticsButtonRef,
+  settingsOpen,
+  onOpenSettings,
 }: {
   readonly agentName: string;
   readonly threadTitle: string | null;
@@ -48,6 +49,8 @@ export function AgentChrome({
   readonly diagnosticsOpen: boolean;
   readonly onToggleDiagnostics: () => void;
   readonly diagnosticsButtonRef: RefObject<HTMLButtonElement | null>;
+  readonly settingsOpen: boolean;
+  readonly onOpenSettings: () => void;
 }) {
   return (
     <header className="agent-chrome">
@@ -81,8 +84,15 @@ export function AgentChrome({
         >
           诊断
         </Button>
-        {/* Advanced surfaces stay one click away, never the default path. */}
-        <a className="agent-chrome-link" href={consoleSurfaceHref()}>控制台</a>
+        <Button
+          shape="pill"
+          pressed={settingsOpen}
+          onClick={onOpenSettings}
+          aria-expanded={settingsOpen}
+          aria-controls="agent-settings-title"
+        >
+          菜单
+        </Button>
         <Button buttonRef={threadsButtonRef} shape="pill" onClick={onOpenThreads}>
           对话记录
         </Button>

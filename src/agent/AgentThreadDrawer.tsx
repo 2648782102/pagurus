@@ -146,9 +146,6 @@ export function AgentThreadDrawer({
           ))}
         </div>
 
-        <div className="agent-drawer-foot">
-          <a href="?surface=console">打开控制台</a>
-        </div>
       </div>
     </div>
   );

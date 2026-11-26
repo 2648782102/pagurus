@@ -5,7 +5,6 @@ import { AgentChatComposer } from '../features/agent-chat/AgentChatComposer.js';
 import { BossWorkPanel } from './BossWorkPanel.js';
 import { AgentChatThread } from '../features/agent-chat/AgentChatThread.js';
 import { Button } from '../shared/ui/primitives.js';
-import { consoleSurfaceHref } from '../shared/ui/surface.js';
 import { useAgentSurface } from './useAgentSurface.js';
 import { AgentChrome } from './AgentChrome.js';
 import { useAgentTheme } from './useAgentTheme.js';
@@ -23,6 +22,7 @@ import { agentErrorText } from './agent-error-text.js';
 import { modelName } from '../shared/ui/model-label.js';
 import { runtimeNoticeBody } from './RuntimeNoticeBody.js';
 import { BossInsightPanel } from './BossInsightPanel.js';
+import { AgentSettingsDrawer } from './AgentSettingsDrawer.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -62,6 +62,7 @@ export function AgentApp() {
   const [contextOpen, setContextOpen] = useState(false);
   const [firstRunDismissed, setFirstRunDismissed] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const contextButtonRef = useRef<HTMLButtonElement | null>(null);
   const diagnosticsButtonRef = useRef<HTMLButtonElement | null>(null);
   const { theme, toggle: toggleTheme } = useAgentTheme();
@@ -162,7 +163,7 @@ export function AgentApp() {
               <span className="agent-chrome-dot" aria-hidden="true" />
               {CONNECTION_LABELS[runtimeStatus.state]}
             </span>
-            <a className="agent-chrome-link" href={consoleSurfaceHref()}>控制台</a>
+            <a className="agent-chrome-link" href="?surface=agent">返回对话</a>
           </div>
         </header>
         <div className="agent-blocked">
@@ -231,6 +232,8 @@ export function AgentApp() {
         diagnosticsOpen={diagnosticsOpen}
         onToggleDiagnostics={toggleDiagnostics}
         diagnosticsButtonRef={diagnosticsButtonRef}
+        settingsOpen={settingsOpen}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <div className={`agent-workspace${contextOpen ? ' has-context' : ''}`}>
@@ -383,6 +386,13 @@ export function AgentApp() {
         onClose={closeDrawer}
         onSelectAgent={chat.selectAgent}
         onResume={chat.resumeConversation}
+      />
+
+      <AgentSettingsDrawer
+        open={settingsOpen}
+        runtime={runtimeStatus.runtime}
+        onClose={() => setSettingsOpen(false)}
+        onAgentsChanged={() => undefined}
       />
 
       <AgentDiagnosticsDrawer

@@ -213,3 +213,37 @@ export async function applyAgentRevision(
 }
 
 export type { RuntimeInfo };
+
+export interface CapabilityAuditGrant {
+  kind: CapabilityGrantKind;
+  name: string;
+  stillAvailable: boolean;
+}
+
+export interface CapabilityAudit {
+  version: 1;
+  agents: {
+    agentId: string;
+    currentRevisionId: string;
+    archived: boolean;
+    grants: CapabilityAuditGrant[];
+  }[];
+  staleGrants: {
+    agentId: string;
+    revisionId: string;
+    kind: CapabilityGrantKind;
+    name: string;
+  }[];
+  available?: { tools: string[]; skills: string[] };
+}
+
+function isCapabilityAudit(value: unknown): value is CapabilityAudit {
+  return isRecord(value) && value.version === 1
+    && Array.isArray(value.agents) && Array.isArray(value.staleGrants)
+    && (value.available === undefined || (isRecord(value.available)
+      && Array.isArray(value.available.tools) && Array.isArray(value.available.skills)));
+}
+
+export async function getCapabilityAudit(signal?: AbortSignal): Promise<CapabilityAudit> {
+  return request('/v1/agents/capability-grants', isCapabilityAudit, 'GET', undefined, signal);
+}

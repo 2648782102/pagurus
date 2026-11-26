@@ -31,7 +31,7 @@ describe('FirstRunGuide', () => {
   it('shows the real state of each precondition, not a blanket "all good"', () => {
     renderGuide({ connection: 'disconnected', models: [] });
     expect(screen.getByText('没有连上；先启动 Conchbase，再点右上角重新连接')).toBeTruthy();
-    expect(screen.getByText('Runtime 没有返回模型；到控制台的运行时状态页检查 provider')).toBeTruthy();
+    expect(screen.getByText('Runtime 没有返回模型；打开菜单里的「模型」分区检查 provider')).toBeTruthy();
   });
 
   it('offers an example only when every step is ready', () => {
@@ -51,9 +51,9 @@ describe('FirstRunGuide', () => {
     expect(props.onDismiss).toHaveBeenCalled();
   });
 
-  it('points at the console when no agent exists', () => {
+  it('points at settings when no agent exists', () => {
     renderGuide({ agents: [] });
-    expect(screen.getByText('还没有可用 Agent；可以先在控制台创建一个')).toBeTruthy();
+    expect(screen.getByText('还没有可用 Agent；可以在菜单里创建一个')).toBeTruthy();
     expect(screen.queryByRole('button', { name: '用这条开始' })).toBeNull();
   });
 

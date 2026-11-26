@@ -84,7 +84,7 @@ export function AgentPrompt({
       <p className="agent-prompt-sub">
         {selectedAgent
           ? '说出你的问题或目标。回答会固定记录所用的模型版本。'
-          : 'Runtime 没有返回可用的 Agent。通常是 provider 或模型目录还没配置好；到控制台的运行时状态页确认后刷新即可。'}
+          : 'Runtime 没有返回可用的 Agent。通常是 provider 或模型目录还没配置好；打开菜单的「模型」分区确认后刷新即可。'}
       </p>
 
       <form

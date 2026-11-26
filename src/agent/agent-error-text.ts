@@ -27,7 +27,7 @@ export function agentErrorText(cause: unknown, fallback: string): string {
 
   const status = /HTTP\s(\d{3})/.exec(raw)?.[1];
   if (status === '503' || status === '502') {
-    return 'Runtime 暂时不可用。稍等一会儿再试；如果一直这样，打开控制台看看运行时状态。';
+    return 'Runtime 暂时不可用。稍等一会儿再试；如果一直这样，打开菜单看看运行时状态。';
   }
   if (status === '429') {
     return '请求太频繁，被限流了。等几秒再发一次。';
@@ -39,7 +39,7 @@ export function agentErrorText(cause: unknown, fallback: string): string {
     return '这次请求没有通过 Runtime 的校验。如果是工具操作，需要先在对话里批准。';
   }
   if (status !== undefined) {
-    return `Runtime 返回了一个错误（${status}）。可以再试一次，或打开控制台查看详情。`;
+    return `Runtime 返回了一个错误（${status}）。可以再试一次，或打开菜单查看详情。`;
   }
 
   if (/failed to fetch|networkerror|load failed/i.test(raw)) {

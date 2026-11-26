@@ -1,5 +1,6 @@
 import type { Agent, ProviderModel } from '../../shared/api/agents.js';
 import { Button, Field, Notice, Select, Tag, Textarea, TextInput } from '../../shared/ui/primitives.js';
+import type { CapabilityOption } from './agent-capability-catalog.js';
 
 export function AgentEditor({
   selected,
@@ -7,16 +8,18 @@ export function AgentEditor({
   name,
   instructions,
   modelReference,
-  toolNames,
-  skillNames,
+  toolOptions,
+  skillOptions,
+  selectedTools,
+  selectedSkills,
+  onToggleTool,
+  onToggleSkill,
   saving,
   busy,
   currentReference,
   onNameChange,
   onInstructionsChange,
   onModelReferenceChange,
-  onToolNamesChange,
-  onSkillNamesChange,
   onSave,
   onMakeDefault,
   onClearDefault,
@@ -28,16 +31,18 @@ export function AgentEditor({
   readonly name: string;
   readonly instructions: string;
   readonly modelReference: string;
-  readonly toolNames: string;
-  readonly skillNames: string;
+  readonly toolOptions: readonly CapabilityOption[];
+  readonly skillOptions: readonly CapabilityOption[];
+  readonly selectedTools: ReadonlySet<string>;
+  readonly selectedSkills: ReadonlySet<string>;
   readonly saving: boolean;
   readonly busy: boolean;
   readonly currentReference: { readonly reference: string } | undefined;
   readonly onNameChange: (name: string) => void;
   readonly onInstructionsChange: (instructions: string) => void;
   readonly onModelReferenceChange: (reference: string) => void;
-  readonly onToolNamesChange: (names: string) => void;
-  readonly onSkillNamesChange: (names: string) => void;
+  readonly onToggleTool: (name: string) => void;
+  readonly onToggleSkill: (name: string) => void;
   readonly onSave: () => void;
   readonly onMakeDefault: () => void;
   readonly onClearDefault: () => void;
@@ -97,32 +102,52 @@ export function AgentEditor({
           能力名必须与 Runtime 已注册的一致，未注册的条目不会生效。
         </p>
         <div className="agent-capability-grid">
-          <Field label="工具授权" hint="每行一个，例如 workspace_read。留空即禁用工具。" htmlFor="agent-tools">
-            <Textarea
-              id="agent-tools"
-              value={toolNames}
-              onChange={(event) => onToolNamesChange(event.target.value)}
-              rows={4}
-              spellCheck={false}
-              placeholder={'workspace_list\nworkspace_read'}
-              disabled={busy || selected?.archived}
-            />
-          </Field>
-          <Field label="Skill 授权" hint="每行一个 Skill 目录名。Skill 只提供指令，不授予工具。" htmlFor="agent-skills">
-            <Textarea
-              id="agent-skills"
-              value={skillNames}
-              onChange={(event) => onSkillNamesChange(event.target.value)}
-              rows={4}
-              spellCheck={false}
-              placeholder="release-notes"
-              disabled={busy || selected?.archived}
-            />
-          </Field>
+          <fieldset className="agent-tool-list">
+            <legend>工具授权</legend>
+            <p className="task-hint">勾选这个 Agent 可以调用的 Runtime 工具。未勾选即不可调用。</p>
+            {toolOptions.length === 0 ? <p className="task-hint">Runtime 没有注册任何工具。</p> : (
+              <ul>
+                {toolOptions.map((tool) => (
+                  <li key={tool.name} className={tool.available ? '' : 'is-stale'}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={selectedTools.has(tool.name)}
+                        onChange={() => onToggleTool(tool.name)}
+                        disabled={busy || selected?.archived}
+                      />
+                      <code>{tool.name}</code>
+                      {!tool.available && <small>Runtime 未注册</small>}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
+          <fieldset className="agent-tool-list">
+            <legend>Skill 授权</legend>
+            <p className="task-hint">Skill 只提供指令，不授予工具。</p>
+            {skillOptions.length === 0 ? <p className="task-hint">没有可授权的 Skill。</p> : (
+              <ul>
+                {skillOptions.map((skill) => (
+                  <li key={skill.name} className={skill.available ? '' : 'is-stale'}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={selectedSkills.has(skill.name)}
+                        onChange={() => onToggleSkill(skill.name)}
+                        disabled={busy || selected?.archived}
+                      />
+                      <code>{skill.name}</code>
+                      {!skill.available && <small>Runtime 未注册</small>}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
         </div>
-        {(!selected || (selected.current.grantedCapabilities?.length ?? 0) === 0)
-          && toolNames.trim().length === 0
-          && skillNames.trim().length === 0 && (
+        {selectedTools.size === 0 && selectedSkills.size === 0 && (
           <Notice role="status">
             当前版本未授权任何能力，该 Agent 无法调用工具或 Skill。
           </Notice>

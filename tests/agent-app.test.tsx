@@ -176,9 +176,8 @@ describe('shipped Agent surface', () => {
     expect(screen.queryByRole('link', { name: /能力目录/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /敏感信息/ })).toBeNull();
     expect(screen.queryByRole('heading', { name: /配置版本/ })).toBeNull();
-    // It does keep a route back to the console, behind history.
-    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
-    expect(screen.getByRole('link', { name: '打开控制台' })).toBeTruthy();
+    // Settings are part of the Agent now, not a second console product.
+    expect(screen.getByRole('button', { name: '菜单' })).toBeTruthy();
   });
 
   it('returns to the prompt after starting a new conversation', async () => {

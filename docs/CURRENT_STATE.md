@@ -21,6 +21,10 @@ Updated: 2026-11-26
   rail, the conversation, and a context drawer that overlays below 1280px and
   becomes a real column at 1280px+. Work states use CSS motion paired with
   readable labels and respect reduced motion.
+- The operator console has been folded into the Agent surface as the “菜单”
+  settings drawer: Agent and tool grants, model catalog, and runtime facts.
+  Debug-only console workspaces are no longer reachable from the shipped app;
+  old `?surface=console` links land on the Agent.
 - The Agent surface reports stream degradation while a reply is pending: a
   stalled stream or an in-progress reconnect says so and notes that polling is
   carrying the update. A healthy stream shows nothing.

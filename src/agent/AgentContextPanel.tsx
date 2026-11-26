@@ -117,7 +117,7 @@ export function AgentContextPanel({
       </div>
 
       <p className="agent-context-note">
-        这里只读取 Runtime 已发布的事实；修改 Agent 或运行时策略请到控制台。
+        这里只读取 Runtime 已发布的事实；修改 Agent 或运行时策略请打开菜单。
       </p>
     </aside>
   );

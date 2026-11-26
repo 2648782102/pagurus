@@ -61,7 +61,7 @@ export function FirstRunGuide({
       state: models.length > 0 ? 'done' : 'blocked',
       hint: models.length > 0
         ? `可用 ${models.length} 个，已自动选好一个`
-        : 'Runtime 没有返回模型；到控制台的运行时状态页检查 provider',
+        : 'Runtime 没有返回模型；打开菜单里的「模型」分区检查 provider',
     },
     {
       id: 'agent',
@@ -69,7 +69,7 @@ export function FirstRunGuide({
       state: agents.length > 0 ? 'done' : 'blocked',
       hint: agents.length > 0
         ? `已选 ${agents[0]?.name ?? '第一个 Agent'}`
-        : '还没有可用 Agent；可以先在控制台创建一个',
+        : '还没有可用 Agent；可以在菜单里创建一个',
     },
   ];
 

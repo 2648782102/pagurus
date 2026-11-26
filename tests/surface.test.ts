@@ -13,8 +13,8 @@ describe('surface resolution', () => {
     expect(resolveSurface('?surface=Agent')).toBe('agent');
   });
 
-  it('opens the console only when asked', () => {
-    expect(resolveSurface('?surface=console')).toBe('console');
+  it('keeps old console links on the one product surface', () => {
+    expect(resolveSurface('?surface=console')).toBe('agent');
     expect(consoleSurfaceHref()).toBe('?surface=console');
   });
 
@@ -28,11 +28,11 @@ describe('surface resolution', () => {
     expect(resolveSurface(agentSurfaceHref())).toBe('agent');
   });
 
-  it('keeps existing console bookmarks working through their workspace hash', () => {
-    expect(resolveSurfaceFromLocation('', '#overview')).toBe('console');
-    expect(resolveSurfaceFromLocation('', '#workbench-title')).toBe('console');
+  it('keeps old console bookmarks on the product surface', () => {
+    expect(resolveSurfaceFromLocation('', '#overview')).toBe('agent');
+    expect(resolveSurfaceFromLocation('', '#workbench-title')).toBe('agent');
     expect(resolveSurfaceFromLocation('', '')).toBe('agent');
     expect(resolveSurfaceFromLocation('?surface=agent', '#overview')).toBe('agent');
-    expect(resolveSurfaceFromLocation('?surface=console', '')).toBe('console');
+    expect(resolveSurfaceFromLocation('?surface=console', '')).toBe('agent');
   });
 });

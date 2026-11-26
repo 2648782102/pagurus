@@ -1,0 +1,61 @@
+.agent-settings-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  justify-items: end;
+  background: rgb(8 12 11 / 28%);
+}
+.agent-settings {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  inline-size: min(920px, 96vw);
+  block-size: 100dvh;
+  background: var(--surface-canvas);
+  border-inline-start: 1px solid var(--border);
+  box-shadow: -24px 0 60px rgb(0 0 0 / 18%);
+}
+.agent-settings-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-block-end: 1px solid var(--border); }
+.agent-settings-head h2 { margin: 0; font-size: 18px; }
+.agent-settings-close { display: grid; place-items: center; inline-size: 30px; block-size: 30px; border: 1px solid var(--border); border-radius: 50%; background: transparent; cursor: pointer; }
+.agent-settings-nav { display: flex; gap: 6px; padding: 10px 22px; overflow: auto; border-block-end: 1px solid var(--border); }
+.agent-settings-nav button { padding: 7px 12px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; }
+.agent-settings-nav button.is-active { border-color: var(--border-strong); background: var(--surface-raised); color: var(--text-strong); }
+.agent-settings-body { min-block-size: 0; overflow: auto; padding: 8px 22px 40px; }
+.agent-tool-list { margin: 0; padding: 0; border: 0; }
+.agent-tool-list legend { margin-block-end: 6px; font-weight: 600; }
+.agent-tool-list ul { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
+.agent-tool-list li label { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; }
+.agent-tool-list li.is-stale { opacity: .62; }
+.agent-tool-list small { margin-inline-start: auto; color: var(--state-caution-strong); font-size: 10px; }
+@media (width < 720px) {
+  .agent-settings { inline-size: 100vw; }
+}
+
+.agent-settings-about h3, .agent-settings-model h3 { margin-block: 18px 10px; font-size: 13px; }
+.agent-settings-about dl { display: grid; gap: 8px; }
+.agent-settings-about dl > div { display: flex; justify-content: space-between; gap: 18px; padding-block: 7px; border-block-end: 1px solid var(--border); }
+.agent-settings-about dt { color: var(--text-muted); }
+.agent-settings-about dd { margin: 0; }
+.agent-settings-model ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.agent-settings-model li { display: grid; gap: 2px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; }
+.agent-settings-model code { color: var(--text-muted); font-size: 10px; }
+
+/*
+ * The Agent editor predates the single-surface product. Its shared panel styles
+ * read the console palette names; inside Settings those names are re-bound to
+ * the product's semantic tokens so the same markup follows the Agent theme.
+ */
+.agent-settings {
+  --ink-soft: var(--text-muted);
+  --muted: var(--text-muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --paper-raised: var(--surface-raised);
+  --paper-inset: var(--surface-sunk);
+  --danger-wash: var(--state-danger-wash);
+  --danger: var(--state-danger-strong);
+  --signal: var(--state-signal);
+  --steel-wash: var(--surface-sunk);
+  --steel-ink: var(--text-strong);
+}

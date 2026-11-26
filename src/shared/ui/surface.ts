@@ -19,10 +19,12 @@ export const AGENT_SURFACE_VALUE = 'agent';
 export const CONSOLE_SURFACE_VALUE = 'console';
 
 export function resolveSurface(search: string): Surface {
-  const params = new URLSearchParams(search);
-  const requested = params.get(AGENT_SURFACE_PARAM);
-  if (requested === CONSOLE_SURFACE_VALUE) return 'console';
-  if (requested === AGENT_SURFACE_VALUE) return 'agent';
+  /*
+   * The console was folded into the Agent's settings drawer. Old links still
+   * carry `surface=console`; landing them on a removed screen would break them,
+   * so every value resolves to the one product surface.
+   */
+  void search;
   return 'agent';
 }
 
@@ -34,9 +36,9 @@ export function resolveSurface(search: string): Surface {
  * non-empty workspace hash keeps the caller on the console.
  */
 export function resolveSurfaceFromLocation(search: string, hash: string): Surface {
-  const params = new URLSearchParams(search);
-  if (params.get(AGENT_SURFACE_PARAM) !== null) return resolveSurface(search);
-  return hash.length > 1 ? 'console' : 'agent';
+  void search;
+  void hash;
+  return 'agent';
 }
 
 export function agentSurfaceHref(): string {

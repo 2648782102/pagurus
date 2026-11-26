@@ -91,24 +91,32 @@ describe('AgentWorkspace', () => {
     expect(screen.getByRole('button', { name: '创建 Agent' })).toBeTruthy();
   });
 
-  it('sends the explicit capability grants and shows the fail-closed empty state', async () => {
+  it('sends explicit capability grants from the checkbox list', async () => {
     let created = false;
-    fetchMock.mockImplementation(serve((url, init) => {
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (url === '/v1/agents/capability-grants') {
+        return json({ version: 1, agents: [], staleGrants: [],
+          available: { tools: ['workspace_read', 'workspace_list'], skills: ['release-notes'] } });
+      }
+      if (url === '/v1/runtime') return json({ name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: ['agents', 'provider-neutral-model-catalog'] });
+      if (url === '/v1/model-catalog') return json({ models: [{ providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] }] });
+      if (url === '/v1/agents/default') return json({ agent: null });
       if (url.endsWith('/v1/agents') && init?.method === 'POST') {
         created = true;
         return json({ agent: AGENT }, 201);
       }
       if (url.endsWith('/v1/agents')) return json({ agents: created ? [AGENT] : [] });
       if (url.includes('/v1/agents/')) return json({ agent: AGENT });
-      return undefined;
-    }));
-    render(<AgentWorkspace />);
+      return json({});
+    });
+    render(<AgentWorkspace runtime={{ name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: ['agents', 'provider-neutral-model-catalog'] } as never} />);
     fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
     await screen.findByLabelText('名称');
     expect(screen.getByText(/未授权任何能力/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
-    fireEvent.change(screen.getByLabelText(/工具/), { target: { value: 'workspace_read\nworkspace_list' } });
-    fireEvent.change(screen.getByLabelText(/Skill/), { target: { value: 'release-notes' } });
+    fireEvent.click(await screen.findByLabelText('workspace_read'));
+    fireEvent.click(await screen.findByLabelText('workspace_list'));
+    fireEvent.click(await screen.findByLabelText('release-notes'));
     fireEvent.click(screen.getByRole('button', { name: '创建 Agent' }));
 
     await waitFor(() => expect(fetchMock.mock.calls.some(([path, init]) => path === '/v1/agents' && init?.method === 'POST')).toBe(true));
@@ -120,16 +128,28 @@ describe('AgentWorkspace', () => {
     ]);
   });
 
-  it('rejects an invalid capability name before calling the Runtime', async () => {
-    fetchMock.mockImplementation(serve(() => undefined));
-    render(<AgentWorkspace />);
-    fireEvent.click(await screen.findByRole('button', { name: '新建 Agent' }));
+  it('does not offer an unregistered tool but keeps a stale grant visible', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (url === '/v1/agents/capability-grants') {
+        return json({ version: 1,
+          agents: [{ agentId: AGENT.id, currentRevisionId: REV1.id, archived: false,
+            grants: [{ kind: 'tool', name: 'WorkspaceRead', stillAvailable: false }] }],
+          staleGrants: [{ agentId: AGENT.id, revisionId: REV1.id, kind: 'tool', name: 'WorkspaceRead' }],
+          available: { tools: ['workspace_read'], skills: [] } });
+      }
+      if (url === '/v1/runtime') return json({ name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: ['agents', 'provider-neutral-model-catalog'] });
+      if (url === '/v1/model-catalog') return json({ models: [{ providerId: 'magpie', modelId: 'fixture/model', reference: 'magpie:fixture/model', displayName: 'Fixture', capabilities: ['chat'] }] });
+      if (url === '/v1/agents/default') return json({ agent: AGENT });
+      if (url.endsWith('/v1/agents')) return json({ agents: [AGENT] });
+      if (url.includes('/v1/agents/')) return json({ agent: { ...AGENT, revisions: [REV1] } });
+      return json({});
+    });
+    render(<AgentWorkspace runtime={{ name: 'Conchbase', version: '1.0.0', state: 'ready', capabilities: ['agents', 'provider-neutral-model-catalog'] } as never} />);
     await screen.findByLabelText('名称');
-    fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'Research' } });
-    fireEvent.change(screen.getByLabelText(/工具/), { target: { value: 'WorkspaceRead' } });
-    fireEvent.click(screen.getByRole('button', { name: '创建 Agent' }));
-    expect(await screen.findByText(/不符合 Runtime 命名规则/)).toBeTruthy();
-    expect(fetchMock.mock.calls.some(([path, init]) => path === '/v1/agents' && init?.method === 'POST')).toBe(false);
+    const stale = await screen.findByRole('checkbox', { name: /WorkspaceRead/ });
+    expect((stale as HTMLInputElement).disabled).toBe(false);
+    expect(stale.closest('li')?.className).toContain('is-stale');
+    expect(screen.queryByRole('checkbox', { name: 'workspace_read' })).toBeTruthy();
   });
 
   it('shows an explicit unsupported state without calling Agent routes on older runtimes', async () => {

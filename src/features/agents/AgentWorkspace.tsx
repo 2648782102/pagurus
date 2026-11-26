@@ -2,18 +2,30 @@ import { useEffect, useState } from 'react';
 import { useAgents } from './useAgents.js';
 import { AgentEditor } from './AgentEditor.js';
 import { AgentPicker } from './AgentPicker.js';
+import { useCapabilityCatalog } from './useCapabilityCatalog.js';
+import type { RuntimeInfo } from '../../shared/api/runtime.js';
 import { AgentRevisionHistory } from './AgentRevisionHistory.js';
 import { earliestRevision } from './agent-revisions.js';
 import { Button, EmptyState, Notice, Section, SkeletonRows } from '../../shared/ui/primitives.js';
 
-export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => void }) {
+export function AgentWorkspace({ onAgentsChanged, runtime = null }: { onAgentsChanged?: () => void; runtime?: RuntimeInfo | null }) {
   const agents = useAgents(onAgentsChanged);
   const selected = agents.selected;
+  const catalog = useCapabilityCatalog(selected?.id, runtime);
   const [creating, setCreating] = useState(false);
   const [compareLeftId, setCompareLeftId] = useState('');
   const [compareRightId, setCompareRightId] = useState('');
   const busy = agents.phase === 'saving' || agents.phase === 'loading';
   const currentReference = agents.models.find((model) => model.reference === agents.modelReference);
+  const selectedTools = new Set(agents.toolNames.split(/\s+/).filter(Boolean));
+  const selectedSkills = new Set(agents.skillNames.split(/\s+/).filter(Boolean));
+  const toolOptions = catalog.options.tools;
+  const skillOptions = catalog.options.skills;
+  const toggle = (current: string, name: string): string => {
+    const next = new Set(current.split(/\s+/).filter(Boolean));
+    if (next.has(name)) next.delete(name); else next.add(name);
+    return [...next].join('\n');
+  };
   const defaultCompareLeftId = selected?.currentRevisionId ?? '';
   const defaultCompareRightId = selected ? earliestRevision(selected.revisions)?.id ?? selected.currentRevisionId : '';
 
@@ -84,16 +96,18 @@ export function AgentWorkspace({ onAgentsChanged }: { onAgentsChanged?: () => vo
             name={agents.name}
             instructions={agents.instructions}
             modelReference={agents.modelReference}
-            toolNames={agents.toolNames}
-            skillNames={agents.skillNames}
+            toolOptions={toolOptions}
+            skillOptions={skillOptions}
+            selectedTools={selectedTools}
+            selectedSkills={selectedSkills}
+            onToggleTool={(name) => agents.setToolNames(toggle(agents.toolNames, name))}
+            onToggleSkill={(name) => agents.setSkillNames(toggle(agents.skillNames, name))}
             saving={agents.phase === 'saving'}
             busy={busy}
             currentReference={currentReference}
             onNameChange={agents.setName}
             onInstructionsChange={agents.setInstructions}
             onModelReferenceChange={agents.setModelReference}
-            onToolNamesChange={agents.setToolNames}
-            onSkillNamesChange={agents.setSkillNames}
             onSave={agents.save}
             onMakeDefault={agents.makeDefault}
             onClearDefault={agents.clearDefault}
