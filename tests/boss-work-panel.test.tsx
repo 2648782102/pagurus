@@ -123,6 +123,12 @@ describe('Boss work rail resilience', () => {
     const { container } = render(<BossWorkPanel runtime={runtime} messages={[]} />);
     await screen.findByRole('complementary', { name: '正在推进' });
     expect(container.querySelector('.boss-work-project')?.className).toContain('anim-live-sweep');
-    expect(container.querySelector('.boss-work-dot')?.className).toContain('anim-live-orbit');
+    /*
+     * The worker's activity dot is DSH's `StateDot`: an active worker gets its
+     * own synchronised spinner, which replaces the bespoke rotating dot and its
+     * `anim-live-orbit` class. The semantic state is the assertion now, because
+     * it is the fact the reader depends on; the spinner is how it looks.
+     */
+    expect(container.querySelector('[data-state="ongoing"]')).toBeTruthy();
   });
 });

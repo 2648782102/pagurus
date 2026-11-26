@@ -272,14 +272,6 @@
   white-space: nowrap;
 }
 .agent-thread-head p { margin: 4px 0 0; color: var(--ag-muted); font-size: 11px; }
-.agent-thread-state {
-  flex: 0 0 auto;
-  margin-block-start: 3px;
-  padding: 3px 9px;
-  border: 1px solid var(--ag-line);
-  border-radius: 999px;
-  color: var(--ag-muted);
-  font-size: 10px;
-}
-.agent-thread-state[data-busy='true'] { border-color: var(--ag-tide); color: var(--ag-tide-ink); }
+/* The thread's state badge is DSH's `Tag`; only its alignment is ours. */
+.agent-thread-state { flex: 0 0 auto; margin-block-start: 3px; }
 .agent-thread-area .agent-chat-thread { padding-block-start: 8px; }

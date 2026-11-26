@@ -8,6 +8,8 @@ import {
 import { supportsOrganizationContract, getOrganizationSession } from '../shared/api/organization.js';
 import type { AgentChatMessage } from '../shared/api/agent-chat.js';
 import type { RuntimeInfo } from '../shared/api/runtime.js';
+import { StateDot, type StateDotState } from '../dsh/primitives/StateDot.js';
+import { Tag, type TagTone } from '../dsh/primitives/Tag.js';
 
 const STATE_LABELS: Readonly<Record<string, string>> = Object.freeze({
   failed: '失败',
@@ -35,6 +37,30 @@ function readableProject(id: string): string {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+/**
+ * Project state in DSH's tag vocabulary.
+ *
+ * The work rail is a reading surface, so its labels use DSH's read-only `Tag`
+ * tones: `success` for a finished state, `info` for work in progress, `quiet`
+ * for a state that is simply parked. The word is always rendered — tone is a
+ * second signal, never the only one.
+ */
+function projectTone(state: string): TagTone {
+  if (state === 'archived' || state === 'quiet') return 'quiet';
+  if (state === 'active' || state === 'resumed') return 'info';
+  if (state === 'failed') return 'danger';
+  return 'outline';
+}
+
+/** Worker activity in DSH's five-state dot vocabulary. */
+function workerDot(activity: string): StateDotState {
+  if (activity === 'active') return 'ongoing';
+  if (activity === 'done') return 'done';
+  if (activity === 'failed') return 'error';
+  if (activity === 'attention') return 'warning';
+  return 'idle';
 }
 
 /** A read-only work rail for one Boss conversation. */
@@ -143,14 +169,14 @@ export function BossWorkPanel({ runtime, messages }: {
             <li key={project.id} className={`boss-work-project is-${project.state}${project.workers.some((worker) => worker.activity === 'active') ? ' anim-live-sweep' : ''}`}>
               <header>
                 <strong>{readableProject(project.id)}</strong>
-                <span>{projectStateLabel(project.state)}</span>
+                <Tag tone={projectTone(project.state)}>{projectStateLabel(project.state)}</Tag>
               </header>
               <code>{shortId(project.id)}</code>
               {project.workers.length > 0 && (
                 <ul>
                   {project.workers.slice(-3).map((worker) => (
                     <li key={worker.id} className={`is-${worker.activity}${workerMotionClass(worker.id, worker.activity)}`}>
-                      <span className={`boss-work-dot${worker.activity === 'active' ? ' anim-live-orbit' : ''}`} aria-hidden="true" />
+                      <StateDot state={workerDot(worker.activity)} />
                       <span className="boss-work-worker-name">{worker.name}</span>
                       <span className="boss-work-worker-state">
                         {bossWorkerStateLabel(worker.state)}

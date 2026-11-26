@@ -27,6 +27,7 @@ import { AgentSettingsDrawer } from './AgentSettingsDrawer.js';
 import { supportsWorkspaceIndex } from '../shared/api/workspace.js';
 import type { ComposerCommand } from '../features/agent-chat/composer-trigger.js';
 import { useWorkspaceColumns } from './useWorkspaceColumns.js';
+import { Tag } from '../dsh/primitives/Tag.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -353,9 +354,17 @@ export function AgentApp() {
                     <h1>{threadTitle ?? '新对话'}</h1>
                     <p>{chat.title} · {chat.conversation.messages.length} 条消息</p>
                   </div>
-                  <span className="agent-thread-state" data-busy={chat.hasPending}>
+                  {/*
+                    DSH's read-only tag, not another hand-drawn capsule: the
+                    11px badge vocabulary is the one DSH uses for a fact beside
+                    a title, and `info` is its tone for work in progress.
+                  */}
+                  <Tag
+                    className="agent-thread-state"
+                    tone={chat.hasPending ? 'info' : 'outline'}
+                  >
                     {chat.hasPending ? 'Boss 正在处理' : '空闲'}
-                  </span>
+                  </Tag>
                 </header>
                 <AgentChatThread
                   messages={chat.conversation.messages}
