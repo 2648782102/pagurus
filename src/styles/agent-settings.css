@@ -189,9 +189,33 @@
 .agent-settings .agent-tool-row small { color: var(--set-muted); }
 
 .agent-settings-actions h3 { margin-block: 5px 12px; }
-.agent-settings-actions ul { display: grid; gap: 1px; margin: 0; padding: 0; overflow: hidden; list-style: none; border: 1px solid var(--set-line); border-radius: 10px; background: var(--set-card); }
-.agent-settings-actions li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 14px; border-block-end: 1px solid var(--set-line); }
-.agent-settings-actions li:last-child { border-block-end: 0; }
-.agent-settings-actions strong { display: block; color: var(--set-text); font-size: 12px; }
-.agent-settings-actions small { color: var(--set-muted); font-size: 10px; }
-.agent-settings-actions button { padding: 5px 11px; border: 1px solid var(--set-line); border-radius: 999px; background: #232429; color: var(--set-text); cursor: pointer; font-size: 11px; }
+/*
+ * Appearance entries are DSH disclosure rows. The row itself comes from the
+ * vendored atom; only the card shell and the trailing action belong here.
+ */
+.agent-settings-rows {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--set-line);
+  border-radius: 10px;
+  background: var(--set-card);
+}
+.agent-settings-rows > div + div { border-block-start: 1px solid var(--set-line); }
+.agent-settings-rows > div { padding: 12px 14px; }
+.agent-settings-row-action {
+  padding: 5px 11px;
+  border: 1px solid var(--set-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--set-text);
+  cursor: pointer;
+  font-size: 11px;
+}
+.agent-settings-row-action:hover { border-color: var(--dsw-alias-border-l4); }
+.agent-settings-row-note {
+  margin: 4px 0 0;
+  color: var(--set-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}

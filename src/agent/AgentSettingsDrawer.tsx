@@ -3,6 +3,11 @@ import type { RuntimeInfo } from '../shared/api/runtime.js';
 import { AgentSettingsPanel } from '../features/agents/AgentSettingsPanel.js';
 import { ModelSettingsPanel } from '../features/agents/ModelSettingsPanel.js';
 import { AgentIcon } from '../shared/ui/AgentIcon.js';
+import { DisclosureRow } from '../dsh/primitives/DisclosureRow.js';
+import {
+  IconEyeOutlineRegular,
+  IconSettingsOutlineRegular,
+} from '../dsh/primitives/icons/index.js';
 
 const SECTIONS = [
   { id: 'agent', label: 'Agent 与工具', icon: 'agent' as const },
@@ -87,20 +92,54 @@ export function AgentSettingsDrawer({
           {section === 'appearance' && (
             <section className="agent-settings-actions" aria-label="外观与工具">
               <h3>外观与工具</h3>
-              <ul>
-                <li>
-                  <div><strong>主题</strong><small>当前：{theme === 'dark' ? '深色' : '浅色'}</small></div>
-                  <button type="button" onClick={onToggleTheme}>切换</button>
-                </li>
-                <li>
-                  <div><strong>对话上下文</strong><small>固定版本、能力边界与执行记录</small></div>
-                  <button type="button" onClick={onOpenContext}>打开</button>
-                </li>
-                <li>
-                  <div><strong>诊断</strong><small>运行时状态与支持信息</small></div>
-                  <button type="button" onClick={onOpenDiagnostics}>打开</button>
-                </li>
-              </ul>
+              {/*
+               * DSH's disclosure row, so the page reads as a list of process
+               * lines with a trailing action rather than a label/button table.
+               */}
+              <div className="agent-settings-rows">
+                <DisclosureRow
+                  icon={<IconEyeOutlineRegular size={14} />}
+                  title={`主题 · 当前${theme === 'dark' ? '深色' : '浅色'}`}
+                  open
+                  expandable={false}
+                  onToggle={() => undefined}
+                  headerAccessory={(
+                    <button type="button" className="agent-settings-row-action" onClick={onToggleTheme}>
+                      切换
+                    </button>
+                  )}
+                >
+                  <p className="agent-settings-row-note">两套配色来自同一组设计令牌。</p>
+                </DisclosureRow>
+                <DisclosureRow
+                  icon={<IconSettingsOutlineRegular size={14} />}
+                  title="对话上下文"
+                  open
+                  expandable={false}
+                  onToggle={() => undefined}
+                  headerAccessory={(
+                    <button type="button" className="agent-settings-row-action" onClick={onOpenContext}>
+                      打开
+                    </button>
+                  )}
+                >
+                  <p className="agent-settings-row-note">固定版本、能力边界与执行记录。</p>
+                </DisclosureRow>
+                <DisclosureRow
+                  icon={<IconSettingsOutlineRegular size={14} />}
+                  title="诊断"
+                  open
+                  expandable={false}
+                  onToggle={() => undefined}
+                  headerAccessory={(
+                    <button type="button" className="agent-settings-row-action" onClick={onOpenDiagnostics}>
+                      打开
+                    </button>
+                  )}
+                >
+                  <p className="agent-settings-row-note">运行时状态与支持信息。</p>
+                </DisclosureRow>
+              </div>
             </section>
           )}
           {section === 'about' && (

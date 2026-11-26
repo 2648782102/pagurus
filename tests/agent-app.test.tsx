@@ -409,8 +409,13 @@ describe('shipped Agent surface', () => {
     fireEvent.click(screen.getByRole('button', { name: '菜单' }));
     fireEvent.click(await screen.findByRole('button', { name: /外观与工具/ }));
     const section = await screen.findByRole('region', { name: '外观与工具' });
-    const item = within(section).getByText(label).closest('li');
-    fireEvent.click(within(item as HTMLElement).getByRole('button', { name: '打开' }));
+    /*
+     * Each appearance entry is now a DSH disclosure row (a `div`, not the
+     * previous list item), so the row is found by its title and the trailing
+     * action inside that row is the one clicked.
+     */
+    const row = within(section).getByText(label).closest('.agent-settings-rows > div');
+    fireEvent.click(within(row as HTMLElement).getByRole('button', { name: '打开' }));
   }
 
   it('opens context and diagnostics from the single menu', async () => {
