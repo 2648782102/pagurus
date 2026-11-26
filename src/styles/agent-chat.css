@@ -100,9 +100,12 @@
 }
 .agent-thread-area .agent-chat-message-assistant p {
   color: var(--text-strong);
-  font-family: var(--font-reading);
-  font-size: 16px;
-  line-height: 1.82;
+  /*
+   * DSH's markdown base: the sans stack, the content size, and the 24px
+   * rhythm. The reading face was a deliberate departure for an editorial
+   * surface; on a DSH-based shell it read as a second, competing type system.
+   */
+  font: var(--dsw-font-markdown-base);
   letter-spacing: .006em;
 }
 
@@ -138,28 +141,21 @@
   font: 13px/1.6 var(--font-mono);
 }
 
-/* Structured answers: prose stays serif, machine text and list markers stay in
-   the tool voice so a long reply is scannable without becoming a document. */
+/* Structured answers use DSH's markdown ladder: one sans family at the base
+   size, headings one step up, and the code voice reserved for machine text. */
 .agent-answer { display: grid; gap: 12px; }
 .agent-answer p {
   margin: 0;
   color: var(--text-strong);
-  font-family: var(--font-reading);
-  /* One step up from the old 16px: at 44rem the line was short enough that the
-     body read smaller than it is, next to a 34px title. */
-  font-size: var(--type-body);
+  font: var(--dsw-font-markdown-base);
   font-weight: 400;
-  line-height: 1.78;
-  letter-spacing: .006em;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .agent-answer h4 {
   margin: 12px 0 0;
   color: var(--text-strong);
-  font: 600 15px var(--font-body);
-  letter-spacing: -.008em;
-  line-height: 1.4;
+  font: var(--dsw-font-markdown-h4);
 }
 .agent-answer ul,
 .agent-answer ol {
@@ -170,40 +166,42 @@
 }
 .agent-answer li {
   color: var(--text-strong);
-  font-family: var(--font-reading);
-  font-size: var(--type-body);
-  line-height: 1.72;
+  font: var(--dsw-font-markdown-base);
 }
 .agent-answer li::marker { color: var(--accent); }
 /* A bold run inside a serif paragraph should read as emphasis, not as a weight
    jump that breaks the line rhythm. */
 .agent-answer strong { color: var(--text-strong); font-weight: 650; }
-.agent-answer p strong { font-family: var(--font-body); font-size: .95em; letter-spacing: -.005em; }
+.agent-answer p strong { font: var(--dsw-font-markdown-base-strong); }
 .agent-answer blockquote {
   margin: 0;
   padding: 2px 0 2px 14px;
   border-left: 2px solid var(--border-strong);
   color: var(--text);
-  font-family: var(--font-reading);
-  font-size: var(--type-body);
-  line-height: 1.75;
+  font: var(--dsw-font-markdown-base);
 }
+/*
+ * Code fences use DSH's markdown code-block recipe: the large radius, the
+ * banner fill above the body fill, and the banner's own typography. The tokens
+ * are DSH's, so a theme flip changes both the banner and the code ground.
+ */
 .agent-answer-code {
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface-sunk);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-alias-markdown-code-block);
 }
 .agent-answer-code figcaption {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  font: 500 10px var(--font-body);
-  letter-spacing: .03em;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-markdown-code-block-banner);
+  color: var(--dsw-alias-label-primary);
+  font: 11px/18px var(--dsw-font-family);
+  letter-spacing: 0;
 }
 .agent-answer-code-lang { flex: 1 1 auto; min-width: 0; }
 

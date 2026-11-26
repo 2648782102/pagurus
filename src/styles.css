@@ -6,7 +6,7 @@
  * them first means every `--dsw-*` reference below resolves, and our own
  * `--ag-*` layer can map onto DSH's scale instead of inventing a second one.
  */
-@import "./dsh/theme/base.css"; @import "./dsh/theme/design-platform.css"; @import "./dsh/theme/corner-shape.css"; @import "./dsh/theme/focus.css"; @import "./dsh/theme/scrollbar.css";
+@import "./dsh/theme/base.css"; @import "./dsh/theme/design-platform.css"; @import "./dsh/theme/gradient-shadow-text.css"; @import "./dsh/theme/corner-shape.css"; @import "./dsh/theme/focus.css"; @import "./dsh/theme/scrollbar.css";
 @import "./styles/tokens.css"; @import "./styles/agent-tokens.css"; @import "./styles/semantic-tokens.css"; @import "./styles/primitives.css"; @import "./styles/base.css";
 @import "./styles/shell.css"; @import "./styles/page.css"; @import "./styles/overview.css"; @import "./styles/tasks.css"; @import "./styles/workbench.css";
 @import "./styles/organization.css"; @import "./styles/execution.css"; @import "./styles/conversation.css"; @import "./styles/configuration.css"; @import "./styles/footer.css";
