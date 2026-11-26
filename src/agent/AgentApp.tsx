@@ -307,6 +307,15 @@ export function AgentApp() {
               )}
 
               <div className="agent-thread-area">
+                <header className="agent-thread-head">
+                  <div>
+                    <h1>{threadTitle ?? '新对话'}</h1>
+                    <p>{chat.title} · {chat.conversation.messages.length} 条消息</p>
+                  </div>
+                  <span className="agent-thread-state" data-busy={chat.hasPending}>
+                    {chat.hasPending ? 'Boss 正在处理' : '空闲'}
+                  </span>
+                </header>
                 <AgentChatThread
                   messages={chat.conversation.messages}
                   agentName={chat.title}

@@ -33,3 +33,28 @@
 @media (width >= 1440px) {
   .boss-insight { display: flex; }
 }
+
+/* Sections read as three distinct blocks rather than one long strip. */
+.boss-insight section {
+  padding: 15px 13px;
+  margin-block: 10px;
+  border: 1px solid var(--ag-line);
+  border-radius: 9px;
+  background: var(--ag-paper-raised);
+}
+.boss-insight section h3 {
+  margin-block-end: 8px;
+  color: var(--ag-ink-soft);
+  letter-spacing: .03em;
+}
+.boss-insight-head { padding-block-end: 16px; }
+.boss-insight-head h2 { font-size: 15px; letter-spacing: -.01em; }
+.boss-insight-focus { font-size: 14px; line-height: 1.6; }
+.boss-insight-signals li { border-radius: 6px; }
+
+/* The rail's focus block is the one thing to read first: give it the strongest
+   type treatment and keep the report list visually secondary. */
+.boss-insight section:first-of-type { background: var(--ag-tide-wash); border-color: var(--ag-tide); }
+.boss-insight section:first-of-type h3 { color: var(--ag-tide-ink); }
+.boss-insight-signals li { padding: 8px 9px; background: var(--ag-paper-raised); }
+.boss-insight-signals li p { font-size: 11px; line-height: 1.55; color: var(--ag-ink-soft); }

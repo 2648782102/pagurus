@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { AgentChatConversationSummary } from '../shared/api/agent-chat.js';
-import { groupForRail } from './agent-surface-model.js';
+import { groupForRail, shortRelativeTime } from './agent-surface-model.js';
 import { AgentIcon } from '../shared/ui/AgentIcon.js';
 
 /** The persistent session rail: one workspace, one list of running threads. */
@@ -44,7 +44,8 @@ export function AgentSessionRail({
                     onClick={() => onResume(entry.id)}
                     title={entry.lastMessagePreview || '（无标题对话）'}
                   >
-                    {railTitle(entry.lastMessagePreview)}
+                    <span className="agent-rail-title">{railTitle(entry.title ?? entry.lastMessagePreview)}</span>
+                    <span className="agent-rail-meta">{shortRelativeTime(entry.createdAt)}</span>
                   </button>
                 </li>
               ))}

@@ -201,6 +201,7 @@ export interface AgentChatConversationSummary {
   readonly reasoningEffort: AgentChatReasoningEffort | null;
   readonly createdAt: string;
   readonly messageCount: number;
+  readonly title?: string;
   readonly lastMessagePreview: string;
 }
 

@@ -67,12 +67,39 @@
 }
 
 .agent-rail .agent-rail-list button {
-  display: block;
-  block-size: 34px;
-  max-block-size: 34px;
-  padding-block: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  block-size: 36px;
+  padding: 0 9px;
   overflow: hidden;
-  line-height: 18px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ag-ink-soft);
+  cursor: pointer;
+  font: 12px var(--ag-sans);
+  text-align: start;
 }
+.agent-rail-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-rail-meta { color: var(--ag-faint); font-size: 10px; white-space: nowrap; }
+.agent-rail-list button.is-active .agent-rail-meta { color: var(--ag-tide-ink); opacity: .75; }
+
+.agent-rail-head { padding: 16px 12px 14px; }
+.agent-rail-brand { font-size: 14px; letter-spacing: -.03em; }
+.agent-rail-new { border-radius: 9px; padding-block: 9px; }
+.agent-rail-list section h2 { padding-block-end: 4px; }
+
+/* The open thread reads as selected, not merely hovered. */
+.agent-rail-list button.is-active {
+  background: var(--ag-tide-wash);
+  box-shadow: inset 2px 0 0 var(--ag-tide);
+}
+.agent-rail-list { padding: 12px 9px 18px; }
+.agent-rail-list section + section { margin-block-start: 16px; }
