@@ -87,15 +87,20 @@
 .boss-work-quiet { margin: 0; color: var(--ag-faint); font-size: 12px; }
 
 .boss-work-projects > ol { gap: 10px; }
+/*
+ * DSH's card language: a hairline surface with the shared radius, and state
+ * carried by the tag in the header rather than by a coloured left edge. The
+ * sweeping top edge stays as the only motion, because it says "this project is
+ * working" and no static style can.
+ */
 .boss-work-project {
   position: relative;
   display: grid;
   gap: 7px;
-  padding: 11px 12px;
-  border: 0;
-  border-inline-start: 3px solid var(--ag-tide);
-  border-radius: 0;
-  background: color-mix(in srgb, var(--ag-paper-raised) 64%, transparent);
+  padding: 11px 12px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
   overflow: hidden;
 }
 .boss-work-project::after {
@@ -108,9 +113,8 @@
   background-size: 180% 100%;
 }
 .boss-work-project.anim-live-sweep::after { animation: motion-live-sweep calc(var(--motion-attention) * 1.1) linear infinite; }
-.boss-work-project header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.boss-work-project header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .boss-work-project header strong { font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
-.boss-work-project header span { flex: 0 0 auto; color: var(--ag-tide-ink); font-size: 11px; }
 .boss-work-project > code { color: var(--ag-faint); font: 9px var(--font-mono); }
 
 .boss-work-project ul { gap: 5px; margin-block-start: 4px; }
