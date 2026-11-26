@@ -1,6 +1,9 @@
 import {
   ArrowUp,
   CircleStop,
+  Cpu,
+  PlugZap,
+  Settings2,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,6 +26,9 @@ const ICONS = {
   send: ArrowUp,
   stop: CircleStop,
   close: X,
+  agent: Cpu,
+  model: Settings2,
+  extensions: PlugZap,
 } as const satisfies Record<string, LucideIcon>;
 
 export type AgentIconName = keyof typeof ICONS;

@@ -5,9 +5,9 @@ import { ModelSettingsPanel } from '../features/agents/ModelSettingsPanel.js';
 import { AgentIcon } from '../shared/ui/AgentIcon.js';
 
 const SECTIONS = [
-  { id: 'agent', label: 'Agent 与工具' },
-  { id: 'model', label: '模型' },
-  { id: 'about', label: '关于运行时' },
+  { id: 'agent', label: 'Agent 与工具', icon: 'agent' as const },
+  { id: 'model', label: '模型', icon: 'model' as const },
+  { id: 'about', label: '关于运行时', icon: 'extensions' as const },
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -66,6 +66,7 @@ export function AgentSettingsDrawer({
               aria-pressed={section === entry.id}
               onClick={() => setSection(entry.id)}
             >
+              <AgentIcon name={entry.icon} size={14} />
               {entry.label}
             </button>
           ))}

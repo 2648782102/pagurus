@@ -1,61 +1,189 @@
+/* Agent settings: a dark workbench, not a form bolted onto the chat. */
+
 .agent-settings-layer {
   position: fixed;
   inset: 0;
   z-index: 40;
   display: grid;
-  justify-items: end;
-  background: rgb(8 12 11 / 28%);
+  background: rgb(0 0 0 / 46%);
 }
 .agent-settings {
+  --set-bg: #131416;
+  --set-side: #191a1d;
+  --set-card: #1e1f23;
+  --set-line: #2b2d32;
+  --set-text: #f4f4f5;
+  --set-muted: #9b9ca3;
+  --set-accent: #6e8bff;
+  --set-accent-wash: #232a44;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
-  inline-size: min(920px, 96vw);
-  block-size: 100dvh;
-  background: var(--surface-canvas);
-  border-inline-start: 1px solid var(--border);
-  box-shadow: -24px 0 60px rgb(0 0 0 / 18%);
+  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-rows: 56px minmax(0, 1fr);
+  grid-template-areas: "head head" "nav body";
+  inline-size: min(1080px, 94vw);
+  block-size: min(760px, 92dvh);
+  margin: auto;
+  overflow: hidden;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 14px;
+  background: var(--set-bg);
+  color: var(--set-text);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 55%);
 }
-.agent-settings-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-block-end: 1px solid var(--border); }
-.agent-settings-head h2 { margin: 0; font-size: 18px; }
-.agent-settings-close { display: grid; place-items: center; inline-size: 30px; block-size: 30px; border: 1px solid var(--border); border-radius: 50%; background: transparent; cursor: pointer; }
-.agent-settings-nav { display: flex; gap: 6px; padding: 10px 22px; overflow: auto; border-block-end: 1px solid var(--border); }
-.agent-settings-nav button { padding: 7px 12px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; }
-.agent-settings-nav button.is-active { border-color: var(--border-strong); background: var(--surface-raised); color: var(--text-strong); }
-.agent-settings-body { min-block-size: 0; overflow: auto; padding: 8px 22px 40px; }
-.agent-tool-list { margin: 0; padding: 0; border: 0; }
-.agent-tool-list legend { margin-block-end: 6px; font-weight: 600; }
-.agent-tool-list ul { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
-.agent-tool-list li label { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; }
-.agent-tool-list li.is-stale { opacity: .62; }
-.agent-tool-list small { margin-inline-start: auto; color: var(--state-caution-strong); font-size: 10px; }
-@media (width < 720px) {
-  .agent-settings { inline-size: 100vw; }
+.agent-settings-head {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 20px;
+  border-block-end: 1px solid var(--set-line);
+  background: var(--set-bg);
+}
+.agent-settings-head h2 { margin: 0; color: var(--set-text); font-size: 15px; font-weight: 650; }
+.agent-settings-close {
+  display: grid; place-items: center; inline-size: 28px; block-size: 28px;
+  border: 1px solid var(--ag-line); border-radius: 50%;
+  background: transparent; color: var(--ag-muted); cursor: pointer;
+}
+.agent-settings-nav {
+  grid-area: nav;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 10px;
+  border-inline-end: 1px solid var(--set-line);
+  background: var(--set-side);
+}
+.agent-settings-nav button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--set-muted);
+  cursor: pointer;
+  font: 500 12px var(--ag-sans);
+  text-align: start;
+}
+.agent-settings-nav button:hover { background: #232429; color: var(--set-text); }
+.agent-settings-nav button.is-active { background: var(--set-accent-wash); color: #dbe2ff; font-weight: 650; }
+.agent-settings-body {
+  grid-area: body;
+  min-block-size: 0;
+  overflow: auto;
+  padding: 22px 28px 36px;
+}
+.agent-settings-body h3 { margin: 0 0 4px; color: var(--set-text); font-size: 17px; }
+.agent-settings-agent > p { color: var(--set-muted); font-size: 12px; }
+
+.agent-settings-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--set-line);
+  border-radius: 10px;
+  background: var(--set-card);
+}
+.agent-settings-group { display: grid; gap: 10px; margin-block-start: 20px; }
+.agent-settings-group > header h4 { margin: 0; color: var(--set-text); font-size: 13px; }
+.agent-settings-group > header p { margin: 3px 0 0; color: var(--set-muted); font-size: 11px; }
+.agent-tool-list { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; overflow: hidden; border: 1px solid var(--ag-line); border-radius: 10px; background: var(--ag-paper); }
+.agent-tool-row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-block-end: 1px solid var(--set-line);
+}
+.agent-tool-row:last-child { border-block-end: 0; }
+.agent-tool-state { inline-size: 7px; block-size: 7px; border-radius: 50%; background: #58d3a5; }
+.agent-tool-row.is-stale .agent-tool-state { background: #e8b45a; }
+.agent-tool-row strong { display: block; color: var(--set-text); font: 550 12px var(--font-mono); }
+.agent-tool-row small { color: var(--set-muted); font-size: 10px; }
+.agent-tool-row.is-stale small { color: #e8b45a; }
+.agent-tool-switch {
+  position: relative;
+  inline-size: 34px;
+  block-size: 20px;
+  padding: 0;
+  border: 1px solid #3a3c43;
+  border-radius: 999px;
+  background: #2a2b30;
+  cursor: pointer;
+}
+.agent-tool-switch::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 50%;
+  background: #8c8d95;
+  transition: transform var(--motion-quick) var(--ease-out), background var(--motion-quick) var(--ease-out);
+}
+.agent-tool-switch[aria-checked='true'] { border-color: #4f6bd8; background: var(--set-accent); }
+.agent-tool-switch[aria-checked='true']::after { transform: translateX(14px); background: #fff; }
+
+.agent-settings-about dl { display: grid; gap: 6px; margin: 14px 0; }
+.agent-settings-about dl > div { display: flex; justify-content: space-between; gap: 18px; padding: 9px 11px; border: 1px solid var(--ag-line); border-radius: 8px; background: var(--ag-paper); }
+.agent-settings-about dt { color: var(--set-muted); font-size: 12px; }
+.agent-settings-about dd { margin: 0; font-size: 12px; }
+.agent-settings-model ul { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; overflow: hidden; border: 1px solid var(--ag-line); border-radius: 10px; background: var(--ag-paper); }
+.agent-settings-model li { display: flex; justify-content: space-between; gap: 16px; padding: 11px 13px; border-block-end: 1px solid var(--set-line); }
+.agent-settings-model li:last-child { border-block-end: 0; }
+.agent-settings-model code { color: var(--set-muted); font-size: 10px; }
+
+@media (width < 760px) {
+  .agent-settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: 56px auto minmax(0, 1fr); grid-template-areas: "head" "nav" "body"; inline-size: 100vw; block-size: 100dvh; border-radius: 0; }
+  .agent-settings-nav { flex-direction: row; overflow: auto; border-inline-end: 0; border-block-end: 1px solid var(--ag-line); }
+  .agent-settings-body { padding: 18px 16px 30px; }
 }
 
-.agent-settings-about h3, .agent-settings-model h3 { margin-block: 18px 10px; font-size: 13px; }
-.agent-settings-about dl { display: grid; gap: 8px; }
-.agent-settings-about dl > div { display: flex; justify-content: space-between; gap: 18px; padding-block: 7px; border-block-end: 1px solid var(--border); }
-.agent-settings-about dt { color: var(--text-muted); }
-.agent-settings-about dd { margin: 0; }
-.agent-settings-model ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.agent-settings-model li { display: grid; gap: 2px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; }
-.agent-settings-model code { color: var(--text-muted); font-size: 10px; }
-
-/*
- * The Agent editor predates the single-surface product. Its shared panel styles
- * read the console palette names; inside Settings those names are re-bound to
- * the product's semantic tokens so the same markup follows the Agent theme.
- */
-.agent-settings {
-  --ink-soft: var(--text-muted);
-  --muted: var(--text-muted);
-  --line: var(--border);
-  --line-strong: var(--border-strong);
-  --paper-raised: var(--surface-raised);
-  --paper-inset: var(--surface-sunk);
-  --danger-wash: var(--state-danger-wash);
-  --danger: var(--state-danger-strong);
-  --signal: var(--state-signal);
-  --steel-wash: var(--surface-sunk);
-  --steel-ink: var(--text-strong);
+.agent-settings-card > header h4 { margin: 0; color: var(--set-text); font-size: 13px; }
+.agent-settings-card > header p { margin: 3px 0 0; color: var(--set-muted); font-size: 11px; }
+.agent-settings-save {
+  position: sticky;
+  inset-block-end: -36px;
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: 22px;
+  padding-block: 14px;
+  background: linear-gradient(transparent, var(--set-bg) 35%);
 }
+
+/* Dark workbench field treatment, matching DSH's settings surface. */
+.agent-settings,
+.agent-settings h2,
+.agent-settings h3,
+.agent-settings h4,
+.agent-settings strong,
+.agent-settings .ui-field > span,
+.agent-settings .ui-field-label { color: var(--set-text); }
+.agent-settings .ui-field > span,
+.agent-settings .ui-field-label { color: var(--set-muted); }
+.agent-settings .ui-field-hint,
+.agent-settings small { color: var(--set-muted); }
+.agent-settings select,
+.agent-settings input[type='text'],
+.agent-settings .ui-select,
+.agent-settings .ui-text-input {
+  border-color: var(--set-line);
+  border-radius: 7px;
+  background: #151619;
+  color: var(--set-text);
+}
+.agent-settings .ui-button-primary { border-radius: 7px; background: #4f6bd8; }
+
+/* Tool rows inherit the card ground; a light list inside a dark card reads as
+   a disabled field and hides the model-supplied tool names. */
+.agent-settings .agent-tool-list,
+.agent-settings .agent-tool-row {
+  border-color: var(--set-line);
+  background: var(--set-card);
+}
+.agent-settings .agent-tool-row strong { color: var(--set-text); }
+.agent-settings .agent-tool-row small { color: var(--set-muted); }

@@ -36,6 +36,8 @@ describe('Agent settings panel', () => {
     }));
     render(<AgentSettingsPanel runtime={runtime} onAgentsChanged={() => undefined} />);
     expect(await screen.findByRole('heading', { name: 'Agent 与工具' })).toBeTruthy();
-    expect(await screen.findByRole('checkbox', { name: 'web_extract' })).toBeTruthy();
+    const tool = await screen.findByRole('switch', { name: 'web_extract' });
+    expect(tool.closest('li')?.className).toContain('agent-tool-row');
+    expect(screen.getByRole('group', { name: '工具' })).toBeTruthy();
   });
 });

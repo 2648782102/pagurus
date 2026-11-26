@@ -61,55 +61,72 @@ export function AgentSettingsPanel({
       {agents.length === 0 && error === null && <p>正在读取 Agent…</p>}
       {agents.length > 0 && (
         <>
-          <Field label="Agent" htmlFor="settings-agent">
-            <Select id="settings-agent" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
-              {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
-            </Select>
-          </Field>
-          <Field label="名称" htmlFor="settings-agent-name">
-            <TextInput id="settings-agent-name" value={name} onChange={(event) => setName(event.target.value)} />
-          </Field>
-          <Field label="模型" htmlFor="settings-agent-model">
-            <Select id="settings-agent-model" value={modelReference} onChange={(event) => setModelReference(event.target.value)}>
-              {models.map((model) => <option key={model.reference} value={model.reference}>{model.displayName}</option>)}
-            </Select>
-          </Field>
+          <section className="agent-settings-card" aria-label="Agent 身份">
+            <header><h4>身份</h4><p>选择要配置的 Agent，并设置它在会话中显示的名称。</p></header>
+            <Field label="Agent" htmlFor="settings-agent">
+              <Select id="settings-agent" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
+                {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="名称" htmlFor="settings-agent-name">
+              <TextInput id="settings-agent-name" value={name} onChange={(event) => setName(event.target.value)} />
+            </Field>
+          </section>
+          <section className="agent-settings-card" aria-label="模型">
+            <header><h4>模型</h4><p>这个 Agent 新任务使用的默认模型。</p></header>
+            <Field label="默认模型" htmlFor="settings-agent-model">
+              <Select id="settings-agent-model" value={modelReference} onChange={(event) => setModelReference(event.target.value)}>
+                {models.map((model) => <option key={model.reference} value={model.reference}>{model.displayName}</option>)}
+              </Select>
+            </Field>
+          </section>
 
-          <fieldset className="agent-settings-tools">
-            <legend>工具</legend>
-            <p>勾选这个 Agent 可以调用的 Runtime 工具。</p>
-            <ul>
+          <section className="agent-settings-group" role="group" aria-label="工具">
+            <header>
+              <h4>工具</h4>
+              <p>Runtime 注册的工具。打开后这个 Agent 才能调用。</p>
+            </header>
+            <ul className="agent-tool-list">
               {catalog.options.tools.map((tool) => (
-                <li key={tool.name} className={tool.available ? '' : 'is-stale'}>
-                  <label>
-                    <input type="checkbox" checked={tools.includes(tool.name)}
-                      onChange={() => toggle(tools, setTools, tool.name)} />
-                    <code>{tool.name}</code>
-                    {!tool.available && <small>Runtime 未注册</small>}
-                  </label>
+                <li key={tool.name} className={`agent-tool-row${tool.available ? '' : ' is-stale'}`}>
+                  <span className="agent-tool-state" aria-hidden="true" />
+                  <div>
+                    <strong>{tool.name}</strong>
+                    <small>{tool.available ? 'Runtime 已注册' : 'Runtime 未注册 · 旧授权'}</small>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tools.includes(tool.name)}
+                    aria-label={tool.name}
+                    className="agent-tool-switch"
+                    onClick={() => toggle(tools, setTools, tool.name)}
+                  />
                 </li>
               ))}
             </ul>
-          </fieldset>
+          </section>
 
           {catalog.options.skills.length > 0 && (
-            <fieldset className="agent-settings-tools">
-              <legend>Skill</legend>
-              <ul>
+            <section className="agent-settings-group" role="group" aria-label="Skill">
+              <header><h4>Skill</h4><p>Skill 只提供指令，不授予工具。</p></header>
+              <ul className="agent-tool-list">
                 {catalog.options.skills.map((skill) => (
-                  <li key={skill.name}>
-                    <label>
-                      <input type="checkbox" checked={skills.includes(skill.name)}
-                        onChange={() => toggle(skills, setSkills, skill.name)} />
-                      <code>{skill.name}</code>
-                    </label>
+                  <li key={skill.name} className="agent-tool-row">
+                    <span className="agent-tool-state" aria-hidden="true" />
+                    <div><strong>{skill.name}</strong><small>指令扩展</small></div>
+                    <button type="button" role="switch" aria-checked={skills.includes(skill.name)}
+                      aria-label={skill.name} className="agent-tool-switch"
+                      onClick={() => toggle(skills, setSkills, skill.name)} />
                   </li>
                 ))}
               </ul>
-            </fieldset>
+            </section>
           )}
 
-          <Button variant="primary" type="button" disabled={saving.saving} onClick={save}>{saving.saving ? '保存中…' : '保存新版本'}</Button>
+          <footer className="agent-settings-save">
+            <Button variant="primary" type="button" disabled={saving.saving} onClick={save}>{saving.saving ? '保存中…' : '保存新版本'}</Button>
+          </footer>
         </>
       )}
     </section>
