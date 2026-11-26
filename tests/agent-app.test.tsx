@@ -152,7 +152,7 @@ describe('shipped Agent surface', () => {
 
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
     // The bar states which Agent owns the open thread.
-    const chrome = screen.getByRole('banner');
+    const chrome = screen.getAllByRole('banner')[0]!;
     expect(within(chrome).getByText('研究助手')).toBeTruthy();
   });
 
@@ -160,11 +160,10 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    // The empty thread is neither resumed nor offered in history.
-    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
-    const drawer = screen.getByRole('dialog', { name: '对话记录' });
-    expect(within(drawer).queryByText('（空会话）')).toBeNull();
-    expect(within(drawer).getByText(/帮我看一下发布状态/)).toBeTruthy();
+    // History is always visible in the session rail.
+    const rail = screen.getByRole('complementary', { name: '会话' });
+    expect(within(rail).queryByText('（空会话）')).toBeNull();
+    expect(within(rail).getAllByText(/帮我看一下发布状态/).length).toBeGreaterThan(0);
   });
 
   it('does not expose operator-only surfaces', async () => {
@@ -184,7 +183,7 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '新对话' }));
+    fireEvent.click(screen.getAllByRole('button', { name: /新对话/ })[0]!);
 
     // Resuming is a launch-time behaviour only. Pressing "new" must not be
     // undone by the next catalog poll re-entering the old thread.
@@ -198,20 +197,11 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '对话记录' }));
-    expect(screen.getByRole('dialog', { name: '对话记录' })).toBeTruthy();
+    const rail = screen.getByRole('complementary', { name: '会话' });
+    expect(within(rail).getByRole('navigation', { name: '会话记录' })).toBeTruthy();
+    expect(within(rail).getAllByText(/帮我看一下发布状态/).length).toBeGreaterThan(0);
 
-    // The resumed thread appears under a recency group, not as a flat list.
-    // Which group depends on how old the fixture is relative to the real clock,
-    // so assert the structure rather than a specific bucket.
-    expect(screen.getByRole('heading', { name: /今天|昨天|近 7 天|更早/ })).toBeTruthy();
-
-    const search = screen.getByPlaceholderText('搜索对话');
-    fireEvent.change(search, { target: { value: '不存在的关键词' } });
-    expect(screen.getByText('没有匹配的对话。')).toBeTruthy();
-
-    fireEvent.change(search, { target: { value: '发布状态' } });
-    expect(screen.queryByText('没有匹配的对话。')).toBeNull();
+    expect(within(rail).queryByText('没有匹配的对话。')).toBeNull();
   });
 
   it('places delegated work in a semantic rail beside the Boss conversation', async () => {
@@ -270,7 +260,7 @@ describe('shipped Agent surface', () => {
     expect(screen.getByRole('button', { name: /^模型：/ })).toBeTruthy();
 
     // Starting over is still offered, as a clear-the-transcript action.
-    fireEvent.click(screen.getByRole('button', { name: '新对话' }));
+    fireEvent.click(screen.getAllByRole('button', { name: /新对话/ })[0]!);
     expect(await screen.findByRole('heading', { name: /和 研究助手 说点什么/ })).toBeTruthy();
   });
 

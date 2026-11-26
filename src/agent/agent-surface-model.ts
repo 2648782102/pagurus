@@ -85,7 +85,11 @@ export function agentSubtitle(agent: AgentChatAgent | undefined): string {
 
 /** A conversation title that reads like a user's, not like an id. */
 export function conversationTitle(preview: string, messageCount: number): string {
-  const trimmed = preview.trim();
-  if (trimmed.length > 0) return trimmed;
+  // The rail is a list of one-line titles. A Runtime notice or a long reply can
+  // arrive as the last preview, and putting its full body in the rail turns the
+  // navigation into a wall of text.
+  const firstLine = preview.trim().split(/\r?\n/).find((line) => line.trim().length > 0)?.trim() ?? '';
+  const title = firstLine.length > 48 ? `${firstLine.slice(0, 48).trimEnd()}…` : firstLine;
+  if (title.length > 0) return title;
   return messageCount === 0 ? '（空会话）' : '（无标题对话）';
 }

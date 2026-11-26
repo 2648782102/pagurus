@@ -16,6 +16,7 @@ import { AgentPrompt } from './AgentPrompt.js';
 import { FirstRunGuide } from './FirstRunGuide.js';
 import { AgentDiagnosticsDrawer } from './AgentDiagnosticsDrawer.js';
 import { AgentThreadDrawer } from './AgentThreadDrawer.js';
+import { AgentSessionRail } from './AgentSessionRail.js';
 import { useAgentCapabilities } from './useAgentCapabilities.js';
 import { conversationTitle } from './agent-surface-model.js';
 import { agentErrorText } from './agent-error-text.js';
@@ -236,7 +237,14 @@ export function AgentApp() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      <div className={`agent-workspace${contextOpen ? ' has-context' : ''}`}>
+      <div className={`agent-shell-body${contextOpen ? ' has-context' : ''}`}>
+        <AgentSessionRail
+          conversations={chat.recent}
+          activeConversationId={chat.conversation?.id ?? null}
+          onNewThread={chat.restart}
+          onResume={(id) => { void chat.resumeConversation(id); }}
+        />
+        <div className="agent-workspace">
         {chat.isBoss && chat.conversation !== null && (
           <BossWorkPanel
             runtime={runtimeStatus.runtime}
@@ -367,6 +375,8 @@ export function AgentApp() {
         {chat.isBoss && chat.conversation !== null && (
           <BossInsightPanel messages={chat.conversation.messages} />
         )}
+
+        </div>
 
         <AgentContextPanel
           open={contextOpen}

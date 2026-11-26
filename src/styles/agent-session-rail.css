@@ -1,0 +1,78 @@
+/* Persistent session rail, modelled on DSH's workspace sidebar. */
+
+.agent-shell-body {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-block-size: 0;
+  flex: 1 1 auto;
+}
+.agent-rail {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  border-inline-end: 1px solid var(--ag-line);
+  background: var(--ag-paper-sunk);
+}
+.agent-rail-head { display: grid; gap: 10px; padding: 14px 12px 12px; border-block-end: 1px solid var(--ag-line); }
+.agent-rail-brand { padding-inline: 4px; color: var(--ag-ink); font: 650 13px var(--ag-sans); letter-spacing: -.02em; }
+.agent-rail-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid var(--ag-line-strong);
+  border-radius: 8px;
+  background: var(--ag-paper-raised);
+  color: var(--ag-ink);
+  cursor: pointer;
+  font: 550 12px var(--ag-sans);
+}
+.agent-rail-new:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); }
+.agent-rail-list { min-block-size: 0; overflow: auto; padding: 10px 8px 16px; }
+.agent-rail-list section + section { margin-block-start: 12px; }
+.agent-rail-list h2 {
+  margin: 0 0 5px;
+  padding-inline: 6px;
+  color: var(--ag-muted);
+  font: 600 10px var(--ag-sans);
+  letter-spacing: .05em;
+}
+.agent-rail-list ul { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; }
+.agent-rail-list button {
+  inline-size: 100%;
+  overflow: hidden;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ag-ink-soft);
+  cursor: pointer;
+  font: 12px var(--ag-sans);
+  line-height: 1.45;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  max-block-size: 1.5em;
+  word-break: keep-all;
+}
+.agent-rail-list button:hover { background: var(--ag-paper-raised); color: var(--ag-ink); }
+.agent-rail-list button.is-active { background: var(--ag-tide-wash); color: var(--ag-tide-ink); font-weight: 600; }
+.agent-rail-empty { margin: 8px 6px; color: var(--ag-faint); font-size: 11px; }
+
+@media (width < 900px) {
+  .agent-shell-body { grid-template-columns: minmax(0, 1fr); }
+  .agent-rail { display: none; }
+}
+
+.agent-rail .agent-rail-list button {
+  display: block;
+  block-size: 34px;
+  max-block-size: 34px;
+  padding-block: 8px;
+  overflow: hidden;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
