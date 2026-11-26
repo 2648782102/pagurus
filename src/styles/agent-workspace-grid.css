@@ -1,5 +1,17 @@
 /* Boss workspace: responsive three-region layout. */
 
+/*
+ * Tracks solved by DSH's column geometry (`useWorkspaceColumns`).
+ *
+ * Declared here, not invented in the component: React writes the numbers with
+ * `setProperty`, and these defaults keep the first frame honest before the
+ * workbench has been measured.
+ */
+.agent-workspace {
+  --workbench-rail: 320px;
+  --workbench-insight: 320px;
+}
+
 @media (width >= 900px) and (width < 1280px) {
   .agent-workspace:has(> .boss-work-rail) {
     grid-template-columns: minmax(0, 1fr);
@@ -25,11 +37,22 @@
     grid-template-areas: "page";
   }
   .agent-workspace:has(> .boss-work-rail):has(> .boss-insight) {
-    grid-template-columns: 320px minmax(0, 1fr) 320px;
+    /*
+     * DSH's column solver supplies these two tracks (`useWorkspaceColumns`
+     * writes them as custom properties). The 320px values are the fallback for
+     * the first frame, before the workbench has been measured.
+     *
+     * The insight track resolves to `0px` when the solver decides the right
+     * panel should give up its track: DSH's rule is that the right column
+     * shrinks first, then loses its track, before the centre drops below its
+     * 400px minimum. With no track, the panel overlays instead.
+     */
+    grid-template-columns: var(--workbench-rail) minmax(0, 1fr)
+      var(--workbench-insight);
     grid-template-areas: "work page insight";
   }
   .agent-workspace:has(> .boss-work-rail):not(:has(> .boss-insight)) {
-    grid-template-columns: clamp(320px, 20vw, 360px) minmax(0, 1fr);
+    grid-template-columns: var(--workbench-rail) minmax(0, 1fr);
     grid-template-areas: "work page";
   }
   .agent-workspace:has(> .boss-work-rail) .agent-chat-thread {

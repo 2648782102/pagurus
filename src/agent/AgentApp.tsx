@@ -26,6 +26,7 @@ import { BossInsightPanel } from './BossInsightPanel.js';
 import { AgentSettingsDrawer } from './AgentSettingsDrawer.js';
 import { supportsWorkspaceIndex } from '../shared/api/workspace.js';
 import type { ComposerCommand } from '../features/agent-chat/composer-trigger.js';
+import { useWorkspaceColumns } from './useWorkspaceColumns.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -72,6 +73,15 @@ export function AgentApp() {
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
   const filesEnabled = supportsWorkspaceIndex(runtimeStatus.runtime);
+  /*
+   * DSH's column solver decides the two side tracks. It is only meaningful for
+   * the Boss workbench, which is the only surface with a work rail; a direct
+   * conversation keeps the plain single column.
+   */
+  const workbench = useWorkspaceColumns({
+    hasInsight: chat.isBoss && chat.conversation !== null,
+    enabled: chat.isBoss && chat.conversation !== null,
+  });
 
   /*
    * The `/` menu is a list of things *this client* can do.
@@ -271,7 +281,11 @@ export function AgentApp() {
           onNewThread={chat.restart}
           onResume={(id) => { void chat.resumeConversation(id); }}
         />
-        <div className="agent-workspace">
+        {/*
+         * The solved tracks arrive as CSS custom properties written through
+         * CSSOM by `useWorkspaceColumns`; the stylesheet owns the geometry.
+         */}
+        <div className="agent-workspace" ref={workbench.ref}>
         {chat.isBoss && chat.conversation !== null && (
           <BossWorkPanel
             runtime={runtimeStatus.runtime}
