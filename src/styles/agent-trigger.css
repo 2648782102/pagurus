@@ -1,0 +1,91 @@
+/*
+ * Composer triggers: `/` commands and `@` workspace files.
+ *
+ * The popup floats above the card rather than sitting inside it. Inside, it
+ * would push the draft down on every keystroke, so the text the reader is
+ * watching would move because of a menu they did not ask to open. Floating
+ * keeps the draft still and attaches the list to the composer.
+ */
+
+.agent-chat-composer {
+  position: relative;
+}
+
+#agent-trigger-popup {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: calc(100% + 8px);
+  z-index: 30;
+  animation: motion-trigger-rise var(--motion-quick) var(--ease-out);
+}
+
+.agent-trigger-pop {
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  box-shadow: var(--lift-2);
+}
+.agent-trigger-pop-label {
+  margin: 0;
+  padding: 8px 11px 6px;
+  border-block-end: 1px solid var(--border);
+  color: var(--text-muted);
+  font: 600 10px var(--font-body);
+  letter-spacing: .05em;
+}
+.agent-trigger-list {
+  display: grid;
+  max-block-size: min(46vh, 340px);
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+  list-style: none;
+}
+.agent-trigger-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font: 12px var(--font-body);
+}
+.agent-trigger-list li.is-active { background: var(--focus-ring); }
+.agent-trigger-item-main {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+.agent-trigger-item-title {
+  overflow: hidden;
+  color: var(--text-strong);
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-trigger-item-hint {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-trigger-item-meta {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: var(--text-faint);
+  font: 10px var(--font-code);
+  white-space: nowrap;
+}
+.agent-trigger-empty {
+  margin: 0;
+  padding: 14px 11px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #agent-trigger-popup { animation: none; }
+}

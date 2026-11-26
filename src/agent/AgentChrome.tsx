@@ -15,17 +15,17 @@ export function AgentChrome({
   connection,
   connectionState,
   pending,
-  threadsButtonRef,
-  onOpenThreads,
+  threadsButtonRef: _unused_threadsButtonRef,
+  onOpenThreads: _unused_onOpenThreads,
   onNewThread,
-  contextOpen,
-  onToggleContext,
-  contextButtonRef,
-  theme,
-  onToggleTheme,
-  diagnosticsOpen,
-  onToggleDiagnostics,
-  diagnosticsButtonRef,
+  contextOpen: _unused_contextOpen,
+  onToggleContext: _unused_onToggleContext,
+  contextButtonRef: _unused_contextButtonRef,
+  theme: _unused_theme,
+  onToggleTheme: _unused_onToggleTheme,
+  diagnosticsOpen: _unused_diagnosticsOpen,
+  onToggleDiagnostics: _unused_onToggleDiagnostics,
+  diagnosticsButtonRef: _unused_diagnosticsButtonRef,
   settingsOpen,
   onOpenSettings,
 }: {
@@ -52,6 +52,7 @@ export function AgentChrome({
   readonly settingsOpen: boolean;
   readonly onOpenSettings: () => void;
 }) {
+  void [_unused_threadsButtonRef, _unused_onOpenThreads, _unused_contextOpen, _unused_onToggleContext, _unused_contextButtonRef, _unused_theme, _unused_onToggleTheme, _unused_diagnosticsOpen, _unused_onToggleDiagnostics, _unused_diagnosticsButtonRef];
   return (
     <header className="agent-chrome">
       <div className="agent-chrome-identity">
@@ -70,20 +71,6 @@ export function AgentChrome({
           <span className="agent-chrome-dot" aria-hidden="true" />
           {pending ? '回复中' : connection}
         </span>
-        <Button shape="pill" onClick={onToggleTheme}
-          aria-label={theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'}>
-          {theme === 'dark' ? '浅色' : '深色'}
-        </Button>
-        <Button
-          shape="pill"
-          pressed={diagnosticsOpen}
-          onClick={onToggleDiagnostics}
-          buttonRef={diagnosticsButtonRef}
-          aria-expanded={diagnosticsOpen}
-          aria-controls="agent-diagnostics-title"
-        >
-          诊断
-        </Button>
         <Button
           shape="pill"
           pressed={settingsOpen}
@@ -92,19 +79,6 @@ export function AgentChrome({
           aria-controls="agent-settings-title"
         >
           菜单
-        </Button>
-        <Button buttonRef={threadsButtonRef} shape="pill" onClick={onOpenThreads}>
-          对话记录
-        </Button>
-        <Button
-          shape="pill"
-          pressed={contextOpen}
-          onClick={onToggleContext}
-          buttonRef={contextButtonRef}
-          aria-expanded={contextOpen}
-          aria-controls="agent-context"
-        >
-          上下文
         </Button>
         <Button shape="pill" variant="primary" onClick={onNewThread}>
           新对话

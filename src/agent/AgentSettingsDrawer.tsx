@@ -8,6 +8,7 @@ const SECTIONS = [
   { id: 'agent', label: 'Agent 与工具', icon: 'agent' as const },
   { id: 'model', label: '模型', icon: 'model' as const },
   { id: 'about', label: '关于运行时', icon: 'extensions' as const },
+  { id: 'appearance', label: '外观与工具', icon: 'agent' as const },
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -18,11 +19,19 @@ export function AgentSettingsDrawer({
   runtime,
   onClose,
   onAgentsChanged,
+  theme,
+  onToggleTheme,
+  onOpenContext,
+  onOpenDiagnostics,
 }: {
   readonly open: boolean;
   readonly runtime: RuntimeInfo | null;
   readonly onClose: () => void;
   readonly onAgentsChanged: () => void;
+  readonly theme: 'light' | 'dark';
+  readonly onToggleTheme: () => void;
+  readonly onOpenContext: () => void;
+  readonly onOpenDiagnostics: () => void;
 }) {
   const [section, setSection] = useState<SectionId>('agent');
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -75,6 +84,25 @@ export function AgentSettingsDrawer({
         <div className="agent-settings-body">
           {section === 'agent' && <AgentSettingsPanel onAgentsChanged={onAgentsChanged} runtime={runtime} />}
           {section === 'model' && <ModelSettingsPanel runtime={runtime} />}
+          {section === 'appearance' && (
+            <section className="agent-settings-actions" aria-label="外观与工具">
+              <h3>外观与工具</h3>
+              <ul>
+                <li>
+                  <div><strong>主题</strong><small>当前：{theme === 'dark' ? '深色' : '浅色'}</small></div>
+                  <button type="button" onClick={onToggleTheme}>切换</button>
+                </li>
+                <li>
+                  <div><strong>对话上下文</strong><small>固定版本、能力边界与执行记录</small></div>
+                  <button type="button" onClick={onOpenContext}>打开</button>
+                </li>
+                <li>
+                  <div><strong>诊断</strong><small>运行时状态与支持信息</small></div>
+                  <button type="button" onClick={onOpenDiagnostics}>打开</button>
+                </li>
+              </ul>
+            </section>
+          )}
           {section === 'about' && (
             <section className="agent-settings-about" aria-label="关于运行时">
               <h3>运行时</h3>

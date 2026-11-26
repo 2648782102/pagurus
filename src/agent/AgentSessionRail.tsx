@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { AgentChatConversationSummary } from '../shared/api/agent-chat.js';
 import { groupForRail, shortRelativeTime } from './agent-surface-model.js';
 import { AgentIcon } from '../shared/ui/AgentIcon.js';
@@ -15,9 +15,16 @@ export function AgentSessionRail({
   readonly onNewThread: () => void;
   readonly onResume: (conversationId: string) => void;
 }) {
+  const [filter, setFilter] = useState('');
+  const query = filter.trim().toLowerCase();
   const groups = useMemo(
-    () => groupForRail(conversations.filter((entry) => entry.messageCount > 0)),
-    [conversations],
+    () => groupForRail(conversations.filter((entry) => {
+      if (entry.messageCount === 0) return false;
+      if (query.length === 0) return true;
+      const title = entry.title ?? entry.lastMessagePreview;
+      return title.toLowerCase().includes(query);
+    })),
+    [conversations, query],
   );
   return (
     <aside className="agent-rail" aria-label="会话">
@@ -27,10 +34,39 @@ export function AgentSessionRail({
           <AgentIcon name="send" size={13} />
           新对话
         </button>
+        {/*
+         * Only once there is something to filter. An empty rail with a search
+         * box asks the reader to search a list they can see is empty.
+         */}
+        {conversations.length > 6 && (
+          <div className="agent-rail-filter">
+            <AgentIcon name="search" size={13} />
+            <label className="sr-only" htmlFor="agent-rail-filter-input">筛选会话</label>
+            <input
+              id="agent-rail-filter-input"
+              type="search"
+              value={filter}
+              placeholder="筛选会话…"
+              onChange={(event) => setFilter(event.target.value)}
+            />
+            {filter.length > 0 && (
+              <button
+                type="button"
+                className="agent-rail-filter-clear"
+                aria-label="清除筛选"
+                onClick={() => setFilter('')}
+              >
+                <AgentIcon name="close" size={12} />
+              </button>
+            )}
+          </div>
+        )}
       </header>
       <nav className="agent-rail-list" aria-label="会话记录">
         {groups.length === 0 ? (
-          <p className="agent-rail-empty">还没有对话。</p>
+          <p className="agent-rail-empty">
+            {query.length > 0 ? '没有匹配的会话。' : '还没有对话。'}
+          </p>
         ) : groups.map((group) => (
           <section key={group.key} aria-labelledby={`rail-${group.key}`}>
             <h2 id={`rail-${group.key}`}>{group.label}</h2>

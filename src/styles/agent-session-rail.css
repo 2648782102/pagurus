@@ -6,6 +6,7 @@
   min-block-size: 0;
   flex: 1 1 auto;
 }
+
 .agent-rail {
   display: flex;
   flex-direction: column;
@@ -13,59 +14,106 @@
   border-inline-end: 1px solid var(--ag-line);
   background: var(--ag-paper-sunk);
 }
-.agent-rail-head { display: grid; gap: 10px; padding: 14px 12px 12px; border-block-end: 1px solid var(--ag-line); }
-.agent-rail-brand { padding-inline: 4px; color: var(--ag-ink); font: 650 13px var(--ag-sans); letter-spacing: -.02em; }
+
+.agent-rail-head {
+  display: grid;
+  gap: 10px;
+  padding: 16px 12px 14px;
+  border-block-end: 1px solid var(--ag-line);
+}
+.agent-rail-brand {
+  padding-inline: 4px;
+  color: var(--ag-ink);
+  font: 650 14px var(--ag-sans);
+  letter-spacing: -.03em;
+}
 .agent-rail-new {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 8px 10px;
+  padding: 9px 10px;
   border: 1px solid var(--ag-line-strong);
-  border-radius: 8px;
+  border-radius: 9px;
   background: var(--ag-paper-raised);
   color: var(--ag-ink);
   cursor: pointer;
   font: 550 12px var(--ag-sans);
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    background var(--motion-quick) var(--ease-out);
 }
 .agent-rail-new:hover { border-color: var(--ag-tide); color: var(--ag-tide-ink); }
-.agent-rail-list { min-block-size: 0; overflow: auto; padding: 10px 8px 16px; }
-.agent-rail-list section + section { margin-block-start: 12px; }
+
+/*
+ * A rail filter, not a search page.
+ *
+ * With dozens of Boss turns the list is the only way back to a thread, and
+ * scanning titles by eye stops working well before the list does. The field
+ * stays inside the rail's own head so it never competes with the composer.
+ */
+.agent-rail-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid var(--ag-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ag-paper-raised) 70%, transparent);
+  color: var(--ag-faint);
+}
+.agent-rail-filter:focus-within { border-color: var(--ag-tide); color: var(--ag-tide); }
+.agent-rail-filter input {
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: 7px 0;
+  border: 0;
+  background: none;
+  color: var(--ag-ink);
+  font: 12px var(--ag-sans);
+  outline: none;
+}
+.agent-rail-filter input::placeholder { color: var(--ag-faint); }
+.agent-rail-filter-clear {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--ag-muted);
+  cursor: pointer;
+}
+
+.agent-rail-list {
+  min-block-size: 0;
+  overflow: auto;
+  padding: 12px 9px 18px;
+}
+.agent-rail-list section + section { margin-block-start: 16px; }
 .agent-rail-list h2 {
   margin: 0 0 5px;
-  padding-inline: 6px;
+  padding: 0 6px 4px;
   color: var(--ag-muted);
   font: 600 10px var(--ag-sans);
   letter-spacing: .05em;
 }
-.agent-rail-list ul { display: grid; gap: 1px; margin: 0; padding: 0; list-style: none; }
-.agent-rail-list button {
-  inline-size: 100%;
-  overflow: hidden;
-  padding: 8px 9px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--ag-ink-soft);
-  cursor: pointer;
-  font: 12px var(--ag-sans);
-  line-height: 1.45;
-  text-align: start;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  max-block-size: 1.5em;
-  word-break: keep-all;
-}
-.agent-rail-list button:hover { background: var(--ag-paper-raised); color: var(--ag-ink); }
-.agent-rail-list button.is-active { background: var(--ag-tide-wash); color: var(--ag-tide-ink); font-weight: 600; }
-.agent-rail-empty { margin: 8px 6px; color: var(--ag-faint); font-size: 11px; }
-
-@media (width < 900px) {
-  .agent-shell-body { grid-template-columns: minmax(0, 1fr); }
-  .agent-rail { display: none; }
+.agent-rail-list ul {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
+/*
+ * One rail row is exactly one line.
+ *
+ * The earlier rule set `max-block-size: 1.5em` at the same specificity as the
+ * 36px row below it, so the row kept the smaller box while the title — still
+ * `nowrap` — painted outside it, over the next row. The geometry is now stated
+ * once: a grid, a fixed height, and clipping on the cell that holds the text.
+ */
 .agent-rail .agent-rail-list button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -82,24 +130,30 @@
   cursor: pointer;
   font: 12px var(--ag-sans);
   text-align: start;
+  transition:
+    background var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.agent-rail-list button:hover { background: var(--ag-paper-raised); color: var(--ag-ink); }
+
+/* The open thread reads as selected, not merely hovered. */
+.agent-rail-list button.is-active {
+  background: var(--ag-tide-wash);
+  box-shadow: inset 2px 0 0 var(--ag-tide);
+  color: var(--ag-tide-ink);
+  font-weight: 600;
 }
 .agent-rail-title {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .agent-rail-meta { color: var(--ag-faint); font-size: 10px; white-space: nowrap; }
 .agent-rail-list button.is-active .agent-rail-meta { color: var(--ag-tide-ink); opacity: .75; }
+.agent-rail-empty { margin: 8px 6px; color: var(--ag-faint); font-size: 11px; }
 
-.agent-rail-head { padding: 16px 12px 14px; }
-.agent-rail-brand { font-size: 14px; letter-spacing: -.03em; }
-.agent-rail-new { border-radius: 9px; padding-block: 9px; }
-.agent-rail-list section h2 { padding-block-end: 4px; }
-
-/* The open thread reads as selected, not merely hovered. */
-.agent-rail-list button.is-active {
-  background: var(--ag-tide-wash);
-  box-shadow: inset 2px 0 0 var(--ag-tide);
+@media (width < 900px) {
+  .agent-shell-body { grid-template-columns: minmax(0, 1fr); }
+  .agent-rail { display: none; }
 }
-.agent-rail-list { padding: 12px 9px 18px; }
-.agent-rail-list section + section { margin-block-start: 16px; }

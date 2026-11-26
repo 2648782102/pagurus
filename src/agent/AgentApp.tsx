@@ -24,6 +24,8 @@ import { modelName } from '../shared/ui/model-label.js';
 import { runtimeNoticeBody } from './RuntimeNoticeBody.js';
 import { BossInsightPanel } from './BossInsightPanel.js';
 import { AgentSettingsDrawer } from './AgentSettingsDrawer.js';
+import { supportsWorkspaceIndex } from '../shared/api/workspace.js';
+import type { ComposerCommand } from '../features/agent-chat/composer-trigger.js';
 
 const CONNECTION_LABELS: Readonly<Record<RuntimeConnectionState, string>> = {
   checking: '连接中',
@@ -69,6 +71,23 @@ export function AgentApp() {
   const { theme, toggle: toggleTheme } = useAgentTheme();
   const threadsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
+  const filesEnabled = supportsWorkspaceIndex(runtimeStatus.runtime);
+
+  /*
+   * The `/` menu is a list of things *this client* can do.
+   *
+   * It deliberately does not offer model-side capabilities: "search the web"
+   * is not a client action, it is something the Agent decides, and listing it
+   * here would promise a call the person cannot make. Everything below
+   * changes what the app shows or starts, which is what a slash command is.
+   */
+  const composerCommands = useMemo<readonly ComposerCommand[]>(() => [
+    { id: 'new', title: '新对话', hint: '结束当前会话，开始一个干净的对话。', keywords: ['new', 'restart'] },
+    { id: 'threads', title: '对话记录', hint: '浏览并恢复之前的会话。', keywords: ['history', 'resume'] },
+    { id: 'context', title: '对话上下文', hint: '查看这条会话的 Agent、模型与能力。', keywords: ['info', 'capability'] },
+    { id: 'diagnostics', title: '诊断', hint: '查看 Runtime 的状态与最近的检查。', keywords: ['debug', 'health'] },
+    { id: 'settings', title: '设置', hint: '外观、工具与运行时信息。', keywords: ['preferences'] },
+  ], []);
 
   const threadTitle = useMemo(() => {
     const messages = chat.conversation?.messages ?? [];
@@ -137,6 +156,14 @@ export function AgentApp() {
     setDiagnosticsOpen(false);
     diagnosticsButtonRef.current?.focus();
   }, []);
+
+  const runComposerCommand = useCallback((id: string) => {
+    if (id === 'new') { chat.restart(); return; }
+    if (id === 'threads') { setDrawerOpen(true); return; }
+    if (id === 'context') { inspectCapabilities(); setContextOpen(true); return; }
+    if (id === 'diagnostics') { setDiagnosticsOpen(true); return; }
+    if (id === 'settings') { setSettingsOpen(true); }
+  }, [chat, inspectCapabilities]);
 
   useEffect(() => {
     if (!diagnosticsOpen) return;
@@ -222,8 +249,8 @@ export function AgentApp() {
         connection={CONNECTION_LABELS[runtimeStatus.state]}
         connectionState={runtimeStatus.state}
         pending={chat.hasPending}
-        threadsButtonRef={threadsButtonRef}
         onOpenThreads={() => setDrawerOpen(true)}
+        threadsButtonRef={threadsButtonRef}
         onNewThread={chat.restart}
         contextOpen={contextOpen}
         onToggleContext={toggleContext}
@@ -362,6 +389,9 @@ export function AgentApp() {
                   waiting={chat.hasPending}
                   onDraftChange={chat.setDraft}
                   onSend={chat.sendMessage}
+                  commands={composerCommands}
+                  onCommand={runComposerCommand}
+                  filesEnabled={filesEnabled}
                   /* Only an empty thread: a resumed one is being read. */
                   autoFocus={chat.conversation.messages.length === 0}
                 >
@@ -385,8 +415,14 @@ export function AgentApp() {
           <BossInsightPanel messages={chat.conversation.messages} />
         )}
 
-        </div>
-
+        {/*
+         * Inside the workspace, not beside it.
+         *
+         * The panel's geometry is defined against this grid (`grid-area:
+         * page`, absolute at the widths where it overlays). As a sibling of the
+         * workspace it landed in an implicit second row of the outer grid and
+         * halved the conversation's height at 1280px.
+         */}
         <AgentContextPanel
           open={contextOpen}
           conversation={chat.conversation}
@@ -394,6 +430,7 @@ export function AgentApp() {
           onRefreshCapabilities={inspectCapabilities}
           onClose={closeContext}
         />
+        </div>
       </div>
 
       <AgentThreadDrawer
@@ -412,6 +449,10 @@ export function AgentApp() {
         runtime={runtimeStatus.runtime}
         onClose={() => setSettingsOpen(false)}
         onAgentsChanged={() => undefined}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenContext={() => { setSettingsOpen(false); inspectCapabilities(); setContextOpen(true); }}
+        onOpenDiagnostics={() => { setSettingsOpen(false); setDiagnosticsOpen(true); }}
       />
 
       <AgentDiagnosticsDrawer

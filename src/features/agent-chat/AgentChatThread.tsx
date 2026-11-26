@@ -6,6 +6,7 @@ import type {
 } from '../../shared/api/agent-chat.js';
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
 import { concurrentTurnIds } from './concurrent-turns.js';
+import { AgentToolActivity } from './AgentToolActivity.js';
 
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
@@ -284,6 +285,14 @@ export function AgentChatThread({
   const [settled, setSettled] = useState(false);
   useEffect(() => { setSettled(true); }, []);
   /*
+   * Whether anything is hidden above the first visible row.
+   *
+   * Purely presentational, so it lives here rather than in the model: the
+   * thread already owns its scroll box, and a fade is only correct when the
+   * fade is telling the truth about content above.
+   */
+  const [atTop, setAtTop] = useState(true);
+  /*
    * The ids present on the first render never animate. Anything else does —
    * the class is decided per message, so flipping `is-settled` cannot restart
    * an animation on a row that was already drawn.
@@ -300,9 +309,11 @@ export function AgentChatThread({
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (grew && !reduced && typeof container.scrollTo === 'function') {
       container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      setAtTop(container.scrollTop <= 1);
       return;
     }
     container.scrollTop = container.scrollHeight;
+    setAtTop(container.scrollTop <= 1);
   }, [messages]);
 
   /*
@@ -315,6 +326,7 @@ export function AgentChatThread({
     if (!container || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => {
       if (nearBottomRef.current) container.scrollTop = container.scrollHeight;
+      setAtTop(container.scrollTop <= 1);
     });
     observer.observe(container);
     return () => observer.disconnect();
@@ -329,7 +341,7 @@ export function AgentChatThread({
      */
     <div className="agent-thread-column">
       <div
-        className={`agent-chat-thread${settled ? ' is-settled' : ''}`}
+        className={`agent-chat-thread${settled ? ' is-settled' : ''}${atTop ? ' is-at-top' : ''}`}
         ref={containerRef}
       /*
        * `off`, not `polite`: a streaming body changes on every frame, and a live
@@ -344,6 +356,7 @@ export function AgentChatThread({
           const pinned = container.scrollHeight - container.scrollTop - container.clientHeight < 96;
           nearBottomRef.current = pinned;
           onPinnedChange?.(pinned);
+          setAtTop(container.scrollTop <= 1);
         }}
       >
       {messages.length === 0 && (
@@ -440,16 +453,7 @@ export function AgentChatThread({
                 <span style={{ width: `${message.progress}%` }} />
               </div>
             )}
-            {parts.rest.length > 0 && (
-              <ul className="agent-chat-activity" aria-label="Agent 执行活动">
-                {parts.rest.map((entry) => (
-                  <li key={entry.id} className={`agent-chat-activity-${entry.state}`}>
-                    <span className="agent-chat-activity-label">{entry.label}</span>
-                    {entry.detail && <code>{entry.detail}</code>}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <AgentToolActivity entries={parts.rest} turnState={message.state} />
             {parts.requested && (
               <PendingApproval
                 message={message}

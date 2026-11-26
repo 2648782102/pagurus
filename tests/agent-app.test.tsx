@@ -404,19 +404,25 @@ describe('shipped Agent surface', () => {
     );
   });
 
-  it('moves focus into the history sheet and back to its trigger', async () => {
+
+  async function openFromMenu(label: '对话上下文' | '诊断') {
+    fireEvent.click(screen.getByRole('button', { name: '菜单' }));
+    fireEvent.click(await screen.findByRole('button', { name: /外观与工具/ }));
+    const section = await screen.findByRole('region', { name: '外观与工具' });
+    const item = within(section).getByText(label).closest('li');
+    fireEvent.click(within(item as HTMLElement).getByRole('button', { name: '打开' }));
+  }
+
+  it('opens context and diagnostics from the single menu', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    const opener = screen.getByRole('button', { name: '对话记录' });
-    fireEvent.click(opener);
-
-    // A modal sheet must take focus, or a keyboard user is stuck behind it.
-    const search = screen.getByPlaceholderText('搜索对话');
-    expect(document.activeElement).toBe(search);
-
-    fireEvent.click(screen.getByRole('button', { name: '关闭对话记录' }));
-    expect(document.activeElement).toBe(opener);
+    // The chrome keeps two actions; secondary surfaces live in the menu.
+    fireEvent.click(screen.getByRole('button', { name: '菜单' }));
+    fireEvent.click(await screen.findByRole('button', { name: /外观与工具/ }));
+    const openButtons = await screen.findAllByRole('button', { name: '打开' });
+    fireEvent.click(openButtons[0]!);
+    expect(await screen.findByRole('complementary', { name: '对话上下文' })).toBeTruthy();
   });
 
   it('does not send while an IME is still composing', async () => {
@@ -443,7 +449,7 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+    await openFromMenu('对话上下文');
 
     const panel = screen.getByRole('complementary', { name: '对话上下文' });
     expect(within(panel).getByText('固定版本')).toBeTruthy();
@@ -456,7 +462,7 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+    await openFromMenu('对话上下文');
     const panel = screen.getByRole('complementary', { name: '对话上下文' });
     expect(await within(panel).findByText(/read_file/)).toBeTruthy();
   });
@@ -489,41 +495,31 @@ describe('shipped Agent surface', () => {
     }));
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: '上下文' }));
+    await openFromMenu('对话上下文');
     const panel = screen.getByRole('complementary', { name: '对话上下文' });
     expect(within(panel).getByRole('heading', { name: '发生了什么' })).toBeTruthy();
     expect(within(panel).getByText('等待你批准')).toBeTruthy();
     expect(within(panel).getByText(/notes\.md/)).toBeTruthy();
   });
 
-  it('closes the context panel and reports it as collapsed', async () => {
+  it('closes the context panel from its own control', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    const toggle = screen.getByRole('button', { name: '上下文' });
-    fireEvent.click(toggle);
-    // A disclosure, not a toggle button: the panel is a region the control owns.
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(toggle.getAttribute('aria-controls')).toBe('agent-context');
+    await openFromMenu('对话上下文');
+    expect(screen.getByRole('complementary', { name: '对话上下文' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: '收起上下文' }));
     expect(screen.queryByRole('complementary', { name: '对话上下文' })).toBeNull();
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    // The close button vanished with the panel: focus must land back on the
-    // control that owns it, not on <body>.
-    expect(document.activeElement).toBe(toggle);
   });
 
   it('opens a diagnostics drawer from the Agent surface without switching pages', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    const toggle = screen.getByRole('button', { name: '诊断' });
-    fireEvent.click(toggle);
-
+    await openFromMenu('诊断');
     const drawer = await screen.findByRole('dialog', { name: '诊断与支持' });
     expect(within(drawer).getByText('数据与诊断')).toBeTruthy();
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(requests.some((request) => request.url === '/v1/operations/data')).toBe(true);
   });
 
@@ -531,21 +527,19 @@ describe('shipped Agent surface', () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    const toggle = screen.getByRole('button', { name: '诊断' });
-    fireEvent.click(toggle);
+    await openFromMenu('诊断');
     const close = await screen.findByRole('button', { name: '关闭诊断' });
     expect(document.activeElement).toBe(close);
 
     fireEvent.click(close);
     expect(screen.queryByRole('dialog', { name: '诊断与支持' })).toBeNull();
-    expect(document.activeElement).toBe(toggle);
   });
 
   it('closes the diagnostics drawer with Escape', async () => {
     render(<AgentApp />);
     expect(await screen.findByText('发布已通过。')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: '诊断' }));
+    await openFromMenu('诊断');
     await screen.findByRole('dialog', { name: '诊断与支持' });
     fireEvent.keyDown(document, { key: 'Escape' });
 

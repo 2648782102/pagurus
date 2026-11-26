@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AgentChatThread } from '../src/features/agent-chat/AgentChatThread.js';
 
@@ -37,14 +37,16 @@ describe('Agent activity list', () => {
       />,
     );
 
-    const list = screen.getByRole('list', { name: 'Agent 执行活动' });
-    expect(list).toBeTruthy();
-    expect(list.children.length).toBe(3);
+    // A settled turn folds its steps into one disclosure, DSH-style.
+    expect(screen.getByRole('button', { name: /3 个步骤/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /3 个步骤/ }));
 
+    const list = screen.getByRole('list', { name: 'Agent 执行活动' });
+    expect(list.children.length).toBe(3);
     // State must be visible in the DOM, not only implied by colour.
-    expect(list.querySelector('.agent-chat-activity-running')).toBeTruthy();
-    expect(list.querySelector('.agent-chat-activity-succeeded')).toBeTruthy();
-    expect(list.querySelector('.agent-chat-activity-failed')).toBeTruthy();
+    expect(list.querySelector('li.is-running')).toBeTruthy();
+    expect(list.querySelector('li.is-succeeded')).toBeTruthy();
+    expect(list.querySelector('li.is-failed')).toBeTruthy();
     expect(screen.getByText('read_file')).toBeTruthy();
   });
 });

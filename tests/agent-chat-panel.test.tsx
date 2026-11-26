@@ -194,6 +194,7 @@ describe('Agent Chat panel', () => {
     expect(screen.getByText(/\+hello/).textContent).toContain('+hello');
     // The same two facts are in the card, not repeated in the plain activity list.
     expect(screen.getAllByText('写入 notes/a.txt（风险：write）')).toHaveLength(1);
+    // The tool row lives inside the folded activity disclosure.
     expect(screen.getByText('写入文件')).toBeTruthy();
     expect(screen.getByText('workspace_write')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '批准并继续' }));

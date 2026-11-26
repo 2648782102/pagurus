@@ -149,9 +149,11 @@ describe('executable interface validation', () => {
       path.join(repositoryRoot, 'src/features/agent-chat/AgentChatThread.tsx'),
       'utf8',
     );
-    expect(thread).toContain('agent-chat-activity');
+    // Tool steps now live in one disclosure component, so assert the seam the
+    // thread actually mounts rather than the removed flat list.
+    expect(thread).toContain('AgentToolActivity');
     expect(thread).toContain('agent-chat-approval-actions');
-    expect(styles).toMatch(/\.agent-chat-activity \{/);
+    expect(styles).toMatch(/\.agent-tool-summary \{/);
     expect(styles).toMatch(/\.agent-chat-approval-actions \{/);
   });
 });

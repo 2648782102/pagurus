@@ -247,3 +247,19 @@
   line-height: 1.7;
   text-wrap: pretty;
 }
+
+/*
+ * A scrolled thread ends mid-line by definition.
+ *
+ * At the bottom, the row at the top of the scroll box is cut through the
+ * middle of its glyphs. Against a flat header that reads as text bleeding out
+ * of the column rather than as "there is more above", so a short fade turns
+ * the cut into the affordance it actually is. At the very top there is nothing
+ * above to hint at, and the fade would dim the first message for no reason.
+ */
+.agent-thread-area .agent-chat-thread {
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 8px, #000 34px);
+}
+.agent-thread-area .agent-chat-thread.is-at-top {
+  mask-image: none;
+}

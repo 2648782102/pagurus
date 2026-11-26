@@ -27,7 +27,7 @@ describe('Agent settings drawer', () => {
       if (path === '/v1/runtime') return Promise.resolve(json(runtime));
       return Promise.resolve(json({}));
     }));
-    render(<AgentSettingsDrawer open runtime={runtime} onClose={() => undefined} onAgentsChanged={() => undefined} />);
+    render(<AgentSettingsDrawer open runtime={runtime} onClose={() => undefined} onAgentsChanged={() => undefined} theme="light" onToggleTheme={() => undefined} onOpenContext={() => undefined} onOpenDiagnostics={() => undefined} />);
     expect(await screen.findByRole('dialog', { name: '设置' })).toBeTruthy();
     expect(await screen.findByRole('navigation', { name: '设置分区' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Agent 与工具' })).toBeTruthy();
@@ -65,7 +65,7 @@ describe('Agent settings drawer', () => {
       if (path === '/v1/runtime') return Promise.resolve(json(runtime));
       return Promise.resolve(json({}));
     }));
-    render(<AgentSettingsDrawer open runtime={runtime} onClose={() => undefined} onAgentsChanged={() => undefined} />);
+    render(<AgentSettingsDrawer open runtime={runtime} onClose={() => undefined} onAgentsChanged={() => undefined} theme="light" onToggleTheme={() => undefined} onOpenContext={() => undefined} onOpenDiagnostics={() => undefined} />);
     expect(await screen.findByRole('heading', { name: '设置' })).toBeTruthy();
     expect(await screen.findByText(/^工具$/)).toBeTruthy();
   });

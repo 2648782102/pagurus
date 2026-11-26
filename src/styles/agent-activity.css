@@ -154,3 +154,49 @@
   padding: 14px 16px;
   border-radius: 6px;
 }
+
+/* One turn's tool work: a single disclosure line, DSH-style. */
+.agent-tool-activity { margin-block: 10px; }
+.agent-tool-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  padding: 6px 0;
+  border: 0;
+  border-block-end: 1px solid var(--ag-line);
+  background: none;
+  color: var(--ag-muted);
+  cursor: pointer;
+  font: 12px var(--ag-sans);
+  text-align: start;
+}
+.agent-tool-summary:hover { color: var(--ag-ink); }
+.agent-tool-pulse {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--ag-faint);
+}
+.agent-tool-pulse.is-running { background: var(--ag-tide); animation: motion-pulse var(--motion-attention) ease-in-out infinite; }
+.agent-tool-chevron { margin-inline-start: auto; transition: transform var(--motion-quick) var(--ease-out); }
+.agent-tool-activity[data-open] .agent-tool-chevron { transform: rotate(180deg); }
+.agent-tool-list { display: grid; gap: 1px; margin: 8px 0 0; padding: 0; list-style: none; }
+.agent-tool-list li {
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: var(--ag-paper-raised);
+  font-size: 11px;
+}
+.agent-tool-list li code { grid-column: 2 / -1; color: var(--ag-muted); font-size: 10px; }
+.agent-tool-dot { inline-size: 5px; block-size: 5px; border-radius: 50%; background: var(--ag-signal); }
+.agent-tool-list li.is-failed .agent-tool-dot { background: var(--ag-danger); }
+.agent-tool-list li.is-running .agent-tool-dot { background: var(--ag-tide); animation: motion-pulse var(--motion-attention) ease-in-out infinite; }
+.agent-tool-list li.is-waiting_approval .agent-tool-dot { background: var(--ag-caution-line); }
+.agent-tool-label { color: var(--ag-ink); }
+.agent-tool-list li.is-failed .agent-tool-label { color: var(--ag-danger); }
+.agent-tool-state { color: var(--ag-faint); font-size: 10px; }

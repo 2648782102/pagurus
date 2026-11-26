@@ -1,6 +1,6 @@
 # Current state
 
-Updated: 2026-11-26
+Updated: 2026-11-27
 
 ## Working today
 
@@ -13,6 +13,18 @@ Updated: 2026-11-26
   surfaces.
 - Agent surface with conversation history, model selection, streaming, copy,
   context panel, responsive layout, and inline approval state.
+- DSH-style workbench chrome: a persistent session rail (searchable once there
+  are more than six threads), one conversation column, a Boss work rail, and a
+  context column at 1920×1080. The top bar carries only 菜单 and 新对话; theme,
+  context, history, and diagnostics live in the settings drawer.
+- A settled turn's tool work folds into one disclosure line ("N 个步骤 · M 个
+  失败") and opens into rows with a state dot, tool name, state, and detail.
+  A running or blocked turn stays open, so a pending approval is never hidden.
+- The composer offers two triggers: `/` for client commands (new thread,
+  history, context, diagnostics, settings) and `@` for workspace file
+  references, backed by the Runtime's bounded `workspace-index`. Both are
+  keyboard-driven; the textarea keeps focus and the popup is a listbox with
+  `aria-activedescendant`.
 - The Boss Agent conversation shows an inline work strip: project state, worker
   state, reports, failures, and open Attention come from the Runtime's
   organization session, without adding a second conversation entry or parsing
