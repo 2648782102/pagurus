@@ -353,7 +353,12 @@ describe('Agent Chat panel', () => {
     /* Settled after the first paint, so the next arrival is the only one that moves. */
     expect(container.querySelector('.agent-chat-thread')?.className).toContain('is-settled');
     rerender(<AgentChatThread messages={grown} agentName="助手" busy={false} onDecision={() => undefined} />);
-    const arrived = container.querySelectorAll('article.agent-chat-message');
+    /*
+     * A user row is DSH's `UserMessageBubble` — a `div` that carries the
+     * message classes and an `article` role — while an assistant row stays an
+     * `<article>`. Counting by class is the structure-independent assertion.
+     */
+    const arrived = container.querySelectorAll('.agent-chat-message');
     expect(arrived).toHaveLength(2);
   });
 

@@ -7,6 +7,7 @@ import type {
 import { Button, StatusDot } from '../../shared/ui/primitives.js';
 import { concurrentTurnIds } from './concurrent-turns.js';
 import { AgentToolActivity } from './AgentToolActivity.js';
+import { UserMessageBubble } from '../../dsh/upstream/primitives/UserMessageBubble.js';
 
 interface AgentChatThreadProps {
   readonly messages: readonly AgentChatMessage[];
@@ -374,8 +375,15 @@ export function AgentChatThread({
          * them play the arrival together and the column reads as a repaint.
          */
         const arriving = settled && !(initialIdsRef.current?.has(message.id) ?? true);
+        /*
+         * A question is DSH's own `UserMessageBubble`, not a card of ours: the
+         * fill, radius, inset, and typography are the ones DSH uses for a prompt
+         * it received, so a question and a DSH question look like the same
+         * thing.
+         */
+        const Row = message.author === 'user' ? UserMessageBubble : 'article';
         return (
-          <article
+          <Row
             /*
              * `anim-rise` comes from the motion library rather than a rule here:
              * the movement is "content appearing in place", which is a library
@@ -385,6 +393,13 @@ export function AgentChatThread({
             className={`agent-chat-message agent-chat-message-${message.author} agent-chat-state-${message.state}${concurrent ? ' is-concurrent' : ''}${arriving ? ' is-arriving anim-rise' : ''}`}
             key={message.id}
             aria-busy={isWorking(message.state)}
+            /*
+             * `UserMessageBubble` renders a `div`; a message is still an
+             * article of the transcript, and a screen reader should hear it as
+             * one. The role is passed through rather than swapping the element,
+             * because the bubble's own styles are what make it a question.
+             */
+            {...(message.author === 'user' ? { role: 'article' } : {})}
           >
             <div className="agent-chat-message-meta">
               <span className="agent-chat-message-author">
@@ -465,7 +480,7 @@ export function AgentChatThread({
             )}
             {message.error && <small>{message.error}</small>}
             {renderMessageActions?.(message)}
-          </article>
+          </Row>
         );
       })}
       </div>

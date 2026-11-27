@@ -246,11 +246,13 @@
   letter-spacing: .002em;
 }
 .agent-thread-area .agent-chat-message-user p { font-size: 14px; line-height: 1.65; }
-.agent-thread-area .agent-chat-message-user {
-  border-radius: 10px;
-  border: 1px solid var(--ag-line);
-  background: var(--ag-paper-raised);
-}
+/*
+ * The question's surface is DSH's `UserMessageBubble`, whose fill is
+ * `--dsw-specific-bubble` (a blue tint in light, a raised grey in dark) and
+ * whose radius is `--dsw-radius-xl`. It used to be overridden here with the
+ * page's own fill, which made the bubble invisible on a white page — a border
+ * drawn around white space. The override is removed rather than retuned.
+ */
 
 /* A conversation header gives the reading column a top edge, like DSH's
    session header: title, quiet metadata, and one health line. */
