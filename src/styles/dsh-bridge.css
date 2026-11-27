@@ -13,6 +13,18 @@
 
 .agent-app,
 .agent-app-blocked {
+  /*
+   * DSH's content-size variables are normally written at runtime by its theme
+   * presenter (the settings drawer's font-size controls). Pagurus does not ship
+   * that presenter, so the defaults are declared here once: every DSH type
+   * token and every product rule then resolves against a real value.
+   */
+  --dsh-content-font-size: 14px;
+  --dsh-content-font-delta: 0px;
+  --dsh-content-font-size-secondary: 13px;
+  --dsh-content-font-delta-secondary: 0px;
+  --dsh-code-font-delta: 0px;
+
   /* --- surfaces ------------------------------------------------------- */
   --ag-paper: var(--dsw-alias-bg-base);
   /*

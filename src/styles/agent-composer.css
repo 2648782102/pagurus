@@ -31,22 +31,32 @@
   box-shadow: none;
 }
 
+/*
+ * The composer card, to DSH's own spec (`InputBar.module.css .card`): the input
+ * surface token as its fill, the panel radius, a hairline drawn through the
+ * elevation tier so it costs no layout, and the soft elevation shadow. The
+ * textarea inside then inherits the content size and 24px rhythm, which is what
+ * makes a draft and a rendered answer share one baseline grid.
+ */
 .agent-chat-composer-card {
   display: grid;
   grid-auto-rows: auto;
   row-gap: 4px;
   padding: 12px 12px 9px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-raised);
-  box-shadow: var(--lift-2);
-  transition: border-color var(--motion-quick) var(--ease), box-shadow var(--motion-quick) var(--ease);
+  border: 0;
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-panel);
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-layer-1));
+  box-shadow: var(--dsw-elevation-soft, var(--lift-2));
+  font-size: var(--dsh-content-font-size, 14px);
+  line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+  transition: box-shadow var(--motion-quick) var(--ease);
 }
 /* Focus is the card's own state, not the textarea's outline: the textarea has
    no box of its own, so the ring has to be drawn on the thing the reader sees. */
 .agent-chat-composer-card:focus-within {
-  border-color: var(--border-strong);
-  box-shadow: var(--lift-2), 0 0 0 3px var(--focus-ring);
+  --dsw-elevation-stroke-color: var(--dsw-alias-border-l4);
+  box-shadow: var(--dsw-elevation-soft, var(--lift-2)), 0 0 0 3px var(--focus-ring);
 }
 
 /* One rule for both surfaces. It has to outrank `.ui-textarea`'s 60px box,
@@ -57,7 +67,7 @@
   border: 0;
   background: transparent;
   color: var(--text-strong);
-  font: 14px/1.7 var(--font-body);
+  font: inherit;
   resize: none;
 }
 .agent-chat-composer textarea:focus-visible { outline: none; }
