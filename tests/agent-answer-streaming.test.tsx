@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AgentAnswer } from '../src/agent/AgentAnswer.js';
 
@@ -17,11 +17,16 @@ describe('AgentAnswer while streaming', () => {
     expect(screen.getByText(/建议如下/)).toBeTruthy();
   });
 
-  it('renders the same body as structured blocks once it settles', () => {
+  it('renders the same body as structured blocks once it settles', async () => {
     const body = '建议如下。\n```bash\necho hi\n```\n以上。';
     const { container } = render(<AgentAnswer body={body} />);
 
-    expect(container.querySelectorAll('pre')).toHaveLength(1);
+    /*
+     * The renderer is lazy — its parser, katex, and highlighter are ~1 MB that
+     * only matter once a reply exists — so the structured blocks arrive one tick
+     * after the message does.
+     */
+    await waitFor(() => expect(container.querySelectorAll('pre')).toHaveLength(1));
   });
 
   it('keeps markup inert', () => {

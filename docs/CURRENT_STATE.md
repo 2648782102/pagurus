@@ -12,6 +12,11 @@ Updated: 2026-11-27
   its Cordis-free `ui-primitives` atoms, and its `@file`/trigger detection core
   — lives under `src/dsh`. See `src/dsh/README.md` for the split and the one
   divergence from upstream.
+- Answers are rendered by DSH's own markdown pipeline (`upstream/primitives/
+  markdown`): GFM tables, lists, task lists, TeX math through KaTeX, and
+  shiki-highlighted code blocks with DSH's banner and copy toolbar. The
+  renderer is imported lazily, so the parser and highlighter load when a reply
+  exists rather than with the shell; the placeholder is the reply's plain text.
 - The theme has one source of truth: `src/styles/dsh-bridge.css` maps the
   product's `--ag-*` names onto DSH aliases and is the only place that declares
   the dark mapping. A theme flip writes both `data-agent-theme` (ours) and

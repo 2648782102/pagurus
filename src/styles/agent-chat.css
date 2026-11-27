@@ -141,69 +141,29 @@
   font: 13px/1.6 var(--font-mono);
 }
 
-/* Structured answers use DSH's markdown ladder: one sans family at the base
-   size, headings one step up, and the code voice reserved for machine text. */
-.agent-answer { display: grid; gap: 12px; }
-.agent-answer p {
+/*
+ * Answers are DSH's `MarkdownText`, which brings its own complete stylesheet
+ * (`MarkdownText.module.css`): the type ladder, list rhythm, table chrome, and
+ * the code-block card. Nothing here may restyle its internals — a second set of
+ * overrides is how a "DSH surface" drifts back into a lookalike. The only rule
+ * left is the column's own width, plus the pre-hydration placeholder.
+ */
+.agent-answer { min-inline-size: 0; }
+/*
+ * DSH's markdown headings carry typography only — their ink comes from the
+ * surrounding surface, which is what lets them follow a theme change. The
+ * console's global `h1..h4 { color: var(--ink) }` outranks inheritance, so
+ * inside the answer it pinned every heading to the console palette: a dark
+ * heading on a dark reply. Restoring inheritance here is the minimum repair.
+ */
+.agent-answer :where(h1, h2, h3, h4, h5, h6) { color: inherit; }
+.agent-answer-loading {
   margin: 0;
   color: var(--text-strong);
   font: var(--dsw-font-markdown-base);
-  font-weight: 400;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.agent-answer h4 {
-  margin: 12px 0 0;
-  color: var(--text-strong);
-  font: var(--dsw-font-markdown-h4);
-}
-.agent-answer ul,
-.agent-answer ol {
-  display: grid;
-  gap: 5px;
-  margin: 0;
-  padding-left: 20px;
-}
-.agent-answer li {
-  color: var(--text-strong);
-  font: var(--dsw-font-markdown-base);
-}
-.agent-answer li::marker { color: var(--accent); }
-/* A bold run inside a serif paragraph should read as emphasis, not as a weight
-   jump that breaks the line rhythm. */
-.agent-answer strong { color: var(--text-strong); font-weight: 650; }
-.agent-answer p strong { font: var(--dsw-font-markdown-base-strong); }
-.agent-answer blockquote {
-  margin: 0;
-  padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--border-strong);
-  color: var(--text);
-  font: var(--dsw-font-markdown-base);
-}
-/*
- * Code fences use DSH's markdown code-block recipe: the large radius, the
- * banner fill above the body fill, and the banner's own typography. The tokens
- * are DSH's, so a theme flip changes both the banner and the code ground.
- */
-.agent-answer-code {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: var(--dsw-radius-lg);
-  background: var(--dsw-alias-markdown-code-block);
-}
-.agent-answer-code figcaption {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-markdown-code-block-banner);
-  color: var(--dsw-alias-label-primary);
-  font: 11px/18px var(--dsw-font-family);
-  letter-spacing: 0;
-}
-.agent-answer-code-lang { flex: 1 1 auto; min-width: 0; }
 
 .agent-chat-message:hover .agent-message-actions,
 .agent-message-actions:focus-within { opacity: 1; }

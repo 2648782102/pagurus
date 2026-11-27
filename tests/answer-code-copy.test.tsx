@@ -16,14 +16,25 @@ describe('code block copy', () => {
     const code = 'npm run check\nnpm test\nnpm run build';
     render(<AgentAnswer body={'说明\n\n```bash\n' + code + '\n```'} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '复制代码' }));
+    /*
+     * The renderer is imported lazily, so the fence and its toolbar appear one
+     * tick after the paragraph does.
+     */
+    fireEvent.click(await screen.findByRole('button', { name: '复制代码' }));
     await waitFor(() => expect(written).toEqual([code]));
-    expect(await screen.findByRole('button', { name: '已复制代码' })).toBeTruthy();
+    /*
+     * DSH's code toolbar swaps the button's accessible label from `copyLabel`
+     * to `copiedLabel` and its glyph from copy to a check. The label is
+     * "已复制" — the word the vendored toolbar was given — not a noun phrase of
+     * ours.
+     */
+    expect(await screen.findByRole('button', { name: '已复制' })).toBeTruthy();
   });
 
-  it('still labels a block that has no language', () => {
+  it('still labels a block that has no language', async () => {
     render(<AgentAnswer body={'```\nplain\n```'} />);
-    expect(screen.getByText('代码')).toBeTruthy();
+    // The toolbar shows the localized fallback for a fence without a language.
+    expect(await screen.findByText('代码', {}, { timeout: 2000 })).toBeTruthy();
     expect(screen.getByRole('button', { name: '复制代码' })).toBeTruthy();
   });
 });

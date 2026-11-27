@@ -68,6 +68,27 @@ export default defineConfig({
   define: {
     __PAGURUS_RUNTIME_URL__: JSON.stringify(runtimeUrl),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        /*
+         * One chunk per syntax grammar.
+         *
+         * DSH's highlighter already imports each language with a dynamic
+         * `import()`, but Vite's default chunking folded every grammar into the
+         * entry chunk — 1.4 MB of parsers for languages a given conversation
+         * will never mention. Splitting them back out keeps the entry small and
+         * makes the load happen on the first fence of that language, which is
+         * the behaviour the upstream code was written for.
+         */
+        manualChunks(id: string) {
+          const lang = /node_modules\/@shikijs\/langs\/dist\/([^/]+)\.mjs$/.exec(id);
+          if (lang) return `shiki-lang-${lang[1]}`;
+          return undefined;
+        },
+      },
+    },
+  },
   server: {
     port: consolePort,
     strictPort: false,

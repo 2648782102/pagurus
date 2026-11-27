@@ -15,10 +15,28 @@ components for a different product.
   scale and its light/dark alias maps), `base.css`, `scrollbar.css`,
   `corner-shape.css`, `focus.css`. These are CSS custom properties only, with
   no Cordis dependency, so they are used as-is.
-- `primitives/` — DSH's `ui-primitives` atoms that Pagurus actually renders:
-  `DisclosureRow`, `StateDot`, `TextShimmer`, `Marquee`, and the product icon
-  set. DSH describes this package as "Cordis-free React atoms"; the only change
-  made while vendoring is React 19 typing for `inert` in `TextShimmer`.
+- `upstream/` — DSH's `ui-primitives` **whole**, plus the three small packages
+  it imports (`util/code-language`, `util/workspace-path`, `util/file-drag`)
+  and the one type it takes from `brand`. This is the entire Cordis-free atom
+  layer: controls, icons, tables, JSON inspector, terminal block, and the
+  markdown pipeline that renders every answer (GFM + TeX grammar, incremental
+  streaming parser, KaTeX, shiki highlighting, sanitised links and images).
+  Import paths inside the tree are rewritten from `@deepseek-ai/...` to
+  relative paths; that is the only structural change.
+
+  `upstream/store` and `upstream/primitives/settings-form` were removed: that
+  store needs `zustand`, which this repository forbids, and the settings form
+  was its only consumer here. Nothing Pagurus renders uses either.
+
+### Package layout
+
+| Directory | Upstream package |
+| --- | --- |
+| `upstream/primitives` | `@deepseek-ai/dsh-client-ui-primitives` |
+| `upstream/code-language` | `@deepseek-ai/dsh-util-code-language` |
+| `upstream/workspace-path` | `@deepseek-ai/dsh-util-workspace-path` |
+| `upstream/file-drag` | `@deepseek-ai/dsh-util-file-drag` |
+| `upstream/brand` | the `Branded` helper type from `@deepseek-ai/dsh-brand` |
 
 ## Why this split
 
@@ -36,4 +54,8 @@ Re-copy from a DSH checkout at the version recorded above, then re-run
 
 | File | Change |
 | --- | --- |
-| `primitives/TextShimmer.tsx` | `inert=""` → boolean `inert` for React 19 |
+| `upstream/primitives/TextShimmer.tsx` | `inert=""` → boolean `inert` for React 19 |
+| `upstream/primitives/use-clipboard-copy.ts` | timer ref typed as `number`, matching the browser's `setTimeout` |
+| `upstream/primitives/useMenuSubmenu.ts`, `markdown/useViewportHighlighting.ts` | `RefObject<T>` → `RefObject<T \| null>`; React 19 types `useRef<T>(null)` as nullable |
+| `upstream/primitives/image-drag.ts`, `JsonTree.tsx` | `useRef<T>()` → `useRef<T \| undefined>(undefined)`; React 19 requires an initial value |
+| `upstream/primitives/index.ts` | `settings-form` exports removed with the package |

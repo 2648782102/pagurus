@@ -1,133 +1,62 @@
-import { useMemo, useState } from 'react';
-import {
-  hasBlockStructure,
-  parseAnswer,
-  parseSpans,
-  type AnswerSpan,
-} from './agent-answer-format.js';
+import { Suspense, lazy } from 'react';
+import type { MarkdownLabels } from '../dsh/upstream/primitives/markdown/MarkdownText.js';
 
 /**
- * The reading view of one answer.
+ * One answer, rendered by DSH's own markdown pipeline.
  *
- * Plain prose stays plain. Only when the published text already contains a
- * fenced block, list, heading, or quote does this render structure — that keeps
- * a one-sentence reply visually identical to before while making a long answer
- * scannable.
+ * `MarkdownText` is the vendored component from `ui-primitives`: DSH's GFM +
+ * TeX grammar, its incremental streaming parser, its KaTeX rendering, its
+ * sanitised link and image handling, and its shiki-highlighted code blocks.
+ * The runtime answer is untrusted text, which is exactly the input this
+ * renderer was written for; it never renders raw HTML as markup and drops
+ * `javascript:`/`data:`/`blob:` destinations.
  *
- * While the answer is still arriving, blocks are not parsed: re-parsing a
- * partial body renumbers lists and splits fences that are not closed yet, so the
- * paragraph would visibly re-flow several times per second. Inline emphasis is
- * stable per frame, so it is safe to render immediately.
- *
- * Every node is React text chosen by this file, so an answer cannot inject
- * markup.
+ * The import is lazy for one measured reason: the parser, katex, and the
+ * highlighter core are ~1 MB, and they are needed only when a reply exists.
+ * Loading them with the shell delayed the composer for content that may never
+ * arrive. The placeholder is the message's own text, so the swap does not move
+ * the reader's place.
  */
+const MarkdownText = lazy(async () => {
+  const module = await import('../dsh/upstream/primitives/markdown/MarkdownText.js');
+  return { default: module.MarkdownText };
+});
+
+/** Localized chrome for the vendored renderer, which takes copy as props. */
+const LABELS: MarkdownLabels = Object.freeze({
+  code: Object.freeze({
+    copyLabel: '复制代码',
+    copiedLabel: '已复制',
+    toolbarLabels: Object.freeze({
+      codeLabel: '代码',
+      wrapLabel: '自动换行',
+      unwrapLabel: '取消换行',
+    }),
+  }),
+  footnotes: '脚注',
+});
+
 export function AgentAnswer({ body, streaming = false }: {
   readonly body: string;
   readonly streaming?: boolean;
 }) {
-  const blocks = useMemo(() => parseAnswer(body), [body]);
-
-  if (streaming || !hasBlockStructure(blocks)) {
-    return <p>{parseSpans(body).map(renderSpan)}</p>;
-  }
-
   return (
     <div className="agent-answer">
-      {blocks.map((block, index) => {
-        switch (block.kind) {
-          case 'code':
-            return (
-              <figure className="agent-answer-code" key={index}>
-                <figcaption>
-                  <span className="agent-answer-code-lang">{block.language ?? '代码'}</span>
-                  <CodeCopyButton text={block.text} />
-                </figcaption>
-                <pre><code>{block.text}</code></pre>
-              </figure>
-            );
-          case 'list': {
-            const items = block.items.map((item, itemIndex) => (
-              <li key={itemIndex}>{parseSpans(item).map(renderSpan)}</li>
-            ));
-            return block.ordered ? <ol key={index}>{items}</ol> : <ul key={index}>{items}</ul>;
-          }
-          case 'heading':
-            return <h4 key={index}>{parseSpans(block.text).map(renderSpan)}</h4>;
-          case 'quote':
-            return <blockquote key={index}>{parseSpans(block.text).map(renderSpan)}</blockquote>;
-          case 'rule':
-            return <hr key={index} />;
-          case 'table':
-            /*
-             * A wide table must scroll rather than force the reading column
-             * wider, so the wrapper owns the overflow and the table keeps its
-             * natural width.
-             */
-            return (
-              <div className="agent-answer-table" key={index}>
-                <table>
-                  <thead>
-                    <tr>{block.head.map((cell, cellIndex) => (
-                      <th key={cellIndex} scope="col">{parseSpans(cell).map(renderSpan)}</th>
-                    ))}</tr>
-                  </thead>
-                  <tbody>
-                    {block.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex}>{row.map((cell, cellIndex) => (
-                        <td key={cellIndex}>{parseSpans(cell).map(renderSpan)}</td>
-                      ))}</tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          default:
-            return <p key={index}>{parseSpans(block.text).map(renderSpan)}</p>;
-        }
-      })}
+      <Suspense
+        /*
+         * Plain text while the renderer loads: the same words, without the
+         * structure. It occupies the space the rendered answer will, so the
+         * thread does not jump when the module lands.
+         */
+        fallback={<p className="agent-answer-loading">{body}</p>}
+      >
+        <MarkdownText
+          text={body}
+          streaming={streaming}
+          labels={LABELS}
+          variant="body"
+        />
+      </Suspense>
     </div>
-  );
-}
-
-/** One inline span; the element is chosen here, never by the answer text. */
-function renderSpan(span: AnswerSpan, index: number) {
-  if (span.kind === 'strong') return <strong key={index}>{span.text}</strong>;
-  if (span.kind === 'emphasis') return <em key={index}>{span.text}</em>;
-  if (span.kind === 'strike') return <del key={index}>{span.text}</del>;
-  if (span.kind === 'code') return <code key={index}>{span.text}</code>;
-  if (span.kind === 'link') {
-    return <a key={index} href={span.href} target="_blank" rel="noreferrer noopener">{span.text}</a>;
-  }
-  return <span key={index}>{span.text}</span>;
-}
-
-/**
- * Copy the whole block, not a selection.
- *
- * A fenced block is the one place a reader reliably wants the exact text —
- * commands, config, SQL — and selecting it by hand across wrapped lines is
- * where copying usually goes wrong.
- */
-function CodeCopyButton({ text }: { readonly text: string }) {
-  const [state, setState] = useState<'idle' | 'copied'>('idle');
-  return (
-    <button
-      type="button"
-      className={`agent-answer-code-copy${state === 'copied' ? ' is-copied' : ''}`}
-      aria-label={state === 'copied' ? '已复制代码' : '复制代码'}
-      onClick={() => {
-        void navigator.clipboard?.writeText(text).then(
-          () => {
-            setState('copied');
-            window.setTimeout(() => setState('idle'), 1600);
-          },
-          () => undefined,
-        );
-      }}
-    >
-      <span aria-hidden="true">{state === 'copied' ? '✓' : '⧉'}</span>
-      <span>{state === 'copied' ? '已复制' : '复制'}</span>
-    </button>
   );
 }
