@@ -51,9 +51,14 @@
 .agent-rail-list h2 {
   margin: 0 0 5px;
   padding: 0 6px 4px;
-  color: var(--ag-muted);
-  font: 600 10px var(--ag-sans);
-  letter-spacing: .05em;
+  /*
+   * DSH's section caption: caption ink, the shared sans stack, and a size one
+   * step under the row text. It used to carry a letter-spaced 10px label of its
+   * own, which read as a different product's navigation heading.
+   */
+  color: var(--dsw-alias-label-caption);
+  font: 500 11px var(--dsw-font-family);
+  letter-spacing: 0;
 }
 .agent-rail-list ul {
   display: grid;
